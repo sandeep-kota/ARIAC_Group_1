@@ -15,6 +15,7 @@
 #include <algorithm>
 #include <vector>
 #include <array>
+// #include <boost/bind.hpp>
 
 #include <ros/ros.h>
 
@@ -127,9 +128,9 @@ public:
    * @param msg Message containing information on objects detected by the camera.
    */
   void logical_camera_callback(
-      const nist_gear::LogicalCameraImage::ConstPtr &msg)
+      const nist_gear::LogicalCameraImage::ConstPtr &msg, const int sensor_n)
   {
-    ROS_INFO_STREAM_THROTTLE(10, "Logical camera: '" << msg->models.size());
+    ROS_INFO_STREAM_THROTTLE(10, "Logical camera: '"<< sensor_n << msg->models.size());
   }
 
   /**
@@ -169,7 +170,6 @@ private:
   std::vector<nist_gear::Order> received_orders_; 
   //Datastructure to store the info from each part detected by the sensors
   std::array <std::array <std::vector < rwa2::Part >, 3>, 4> parts_;
-
 };
 
 int main(int argc, char **argv)
@@ -197,23 +197,62 @@ int main(int argc, char **argv)
       "/ariac/orders", 10,
       &MyCompetitionClass::order_callback, &comp_class);
 
-  // Subscribe to the '/ariac/range_finder_0' Topic.
-  ros::Subscriber proximity_sensor_subscriber = node.subscribe(
-      "/ariac/range_finder_0", 
-      10, 
-      &MyCompetitionClass::proximity_sensor_callback,
-      &comp_class);
+  // // Subscribe to the '/ariac/range_finder_0' Topic.
+  // ros::Subscriber proximity_sensor_subscriber = node.subscribe(
+  //     "/ariac/range_finder_0", 
+  //     10, 
+  //     &MyCompetitionClass::proximity_sensor_callback,
+  //     &comp_class);
 
   // Subscribe to the '/ariac/breakbeam_0_change' Topic.
-  ros::Subscriber break_beam_subscriber = node.subscribe(
-      "/ariac/breakbeam_0_change", 10,
-      &MyCompetitionClass::break_beam_callback,
-      &comp_class);
+  // ros::Subscriber break_beam_subscriber = node.subscribe(
+  //     "/ariac/breakbeam_0_change", 10,
+  //     &MyCompetitionClass::break_beam_callback,
+  //     &comp_class);
 
   // Subscribe to the '/ariac/logical_camera_12' Topic.
-  ros::Subscriber logical_camera_subscriber = node.subscribe(
-      "/ariac/logical_camera_12", 10,
-      &MyCompetitionClass::logical_camera_callback, &comp_class);
+
+  ros::Subscriber logical_camera_0_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_0", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 0));
+  
+  ros::Subscriber logical_camera_1_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_1", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 1));
+
+  ros::Subscriber logical_camera_3_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_3", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 3));
+
+  ros::Subscriber logical_camera_10_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_10", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 10));
+
+  ros::Subscriber logical_camera_11_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_11", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 11));
+
+  ros::Subscriber logical_camera_12_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_12", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 12));
+
+  ros::Subscriber logical_camera_110_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_110", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 110));
+
+  ros::Subscriber logical_camera_111_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_111", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 111));
+
+  ros::Subscriber logical_camera_20_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_20", 10, &boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 20));
+
+  ros::Subscriber logical_camera_21_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_21", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 21));
+
+  ros::Subscriber logical_camera_50_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_50", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 50));
+
+  ros::Subscriber logical_camera_51_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_51", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 51));
+
+  ros::Subscriber logical_camera_80_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_80", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 80));
+
+  ros::Subscriber logical_camera_81_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_81", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 81));
 
   // Subscribe to the '/ariac/laser_profiler_0' Topic.
   ros::Subscriber laser_profiler_subscriber = node.subscribe(
