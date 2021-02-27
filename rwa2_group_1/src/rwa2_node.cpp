@@ -128,9 +128,9 @@ public:
    * @param msg Message containing information on objects detected by the camera.
    */
   void logical_camera_callback(
-      const nist_gear::LogicalCameraImage::ConstPtr &msg, const int sensor_n)
+      const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n)
   {
-    ROS_INFO_STREAM_THROTTLE(10, "Logical camera: '"<< sensor_n << msg->models.size());
+    ROS_INFO_STREAM_THROTTLE(10, "Logical camera "<<sensor_n<<": " << msg->models.size());
   }
 
   /**
@@ -236,8 +236,8 @@ int main(int argc, char **argv)
   ros::Subscriber logical_camera_111_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
       "/ariac/logical_camera_111", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 111));
 
-  ros::Subscriber logical_camera_20_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_20", 10, &boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 20));
+ ros::Subscriber logical_camera_20_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_20", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 20));
 
   ros::Subscriber logical_camera_21_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
       "/ariac/logical_camera_21", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 21));
