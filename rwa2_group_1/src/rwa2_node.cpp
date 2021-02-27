@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <vector>
+#include <array>
 
 #include <ros/ros.h>
 
@@ -28,6 +29,8 @@
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h> //--needed for tf2::Matrix3x3
+#include "../include/Part.hh"
+
 
 /**
  * @brief Start the competition
@@ -163,7 +166,10 @@ public:
 private:
   std::string competition_state_;
   double current_score_;
-  std::vector<nist_gear::Order> received_orders_;
+  std::vector<nist_gear::Order> received_orders_; 
+  //Datastructure to store the info from each part detected by the sensors
+  std::array <std::array <std::vector < rwa2::Part >, 3>, 4> parts_;
+
 };
 
 int main(int argc, char **argv)
