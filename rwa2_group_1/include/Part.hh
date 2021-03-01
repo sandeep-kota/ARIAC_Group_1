@@ -3,25 +3,26 @@
 #define PART_HH
 
 #include <iostream>
-#include <geometry_msgs/Pose.h>
+#include <geometry_msgs/PoseStamped.h>
 
 namespace rwa2 {
 
     class Part {
     public:
-        Part(std::string type,std::string color,std::string name_id, std::string sensor,
-         geometry_msgs::Pose pose_world): type_{type}, color_{color}, name_id_{name_id}, 
-         sensor_{sensor}, pose_world_{pose_world}{}
+        explicit Part(std::string type,std::string color, int sensor,
+         geometry_msgs::PoseStamped pose_world): type_{type}, color_{color}, sensor_{sensor}, 
+         pose_world_{pose_world}{}
 
         void Print_Info();
+
+        std::string const get_type_() { return type_;}
 
     private:
 
         std::string type_;
         std::string color_;
-        std::string name_id_;
-        std::string sensor_;
-        geometry_msgs::Pose pose_world_;
+        int sensor_;
+        geometry_msgs::PoseStamped pose_world_;
        
     };
 }

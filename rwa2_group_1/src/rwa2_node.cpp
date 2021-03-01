@@ -29,9 +29,18 @@
 #include <std_srvs/Trigger.h>
 #include <tf2_ros/transform_listener.h>
 #include <geometry_msgs/TransformStamped.h>
+#include <geometry_msgs/Pose.h>
+#include <geometry_msgs/PoseStamped.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h> //--needed for tf2::Matrix3x3
 #include "../include/Part.hh"
 
+enum part_code {
+    kDisk,
+    kPulley,
+    kPiston,
+    kGear,
+    kGasket
+};
 
 /**
  * @brief Start the competition
@@ -120,6 +129,24 @@ public:
     received_orders_.push_back(*msg);
   }
 
+  geometry_msgs::PoseStamped frame_to_world(int i, geometry_msgs::Pose original_pos, geometry_msgs::TransformStamped c_w_transform)
+  {   
+    geometry_msgs::PoseStamped pose_target, pose_rel;  
+
+    pose_rel.header.frame_id = c_w_transform.header.frame_id + "_part_" + std::to_string(i);
+    pose_rel.pose = original_pos;
+    tf2::doTransform(pose_rel, pose_target, c_w_transform);
+
+    return pose_target;
+  }
+
+  part_code hashit (std::string const& partString) {
+    if (partString == "disk") return kDisk;
+    if (partString == "pulley") return kPulley;
+    if (partString == "gasket") return kGasket;
+    if (partString == "piston") return kPiston;
+    if (partString == "gear") return kGear;
+  }
   /**
    * @brief Called when a new Message is received on the Topic /ariac/logical_camera_x
    * 
@@ -130,7 +157,108 @@ public:
   void logical_camera_callback(
       const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n)
   {
-    ROS_INFO_STREAM_THROTTLE(10, "Logical camera "<<sensor_n<<": " << msg->models.size());
+    
+    logic_call_ ++; 
+    geometry_msgs::TransformStamped c_w_transform {};
+
+    c_w_transform.header.frame_id = "world_logical_camera_" + std::to_string(sensor_n) + "_frame";
+    c_w_transform.transform.translation.x = msg->pose.position.x;
+    c_w_transform.transform.translation.y = msg->pose.position.y;
+    c_w_transform.transform.translation.z = msg->pose.position.z;
+
+    c_w_transform.transform.rotation.x = msg->pose.orientation.x;
+    c_w_transform.transform.rotation.y = msg->pose.orientation.y;
+    c_w_transform.transform.rotation.z = msg->pose.orientation.z;
+    c_w_transform.transform.rotation.w = msg->pose.orientation.w;
+
+    if (msg->models.size() > 0) {
+      for (int i = 0; i < msg->models.size(); i++)
+        {
+          int pos_t = msg->models.at(i).type.find("_");
+          int pos_c = msg->models.at(i).type.rfind("_");
+
+          std::string type = msg->models.at(i).type.substr(0,pos_t);
+          std::string color = msg->models.at(i).type.substr(pos_c+1);
+          geometry_msgs::PoseStamped world_pose = frame_to_world(i, msg->models.at(i).pose, c_w_transform);
+
+          rwa2::Part part (type, color, sensor_n, world_pose);
+
+          switch(hashit(type)) {
+            case kPiston:
+              if (color == "red") {
+                parts_.at(0).at(0).push_back(part);
+              } else if (color == "blue") {
+                parts_.at(0).at(1).push_back(part);
+              } else {
+                parts_.at(0).at(2).push_back(part);
+              }       
+              break; 
+            case kDisk:
+            if (color == "red") {
+                parts_.at(1).at(0).push_back(part);
+              } else if (color == "blue") {
+                parts_.at(1).at(1).push_back(part);
+              } else {
+                parts_.at(1).at(2).push_back(part);
+              }       
+              break;
+            case kGasket:
+              if (color == "red") {
+                  parts_.at(2).at(0).push_back(part);
+                } else if (color == "blue") {
+                  parts_.at(2).at(1).push_back(part);
+                } else {
+                  parts_.at(2).at(2).push_back(part);
+                }       
+                break;
+            case kGear:
+              if (color == "red") {
+                  parts_.at(3).at(0).push_back(part);
+                } else if (color == "blue") {
+                  parts_.at(3).at(1).push_back(part);
+                } else {
+                  parts_.at(3).at(2).push_back(part);
+                }       
+                break;
+            default:
+              if (color == "red") {
+                  parts_.at(4).at(0).push_back(part);
+                } else if (color == "blue") {
+                  parts_.at(4).at(1).push_back(part);
+                } else {
+                  parts_.at(4).at(2).push_back(part);
+                }       
+                break;         
+            }
+          
+        }
+    }
+    if (logic_call_ == 14){
+      std::cout << logic_call_ << std::endl;
+      for (int p = 0; p < 5; p++) {
+
+        std::cout << "\n\n*****  " + part_names_.at(p) + " (" + std::to_string(parts_.at(p).at(0).size()+parts_.at(p).at(1).size()
+                  +parts_.at(p).at(2).size()) + " parts)" + "  *****" <<std::endl;
+
+        for (int c = 0; c < 3; c++) {
+
+          std::cout << "================\n" + color_names_.at(c)
+           + " (" + std::to_string(parts_.at(p).at(c).size()) + " parts)\n================" <<std::endl;
+
+            for (int i = 0; i < parts_.at(p).at(c).size(); i++) {
+
+              parts_.at(p).at(c).at(i).Print_Info();
+
+              }
+            }
+          }
+      for (int p = 0; p < 5; p++) {
+        for (int c = 0; c < 3; c++) {
+          parts_.at(p).at(c).clear();
+            }
+          }
+      logic_call_ = 0;
+        }       
   }
 
   /**
@@ -168,8 +296,10 @@ private:
   std::string competition_state_;
   double current_score_;
   std::vector<nist_gear::Order> received_orders_; 
-  //Datastructure to store the info from each part detected by the sensors
-  std::array <std::array <std::vector < rwa2::Part >, 3>, 4> parts_;
+  std::array <std::array <std::vector < rwa2::Part >, 3>, 5> parts_ {}; //Datastructure to store the info from each part detected by the sensors
+  int logic_call_ {0};
+  std::array <const std::string, 5> part_names_ {"PISTON", "DISK", "GASKET", "GEAR", "PULLEY"};
+  std::array <const std::string, 3> color_names_ {"Red", "Blue", "Green"};
 };
 
 int main(int argc, char **argv)
@@ -213,54 +343,64 @@ int main(int argc, char **argv)
   // Subscribe to the '/ariac/logical_camera_12' Topic.
 
   ros::Subscriber logical_camera_0_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_0", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 0));
+      "/ariac/logical_camera_0", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 0));
   
   ros::Subscriber logical_camera_1_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_1", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 1));
+      "/ariac/logical_camera_1", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 1));
+      
+  ros::Subscriber logical_camera_2_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_2", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 2));
 
   ros::Subscriber logical_camera_3_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_3", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 3));
+      "/ariac/logical_camera_3", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 3));
 
   ros::Subscriber logical_camera_10_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_10", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 10));
+      "/ariac/logical_camera_10", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 10));
 
   ros::Subscriber logical_camera_11_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_11", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 11));
+      "/ariac/logical_camera_11", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 11));
 
-  ros::Subscriber logical_camera_12_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_12", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 12));
-
-  ros::Subscriber logical_camera_110_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_110", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 110));
-
-  ros::Subscriber logical_camera_111_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_111", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 111));
-
- ros::Subscriber logical_camera_20_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_20", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 20));
+  ros::Subscriber logical_camera_20_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_20", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 20));
 
   ros::Subscriber logical_camera_21_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_21", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 21));
+      "/ariac/logical_camera_21", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 21));
 
-  ros::Subscriber logical_camera_50_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_50", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 50));
-
-  ros::Subscriber logical_camera_51_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_51", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 51));
-
-  ros::Subscriber logical_camera_80_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_80", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 80));
+ ros::Subscriber logical_camera_80_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_80", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 80));
 
   ros::Subscriber logical_camera_81_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_81", 10, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 81));
+      "/ariac/logical_camera_81", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 81));
+
+  ros::Subscriber logical_camera_50_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_50", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 50));
+
+  ros::Subscriber logical_camera_51_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_51", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 51));
+
+  ros::Subscriber logical_camera_110_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_110", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 110));
+
+  ros::Subscriber logical_camera_111_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_111", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 111));
 
   // Subscribe to the '/ariac/laser_profiler_0' Topic.
-  ros::Subscriber laser_profiler_subscriber = node.subscribe(
-      "/ariac/laser_profiler_0", 10, &MyCompetitionClass::laser_profiler_callback, &comp_class);
+  // ros::Subscriber laser_profiler_subscriber = node.subscribe(
+  //     "/ariac/laser_profiler_0", 10, &MyCompetitionClass::laser_profiler_callback, &comp_class);
 
   ROS_INFO("Setup complete.");
   start_competition(node);
-  ros::spin(); // This executes callbacks on new data until ctrl-c.
+
+  int i {0};
+
+  ros::Rate r(10);
+  while (ros::ok())
+  {
+    ros::spinOnce();
+    r.sleep();
+
+  }
+  // ros::spin(); // This executes callbacks on new data until ctrl-c.
 
   return 0;
 }
