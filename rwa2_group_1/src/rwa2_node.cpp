@@ -171,7 +171,7 @@ public:
     }
     if (logic_call_ == 17){
       remove_duplicate_parts();
-      print_part_poses();
+      print_part_poses("all","all",0);
 
 
       for (int p = 0; p < 5; p++) {
@@ -257,12 +257,6 @@ public:
 
   /**
    * @brief Used to save the parts into the array.
-   * @details [long description]
-   * 
-   * @param type [description]
-   * @param color [description]
-   * @param sensor_n [description]
-   * @param world_pose [description]
    */
   void save_part_array(std::string type, std::string color, int sensor_n, geometry_msgs::PoseStamped world_pose) {
     std::string part_id {};
@@ -285,12 +279,12 @@ public:
       for (int j=0; j<3; j++) {
       // std::cout<<i<<" "<<j<<" "<<parts_[i][j].size()<<std::endl;
         for (int k1=0; k1<parts_[i][j].size();k1++) {
-          for (int k2=0; k2<parts_[i][j].size();k2++) {
+          for (int k2=k1; k2<parts_[i][j].size();k2++) {
             std::vector<double> p1 = parts_[i][j][k1].get_pose_world();
             std::vector<double> p2 = parts_[i][j][k2].get_pose_world();
-            if (p1[0]==p2[0] && p1[1]==p2[1] && p1[2]==p2[2] 
-                  && std::abs(parts_[i][j][k1].get_sensor() - parts_[i][j][k2].get_sensor())==1) {
-              std::cout<<"Duplicate"<<std::endl;
+            int dist = std::sqrt(((p1[0]-p2[0])*(p1[0]-p2[0])) + ((p1[1]-p2[1])*(p1[1]-p2[1])) + ((p1[2]-p2[2])*(p1[2]-p2[2])));
+            if ((dist<=0.00001) && (std::abs(parts_[i][j][k1].get_sensor() - parts_[i][j][k2].get_sensor())==1)) {
+              std::cout<<"Duplicate :" << dist<<std::endl;
               std::cout<<"P1 "<<"x :"<<p1[0]<<"y :"<<p1[1]<<"z :"<<p1[2]<<std::endl;
               std::cout<<"P2 "<<"x :"<<p2[0]<<"y :"<<p2[1]<<"z :"<<p2[2]<<std::endl;
               parts_[i][j].erase(parts_[i][j].begin()+k2);
@@ -303,8 +297,13 @@ public:
     }
   }
 
+  
   /**
-   * 
+   * @brief      Prints part poses.
+   *
+   * @param[in]  p_color  The color of the parts
+   * @param[in]  p_type   The tyype of the parts
+   * @param[in]  verbose  The verbose
    */
   void print_part_poses(std::string p_color = "all",std::string p_type = "all", int verbose=0) {
     
@@ -324,23 +323,24 @@ public:
         c_it_max = hashit_color(p_color)+1;
       } 
 
+
       for (int p = p_it_min; p < p_it_max; p++) {
-        // std::cout << "\n\n*****  " + part_names_.at(p) + " (" + std::to_string(parts_.at(p).at(0).size()+parts_.at(p).at(1).size()
-        //           +parts_.at(p).at(2).size()) + " parts)" + "  *****" <<std::endl;
+        std::cout << "\n\n*****  " + part_names_[p] + " (" + std::to_string(parts_[p][0].size()+parts_[p][1].size()
+                  +parts_.at(p).at(2).size()) + " parts)" + "  *****" <<std::endl;
         
         for (int c = c_it_min; c < c_it_max; c++) {
-          std::cout << "================\n" + color_names_.at(c)
-           + " " + part_names_.at(p) + " (" + std::to_string(parts_.at(p).at(c).size()) + " parts)\n================" <<std::endl;
+          std::cout << "================\n" + color_names_[c] + " " + part_names_[p]+ " (" + std::to_string(parts_[p][c].size()) + " parts)\n================" <<std::endl;
             
             if (verbose==0) {
-              for (int i = 0; i < parts_.at(p).at(c).size(); i++) {
+              for (int i = 0; i < parts_[p][c].size(); i++) {
                 std::cout<< i <<std::endl;
-                parts_.at(p).at(c).at(i).Print_Info();
+                parts_[p][c][i].Print_Info();
               }
             }
         }
       }
-    
+  
+
     std::cout << "------------!!!----------" << std::endl;
   }
 
