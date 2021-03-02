@@ -170,6 +170,9 @@ public:
         }
     }
     if (logic_call_ == 17){
+
+      std::cout << "\n\n" <<std::endl;
+      ROS_INFO("LOGICAL CAMERA DETECTED PARTS");
       remove_duplicate_parts();
       print_part_poses("all","all",0);
 
@@ -329,7 +332,8 @@ public:
                   +parts_.at(p).at(2).size()) + " parts)" + "  *****" <<std::endl;
         
         for (int c = c_it_min; c < c_it_max; c++) {
-          std::cout << "================\n" + color_names_[c] + " " + part_names_[p]+ " (" + std::to_string(parts_[p][c].size()) + " parts)\n================" <<std::endl;
+          std::cout << "===================\n" + color_names_[c] + " " + part_names_[p] 
+          + " (" + std::to_string(parts_[p][c].size()) + " parts)\n===================" <<std::endl;
             
             if (verbose==0) {
               for (int i = 0; i < parts_[p][c].size(); i++) {
