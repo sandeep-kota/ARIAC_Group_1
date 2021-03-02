@@ -43,16 +43,16 @@ roslaunch rwa2_group_1 rwa2.launch
 COLOR PART (# parts)
 ===================
 # of type of part
-Part ID: part + colo r+ #
+Part ID: part + color + #
 Sensor: logical camera that detects the part
 Type: {disk, pulley, gasket, piston, gear}
 Color: {red, blue, green}
-Position:
+Position: (position in world coordinates)
 	x: 
 	y: 
 	z: 
-`````
-Orientation:
+
+Orientation: (orientation in world coordinates)
 	x: 
 	y: 
 	z: 
@@ -61,7 +61,7 @@ Orientation:
 	roll: 
 	pitch: 
 	yaw: 
-````
+
 -------------------------
              .
              .
