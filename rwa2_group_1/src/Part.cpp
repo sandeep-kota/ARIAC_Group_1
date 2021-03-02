@@ -1,7 +1,6 @@
 #include "../include/Part.hh"
 
 void rwa2::Part::Print_Info() {
-
     std::cout << "\n-------------------------" << std::endl;
     std::cout << "Sensor: " + std::to_string(sensor_) <<std::endl;
     std::cout << "Type: " + type_ <<std::endl;

@@ -34,12 +34,23 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h> //--needed for tf2::Matrix3x3
 #include "../include/Part.hh"
 
+
+/** 
+ * @brief Part enumeration
+ * Create a enumeration of each type of part
+ */  
 enum part_code {
-    kDisk,
-    kPulley,
     kPiston,
+    kDisk,
+    kGasket,
     kGear,
-    kGasket
+    kPulley
+};
+
+enum color_code {
+  kRed,
+  kBlue,
+  kGreen
 };
 
 /**
@@ -140,13 +151,31 @@ public:
     return pose_target;
   }
 
-  part_code hashit (std::string const& partString) {
+  part_code hashit_type (std::string const& partString) {
     if (partString == "disk") return kDisk;
     if (partString == "pulley") return kPulley;
     if (partString == "gasket") return kGasket;
     if (partString == "piston") return kPiston;
     if (partString == "gear") return kGear;
   }
+
+  color_code hashit_color (std::string const& colorString) {
+    if (colorString == "red") return kRed;
+    if (colorString == "blue") return kBlue;
+    if (colorString == "green") return kGreen;
+  }
+
+  void save_part_array(std::string type, std::string color, int sensor_n, geometry_msgs::PoseStamped world_pose) {
+    std::string part_id {};
+    int ktype = hashit_type(type);
+    int kcolor =hashit_color(color);
+    // std::cout << kcolor <<std::endl;
+    part_id = type + color + "part" + std::to_string(parts_.at(ktype).at(kcolor).size());
+
+    rwa2::Part part (part_id, type, color, sensor_n, world_pose);
+
+    parts_.at(ktype).at(kcolor).push_back(part); 
+  } 
   /**
    * @brief Called when a new Message is received on the Topic /ariac/logical_camera_x
    * 
@@ -158,83 +187,30 @@ public:
       const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n)
   {
     
-    logic_call_ ++; 
-    geometry_msgs::TransformStamped c_w_transform {};
+    logic_call_ ++;
 
-    c_w_transform.header.frame_id = "world_logical_camera_" + std::to_string(sensor_n) + "_frame";
-    c_w_transform.transform.translation.x = msg->pose.position.x;
-    c_w_transform.transform.translation.y = msg->pose.position.y;
-    c_w_transform.transform.translation.z = msg->pose.position.z;
-
-    c_w_transform.transform.rotation.x = msg->pose.orientation.x;
-    c_w_transform.transform.rotation.y = msg->pose.orientation.y;
-    c_w_transform.transform.rotation.z = msg->pose.orientation.z;
-    c_w_transform.transform.rotation.w = msg->pose.orientation.w;
+    int pos_t {};
+    int pos_c {};
+    std::string type {};
+    std::string color {};
+    geometry_msgs::PoseStamped world_pose {};
 
     if (msg->models.size() > 0) {
       for (int i = 0; i < msg->models.size(); i++)
         {
-          int pos_t = msg->models.at(i).type.find("_");
-          int pos_c = msg->models.at(i).type.rfind("_");
+          pos_t = msg->models.at(i).type.find("_");
+          pos_c = msg->models.at(i).type.rfind("_");
 
-          std::string type = msg->models.at(i).type.substr(0,pos_t);
-          std::string color = msg->models.at(i).type.substr(pos_c+1);
-          geometry_msgs::PoseStamped world_pose = frame_to_world(i, msg->models.at(i).pose, c_w_transform);
+          type = msg->models.at(i).type.substr(0,pos_t);
+          color = msg->models.at(i).type.substr(pos_c+1);
+          world_pose = frame_to_world(i, msg->models.at(i).pose, c_w_transforms_.at(sensor_n));
 
-          rwa2::Part part (type, color, sensor_n, world_pose);
-
-          switch(hashit(type)) {
-            case kPiston:
-              if (color == "red") {
-                parts_.at(0).at(0).push_back(part);
-              } else if (color == "blue") {
-                parts_.at(0).at(1).push_back(part);
-              } else {
-                parts_.at(0).at(2).push_back(part);
-              }       
-              break; 
-            case kDisk:
-            if (color == "red") {
-                parts_.at(1).at(0).push_back(part);
-              } else if (color == "blue") {
-                parts_.at(1).at(1).push_back(part);
-              } else {
-                parts_.at(1).at(2).push_back(part);
-              }       
-              break;
-            case kGasket:
-              if (color == "red") {
-                  parts_.at(2).at(0).push_back(part);
-                } else if (color == "blue") {
-                  parts_.at(2).at(1).push_back(part);
-                } else {
-                  parts_.at(2).at(2).push_back(part);
-                }       
-                break;
-            case kGear:
-              if (color == "red") {
-                  parts_.at(3).at(0).push_back(part);
-                } else if (color == "blue") {
-                  parts_.at(3).at(1).push_back(part);
-                } else {
-                  parts_.at(3).at(2).push_back(part);
-                }       
-                break;
-            default:
-              if (color == "red") {
-                  parts_.at(4).at(0).push_back(part);
-                } else if (color == "blue") {
-                  parts_.at(4).at(1).push_back(part);
-                } else {
-                  parts_.at(4).at(2).push_back(part);
-                }       
-                break;         
-            }
-          
+          save_part_array(type, color, sensor_n, world_pose);                         
         }
     }
-    if (logic_call_ == 14){
-      std::cout << logic_call_ << std::endl;
+
+    if (logic_call_ == 17){
+      ROS_INFO("LOGICAL CAMERA SENSORS INFO REPORT");
       for (int p = 0; p < 5; p++) {
 
         std::cout << "\n\n*****  " + part_names_.at(p) + " (" + std::to_string(parts_.at(p).at(0).size()+parts_.at(p).at(1).size()
@@ -292,6 +268,10 @@ public:
     }
   }
 
+  void set_c_w_transform (int c, geometry_msgs::TransformStamped transform) {
+    c_w_transforms_.at(c) = transform;
+  }
+
 private:
   std::string competition_state_;
   double current_score_;
@@ -300,6 +280,7 @@ private:
   int logic_call_ {0};
   std::array <const std::string, 5> part_names_ {"PISTON", "DISK", "GASKET", "GEAR", "PULLEY"};
   std::array <const std::string, 3> color_names_ {"Red", "Blue", "Green"};
+  std::array <geometry_msgs::TransformStamped, 17> c_w_transforms_ {}; 
 };
 
 int main(int argc, char **argv)
@@ -354,36 +335,44 @@ int main(int argc, char **argv)
   ros::Subscriber logical_camera_3_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
       "/ariac/logical_camera_3", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 3));
 
+  ros::Subscriber logical_camera_4_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_4", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 4));
+
+  ros::Subscriber logical_camera_5_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_5", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 5));
+
+  ros::Subscriber logical_camera_6_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_6", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 6));
+
+  ros::Subscriber logical_camera_7_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_7", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 7));
+
+  ros::Subscriber logical_camera_8_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_8", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 8));
+
+ ros::Subscriber logical_camera_9_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_9", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 9));
+
   ros::Subscriber logical_camera_10_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
       "/ariac/logical_camera_10", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 10));
 
   ros::Subscriber logical_camera_11_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
       "/ariac/logical_camera_11", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 11));
 
-  ros::Subscriber logical_camera_20_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_20", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 20));
+  ros::Subscriber logical_camera_12_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_12", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 12));
 
-  ros::Subscriber logical_camera_21_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_21", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 21));
+  ros::Subscriber logical_camera_13_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_13", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 13));
 
- ros::Subscriber logical_camera_80_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_80", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 80));
+  ros::Subscriber logical_camera_14_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_14", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 14));
 
-  ros::Subscriber logical_camera_81_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_81", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 81));
+  ros::Subscriber logical_camera_15_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_15", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 15));
 
-  ros::Subscriber logical_camera_50_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_50", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 50));
-
-  ros::Subscriber logical_camera_51_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_51", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 51));
-
-  ros::Subscriber logical_camera_110_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_110", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 110));
-
-  ros::Subscriber logical_camera_111_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_111", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 111));
-
+  ros::Subscriber logical_camera_16_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_16", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 16));
   // Subscribe to the '/ariac/laser_profiler_0' Topic.
   // ros::Subscriber laser_profiler_subscriber = node.subscribe(
   //     "/ariac/laser_profiler_0", 10, &MyCompetitionClass::laser_profiler_callback, &comp_class);
@@ -391,13 +380,33 @@ int main(int argc, char **argv)
   ROS_INFO("Setup complete.");
   start_competition(node);
 
-  int i {0};
+  //Get transforms world to logical camera sensors
+  tf2_ros::Buffer tfBuffer;
+  tf2_ros::TransformListener tfListener(tfBuffer);
 
-  ros::Rate r(10);
+  ros::Duration timeout(5.0);
+
+  geometry_msgs::TransformStamped transformStamped;    
+
+  for (int i = 0; i < 17; i++) {
+    try{
+      transformStamped = tfBuffer.lookupTransform("world", "logical_camera_" + std::to_string(i) +"_frame",
+                               ros::Time(0), timeout);
+    }
+    catch (tf2::TransformException &ex) {
+      ROS_WARN("%s",ex.what());
+      ros::Duration(1.0).sleep();
+      continue;
+    }
+    //Initialize attribute that stores the frame transforms to world of each camera
+    comp_class.set_c_w_transform(i, transformStamped);
+  }
+
+  ros::Rate rate(10);
   while (ros::ok())
   {
     ros::spinOnce();
-    r.sleep();
+    rate.sleep();
 
   }
   // ros::spin(); // This executes callbacks on new data until ctrl-c.
