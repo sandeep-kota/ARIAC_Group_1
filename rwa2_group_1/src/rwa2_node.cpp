@@ -169,6 +169,7 @@ public:
           save_part_array(type, color, sensor_n, world_pose);                    
         }
     }
+    // Once every logical camera sensor callback is runned (17) print the output and reset the parts_ data structure
     if (logic_call_ == 17){
 
       std::cout << "\n\n" <<std::endl;
@@ -218,13 +219,13 @@ public:
   }
 
   /**
-   * @brief [brief description]
-   * @details [long description]
+   * @brief Class method that receives the pose information from a part with respect to its camea frame and transforms
+   * it to its pose with respect to the world frame
    * 
-   * @param i [description]
-   * @param original_pos [description]
-   * @param c_w_transform [description]
-   * @return [description]
+   * @param i part number identified
+   * @param original_pos pose of part with respect to camer frame
+   * @param c_w_transform pose of camera with respect to world frame
+   * @return pose of the part with respect to the world
    */
   geometry_msgs::PoseStamped frame_to_world(int i, geometry_msgs::Pose original_pos, geometry_msgs::TransformStamped c_w_transform)
   {   
@@ -264,8 +265,7 @@ public:
   void save_part_array(std::string type, std::string color, int sensor_n, geometry_msgs::PoseStamped world_pose) {
     std::string part_id {};
     int ktype = hashit_type(type);
-    int kcolor =hashit_color(color);
-    // std::cout << kcolor <<std::endl;
+    int kcolor = hashit_color(color);
     part_id = type + color + "part" + std::to_string(parts_.at(ktype).at(kcolor).size());
 
     rwa2::Part part (part_id, type, color, sensor_n, world_pose);
@@ -396,13 +396,13 @@ int main(int argc, char **argv)
   //     &MyCompetitionClass::proximity_sensor_callback,
   //     &comp_class);
 
-  // Subscribe to the '/ariac/breakbeam_0_change' Topic.
-  // ros::Subscriber break_beam_subscriber = node.subscribe(
-  //     "/ariac/breakbeam_0_change", 10,
-  //     &MyCompetitionClass::break_beam_callback,
-  //     &comp_class);
+  // Subscribe to the '/ariac/breakbeam' Topic.
+  ros::Subscriber break_beam_subscriber = node.subscribe(
+      "/ariac/breakbeame", 10,
+      &MyCompetitionClass::break_beam_callback,
+      &comp_class);
 
-  // Subscribe to the '/ariac/logical_camera_12' Topic.
+  // Subscribe to the '/ariac/logical_camera_#' Topic of each logical camera in the placed in the environment.
 
    ros::Subscriber logical_camera_0_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
       "/ariac/logical_camera_0", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 0));
@@ -454,6 +454,7 @@ int main(int argc, char **argv)
 
   ros::Subscriber logical_camera_16_subcriber = node.subscribe<nist_gear::LogicalCameraImage>(
       "/ariac/logical_camera_16", 1, boost::bind(&MyCompetitionClass::logical_camera_callback, &comp_class, _1, 16));
+
   // Subscribe to the '/ariac/laser_profiler_0' Topic.
   // ros::Subscriber laser_profiler_subscriber = node.subscribe(
   //     "/ariac/laser_profiler_0", 10, &MyCompetitionClass::laser_profiler_callback, &comp_class);
