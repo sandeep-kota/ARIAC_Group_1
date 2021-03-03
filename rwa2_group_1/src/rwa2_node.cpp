@@ -182,6 +182,7 @@ public:
       std::cout << "\n\n" <<std::endl;
       ROS_INFO("LOGICAL CAMERA DETECTED PARTS");
       remove_duplicate_parts();
+      // print_part_poses("red","disk",1);
       print_part_poses("all","all",0);
 
 
@@ -287,22 +288,29 @@ public:
   void remove_duplicate_parts() {
     for (int i=0; i<5;i++) {
       for (int j=0; j<3; j++) {
+      std::vector<int> remove_idx{};
       // std::cout<<i<<" "<<j<<" "<<parts_[i][j].size()<<std::endl;
-        for (int k1=0; k1<parts_[i][j].size();k1++) {
-          for (int k2=k1; k2<parts_[i][j].size();k2++) {
-            std::vector<double> p1 = parts_[i][j][k1].get_pose_world();
-            std::vector<double> p2 = parts_[i][j][k2].get_pose_world();
-            int dist = std::sqrt(((p1[0]-p2[0])*(p1[0]-p2[0])) + ((p1[1]-p2[1])*(p1[1]-p2[1])) + ((p1[2]-p2[2])*(p1[2]-p2[2])));
-            if ((dist<=0.00001) && (std::abs(parts_[i][j][k1].get_sensor() - parts_[i][j][k2].get_sensor())==1)) {
-              std::cout<<"Duplicate :" << dist<<std::endl;
-              std::cout<<"P1 "<<"x :"<<p1[0]<<"y :"<<p1[1]<<"z :"<<p1[2]<<std::endl;
-              std::cout<<"P2 "<<"x :"<<p2[0]<<"y :"<<p2[1]<<"z :"<<p2[2]<<std::endl;
-              parts_[i][j].erase(parts_[i][j].begin()+k2);
-              std::cout<<"!!!"<<std::endl;
-              break;
+      for (int k1=0; k1<parts_[i][j].size();k1++) {
+        for (int k2=k1+1; k2<parts_[i][j].size()-1;k2++) {
+          std::vector<double> p1 = parts_[i][j][k1].get_pose_world();
+          std::vector<double> p2 = parts_[i][j][k2].get_pose_world();
+          int dist = std::sqrt(((p1[0]-p2[0])*(p1[0]-p2[0])) + ((p1[1]-p2[1])*(p1[1]-p2[1])) + ((p1[2]-p2[2])*(p1[2]-p2[2])));
+          // std::cout<< "k1 :"<< k1<< "K2 :" <<k2 <<" dist :" <<dist <<std::endl;
+          if ((dist<=0.00001) && (std::abs(parts_[i][j][k1].get_sensor() - parts_[i][j][k2].get_sensor())==1)) {
+            std::cout<<"Duplicate :" << dist<<std::endl;
+            std::cout<<"P1 "<<"x :"<<p1[0]<<"y :"<<p1[1]<<"z :"<<p1[2]<<std::endl;
+            std::cout<<"P2 "<<"x :"<<p2[0]<<"y :"<<p2[1]<<"z :"<<p2[2]<<std::endl;
+            remove_idx.emplace_back(k2);
+            // parts_[i][j].erase(parts_[i][j].begin()+k2);
+            std::cout<<"!!!"<<std::endl;
+            break;
             }
           }
-        }        
+        }
+        for (int idx=0 ; idx<remove_idx.size();idx++) {
+          std::cout<<"Removing " << idx <<std::endl;
+          parts_[i][j].erase(parts_[i][j].begin()+idx);        
+        }
       }
     }
   }
