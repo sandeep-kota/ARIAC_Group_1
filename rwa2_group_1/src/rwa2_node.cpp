@@ -34,6 +34,10 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h> //--needed for tf2::Matrix3x3
 #include "../include/Part.hh"
 
+
+/**
+ * @brief Enumeration of the different types of parts
+ */
 enum part_code {
     kDisk,
     kPulley,
@@ -42,6 +46,9 @@ enum part_code {
     kGasket
 };
 
+/**
+ * @brief Enumeration of the different colors of parts
+ */
 enum color_code {
   kRed,
   kBlue,
