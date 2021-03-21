@@ -90,54 +90,6 @@ models_over_bins:
         rpy: [0, 0, 0]
         num_models_x: 2
         num_models_y: 1
-  bin4:
-    models:
-      disk_part_blue:
-        xyz_start: [0.1, 0.1, 0.0]
-        xyz_end: [0.5, 0.5, 0.0]
-        rpy: [0, 0, 0]
-        num_models_x: 3
-        num_models_y: 3
-  # bin5:
-  #   models:
-  #     disk_part_green:
-  #       xyz_start: [0.1, 0.1, 0.0]
-  #       xyz_end: [0.5, 0.5, 0.0]
-  #       rpy: [0, 0, 0]
-  #       num_models_x: 3
-  #       num_models_y: 3
-  # bin6:
-  #   models:
-  #     disk_part_blue:
-  #       xyz_start: [0.1, 0.1, 0.0]
-  #       xyz_end: [0.5, 0.5, 0.0]
-  #       rpy: [0, 0, 0]
-  #       num_models_x: 3
-  #       num_models_y: 3
-  # bin7:
-  #   models:
-  #     disk_part_green:
-  #       xyz_start: [0.1, 0.1, 0.0]
-  #       xyz_end: [0.5, 0.5, 0.0]
-  #       rpy: [0, 0, 0]
-  #       num_models_x: 3
-  #       num_models_y: 3
-  bin8:
-    models:
-      disk_part_blue:
-        xyz_start: [0.1, 0.1, 0.0]
-        xyz_end: [0.5, 0.5, 0.0]
-        rpy: [0, 0, 0]
-        num_models_x: 3
-        num_models_y: 3
-  bin15:
-    models:
-      pulley_part_red:
-        xyz_start: [0.15, 0.15, 0.0]
-        xyz_end: [0.45, 0.45, 0.0]
-        rpy: [0, 0, 0]
-        num_models_x: 2
-        num_models_y: 1
 
 models_over_shelves:
   shelf5:
@@ -148,7 +100,6 @@ models_over_shelves:
         rpy: [0, 0, 0]
         num_models_x: 2
         num_models_y: 1
-
 
 faulty_products:
   - disk_part_blue_1

@@ -51,8 +51,8 @@ class SensorControl
     
     std::array <geometry_msgs::TransformStamped, 17> c_w_transforms_ {};
 
-    std::unordered_map <std::string, std::vector<part>> parts_;
-    std::unordered_map <std::string, std::vector<part>> current_parts_;
+    std::map <std::string, std::vector<part>> parts_;
+    std::map <std::string, std::vector<part>> current_parts_;
     
 };
 

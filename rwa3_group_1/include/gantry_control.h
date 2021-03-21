@@ -51,7 +51,8 @@ class GantryControl {
 //    bool pickPart(part part, std::string arm_name);
     bool pickPartLeftArm(part part);
     bool pickPartRightArm(part part);
-    void placePart(part part, std::string agv);
+    void placePartLeftArm();
+    void placePartRightArm();
 
     
     /// Send command message to robot controller
@@ -73,6 +74,12 @@ class GantryControl {
     std::string getGantryLocation(){
       return gantry_location_;
     }
+    product getProductLeftArm(){
+      return product_left_arm_;
+    }
+    product getProductRightArm(){
+      return product_right_arm_;
+    }
     void printPartOrient();
 
     void activateGripper(std::string gripper_id);
@@ -86,8 +93,11 @@ class GantryControl {
     shelf1 shelf1_;
     shelf2 shelf2_;
     bins bins_;
-    agv2 agv2_;
-
+    agv1_left agv1_left_;
+    agv1_right agv1_right_;
+    agv2_left agv2_left_;
+    agv2_right agv2_right_;
+    
   private:
     std::vector<double> joint_group_positions_;
     ros::NodeHandle node_;
@@ -114,7 +124,7 @@ class GantryControl {
     std::string gantry_location_;
 
     product product_left_arm_;
-    product product_right_arm;
+    product product_right_arm_;
 
     sensor_msgs::JointState current_joint_states_;
 

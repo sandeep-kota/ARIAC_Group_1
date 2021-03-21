@@ -88,15 +88,23 @@ int main(int argc, char ** argv) {
                 }
 
                 gantry.goToPresetLocation(gantry.start_);
-                
-                break;
 
+                //First place product of left arm in agv
+
+                gantry.placePartLeftArm();
+
+                ros::Duration(1).sleep();
+
+                gantry.placePartRightArm();
+
+                gantry.getProduct(current_product);               
+                
             } else {
 
-                gantry.getProduct(current_product.p);
+                gantry.getProduct(current_product);
             }            
 
-            // gantry.goToPresetLocation(gantry.start_);
+            gantry.goToPresetLocation(gantry.start_);
         }
         
     }
