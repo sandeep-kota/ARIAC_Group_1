@@ -61,7 +61,7 @@ public:
      * @brief Handle products in the order
      * 
      */
-    void processOrder();
+    bool processOrder();
     /**
      * @brief Get the Clock objectGet 
      * 
@@ -83,7 +83,9 @@ public:
     std::vector<Product> get_product_list(){
         return product_list_;
     }
-
+    std::vector<Shipment> get_shipment_list(){
+        return shipment_list_;
+    }
 private:
     ros::NodeHandle node_;/*!< node h_type: "ordeandle for this class */
     std::string competition_state_;/*!< state of the competition */
@@ -93,7 +95,7 @@ private:
     std::vector<nist_gear::Order> received_orders_;/*!< vector to store orders */
      std::vector<Order> order_list_;/*!< list of orders */
     std::vector<Product> product_list_;
-
+    std::vector<Shipment> shipment_list_;
     ros::Subscriber current_score_subscriber_;/*!< subscriber to the topic /ariac/current_score */
     ros::Subscriber competition_state_subscriber_;/*!< subscriber to the topic /ariac/competition_state */
     ros::Subscriber competition_clock_subscriber_;/*!< subscriber to the topic /clock */

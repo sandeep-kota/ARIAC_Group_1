@@ -24,11 +24,12 @@ class SensorControl
     explicit SensorControl(ros::NodeHandle & node);
     void logical_camera_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n);
     void init();
+    Part findPart(std::string type);
     geometry_msgs::Pose frame_to_world(int i, geometry_msgs::Pose original_pos, geometry_msgs::TransformStamped c_w_transform);
 
   private:
     ros::NodeHandle node_;
-    int logic_call_ {0};
+    
     ros::Subscriber logical_camera_0_subcriber_;
     ros::Subscriber logical_camera_1_subcriber_;
     ros::Subscriber logical_camera_2_subcriber_;
@@ -46,10 +47,12 @@ class SensorControl
     ros::Subscriber logical_camera_14_subcriber_;
     ros::Subscriber logical_camera_15_subcriber_;
     ros::Subscriber logical_camera_16_subcriber_;
-
+    int logic_call_ {0};
+    
     std::array <geometry_msgs::TransformStamped, 17> c_w_transforms_ {};
 
     std::unordered_map <std::string, std::vector<part>> parts_;
+    std::unordered_map <std::string, std::vector<part>> current_parts_;
     
 };
 

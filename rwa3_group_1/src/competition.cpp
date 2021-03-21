@@ -94,15 +94,30 @@ void Competition::competition_clock_callback(const rosgraph_msgs::Clock::ConstPt
 }
 
 ////////////////////////
-void Competition::processOrder(){
-  auto current_order = order_list_.front();
-  auto current_shipment = current_order.shipments.front();//--change this line to handle multiple shipments
-  auto product_list = current_shipment.products;
+bool Competition::processOrder(){
 
-  for (const auto &product: product_list)
-  {
-    product_list.push_back(product);
+  if (order_list_.size() == 0)
+  { 
+    ROS_INFO_STREAM("Order empty");
+    return false;
   }
+  ROS_INFO_STREAM("Order not empty");
+  auto current_order = order_list_.front();
+  order_list_.erase(order_list_.begin());
+
+  shipment_list_.clear();
+  product_list_.clear();
+
+  for (int s = 0; s < current_order.shipments.size(); s++)
+  {
+    shipment_list_.push_back(current_order.shipments.at(s));
+    for (int p = 0; p < current_order.shipments.at(s).products.size(); p++)
+    {
+      product_list_.push_back(current_order.shipments.at(s).products.at(p));
+    }
+  }
+
+  return true; 
 }
 
 

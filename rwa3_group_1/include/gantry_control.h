@@ -68,8 +68,11 @@ class GantryControl {
     void FKRightArm(std::vector<double> joints);
     void FKGantry(std::vector<double> joints);
     void moveOverPart(part part, std::string arm);
-    void getPart(part part);
+    void getProduct(product product);
     std::string checkFreeGripper();
+    std::string getGantryLocation(){
+      return gantry_location_;
+    }
     void printPartOrient();
 
     void activateGripper(std::string gripper_id);
@@ -109,6 +112,9 @@ class GantryControl {
     double left_ee_yaw_;
     std::array<float,4> left_ee_quaternion_;
     std::string gantry_location_;
+
+    product product_left_arm_;
+    product product_right_arm;
 
     sensor_msgs::JointState current_joint_states_;
 

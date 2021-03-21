@@ -164,9 +164,9 @@ std::string GantryControl::checkFreeGripper()
 }
 
 
-void GantryControl::getPart(part part)
+void GantryControl::getProduct(product product)
 {
-    std::string location = part.location;
+    std::string location = product.p.location;
     std::string free_arm = checkFreeGripper();
 
     std::cout << gantry_location_ << free_arm << std::endl;
@@ -192,15 +192,15 @@ void GantryControl::getPart(part part)
 
         if (free_arm == "any" || free_arm == "left")
         {
-            reachPartShelfLeftArm(part);
-            moveOverPart(part, free_arm);
-            pickPartLeftArm(part);
+            reachPartShelfLeftArm(product.p);
+            moveOverPart(product.p, free_arm);
+            pickPartLeftArm(product.p);
             FKLeftArm(shelf1_.left_arm);
                 
         } else {
-            reachPartShelfRightArm(part);
-            moveOverPart(part, free_arm);
-            pickPartRightArm(part);
+            reachPartShelfRightArm(product.p);
+            moveOverPart(product.p, free_arm);
+            pickPartRightArm(product.p);
             FKRightArm(shelf1_.right_arm);
         }
 
@@ -228,15 +228,15 @@ void GantryControl::getPart(part part)
 
         if (free_arm == "any" || free_arm == "left")
         {
-            reachPartBinLeftArm(part);
+            reachPartBinLeftArm(product.p);
             ros::Duration(0.5).sleep();
-            pickPartLeftArm(part);
+            pickPartLeftArm(product.p);
             ros::Duration(1).sleep();
                 
         } else {
-            reachPartBinRightArm(part);
+            reachPartBinRightArm(product.p);
             ros::Duration(0.5).sleep();
-            pickPartRightArm(part);
+            pickPartRightArm(product.p);
             ros::Duration(1).sleep();
         }
 
@@ -258,14 +258,14 @@ void GantryControl::getPart(part part)
         goToBottomShelfs();
         if (free_arm == "any" || free_arm == "left")
         {
-            reachPartShelfLeftArm(part);
-            pickPartLeftArm(part);
+            reachPartShelfLeftArm(product.p);
+            pickPartLeftArm(product.p);
             ros::Duration(1).sleep();
             retriveFromBottomShelf();
                 
         } else {
-            reachPartShelfRightArm(part);
-            pickPartRightArm(part);
+            reachPartShelfRightArm(product.p);
+            pickPartRightArm(product.p);
             retriveFromBottomShelf();
         }
 
@@ -287,13 +287,13 @@ void GantryControl::getPart(part part)
         goToBottomShelfs();
         if (free_arm == "any" || free_arm == "left")
         {
-            reachPartShelfLeftArm(part);
-            pickPartLeftArm(part);
+            reachPartShelfLeftArm(product.p);
+            pickPartLeftArm(product.p);
             retriveFromBottomShelf();
                 
         } else {
-            reachPartShelfRightArm(part);
-            pickPartRightArm(part);
+            reachPartShelfRightArm(product.p);
+            pickPartRightArm(product.p);
             retriveFromBottomShelf();
         }
 
@@ -305,7 +305,7 @@ void GantryControl::getPart(part part)
         if (gantry_location_ == "shelf_1" || gantry_location_ == "shelf_2" || gantry_location_ == "bins" || gantry_location_ == "start")
         {
             FKGantry(start_.gantry);
-            if (part.pose.position.y > 0)
+            if (product.p.pose.position.y > 0)
             {
                 goToPresetLocation(aisle1_);
                 gantry_location_ = "aisle_1";
@@ -318,16 +318,17 @@ void GantryControl::getPart(part part)
     goToBottomShelfs();
     if (free_arm == "any" || free_arm == "left")
         {   
-            reachPartShelfLeftArm(part);
-            pickPartLeftArm(part);
+            reachPartShelfLeftArm(product.p);
+            pickPartLeftArm(product.p);
             retriveFromBottomShelf();
                 
         } else {
-            reachPartShelfRightArm(part);
-            pickPartRightArm(part);
+            reachPartShelfRightArm(product.p);
+            pickPartRightArm(product.p);
             retriveFromBottomShelf();
         }
     }
+
 }
     
 ////////////////////////////
@@ -680,7 +681,6 @@ bool GantryControl::pickPartLeftArm(part part)
             //--Move arm to previous position
             left_arm_group_.setPoseTarget(currentPose);
             left_arm_group_.move();
-            // goToPresetLocation(start_);
         }
         else
         {

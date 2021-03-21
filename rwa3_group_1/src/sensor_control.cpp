@@ -86,6 +86,9 @@ void SensorControl::init()
             {"disk_part_blue", {}}
     };
 
+    current_parts_.insert(parts_.begin(), parts_.end());
+    
+
 }
 void SensorControl::logical_camera_callback (const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n)
 {
@@ -136,9 +139,39 @@ void SensorControl::logical_camera_callback (const nist_gear::LogicalCameraImage
 
     // Once every logical camera sensor callback is runned (17) print the output and reset the parts_ data structure
     if (logic_call_ == 17)
-    {
+    {   
 
-      ROS_INFO_STREAM(parts_.at("pulley_part_red").size());
+        current_parts_.at("piston_rod_part_red").clear(); 
+        current_parts_.at("piston_rod_part_green").clear();
+        current_parts_.at("piston_rod_part_blue").clear();
+        current_parts_.at("pulley_part_red").clear();
+        current_parts_.at("pulley_part_green").clear();
+        current_parts_.at("pulley_part_blue").clear();
+        current_parts_.at("gear_part_red").clear();
+        current_parts_.at("gear_part_green").clear();
+        current_parts_.at("gear_part_blue").clear();
+        current_parts_.at("gasket_part_red").clear();
+        current_parts_.at("gasket_part_green").clear();
+        current_parts_.at("gasket_part_blue").clear();
+        current_parts_.at("disk_part_red").clear();
+        current_parts_.at("disk_part_green").clear();
+        current_parts_.at("disk_part_blue").clear();
+
+        current_parts_.at("piston_rod_part_red") = parts_.at("piston_rod_part_red"); 
+        current_parts_.at("piston_rod_part_green") = parts_.at("piston_rod_part_green");
+        current_parts_.at("piston_rod_part_blue") = parts_.at("piston_rod_part_blue");
+        current_parts_.at("pulley_part_red") = parts_.at("pulley_part_red");
+        current_parts_.at("pulley_part_green") = parts_.at("pulley_part_green");
+        current_parts_.at("pulley_part_blue") = parts_.at("pulley_part_blue");
+        current_parts_.at("gear_part_red") = parts_.at("gear_part_red");
+        current_parts_.at("gear_part_green") = parts_.at("gear_part_green") ;
+        current_parts_.at("gear_part_blue") = parts_.at("gear_part_blue");
+        current_parts_.at("gasket_part_red") = parts_.at("gasket_part_red");
+        current_parts_.at("gasket_part_green") = parts_.at("gasket_part_green");
+        current_parts_.at("gasket_part_blue") = parts_.at("gasket_part_blue");
+        current_parts_.at("disk_part_red") = parts_.at("disk_part_red");
+        current_parts_.at("disk_part_green") = parts_.at("disk_part_green");
+        current_parts_.at("disk_part_blue") = parts_.at("disk_part_blue");
 
         parts_.at("piston_rod_part_red").clear(); 
         parts_.at("piston_rod_part_green").clear();
@@ -154,9 +187,8 @@ void SensorControl::logical_camera_callback (const nist_gear::LogicalCameraImage
         parts_.at("gasket_part_blue").clear();
         parts_.at("disk_part_red").clear();
         parts_.at("disk_part_green").clear();
-        parts_.at("disk_part_blue").clear();
-            
-      logic_call_ = 0;
+        parts_.at("disk_part_blue").clear();            
+        logic_call_ = 0;
     }       
 }
 
@@ -174,3 +206,8 @@ geometry_msgs::Pose SensorControl::frame_to_world(int i, geometry_msgs::Pose ori
 
     return world_pose;
   }
+
+Part SensorControl::findPart(std::string type)
+{
+  return current_parts_.at(type).at(0);
+}
