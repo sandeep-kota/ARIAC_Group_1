@@ -82,9 +82,9 @@ void GantryControl::init()
 
     // joint positions to go to agv2
     agv2_.location = "agv2";
-    agv2_.gantry = {0.6, 6.9, PI};
-    agv2_.left_arm = {0.0, -PI / 4, PI / 2, -PI / 4, PI / 2, 0};
-    agv2_.right_arm = {PI, -PI / 4, PI / 2, -PI / 4, PI / 2, 0};
+    agv2_.gantry = {0.0, 5.6, -PI/2};
+    agv2_.left_arm = {PI, -1.51, -1.51, 0, PI / 2, 0};
+    agv2_.right_arm = {PI, -1.51, -1.51, 0, PI / 2, 0};
 
     //--Raw pointers are frequently used to refer to the planning group for improved performance.
     //--To start, we will create a pointer that references the current robot’s state.
@@ -639,29 +639,30 @@ void GantryControl::moveOverPart(part part, std::string arm)
 ////////////////////////
 bool GantryControl::pickPartLeftArm(part part)
 {
-    tf2_ros::Buffer tfBuffer;
-    tf2_ros::TransformListener tfListener(tfBuffer);
-
-    ros::Duration timeout(5.0);
-
-    geometry_msgs::TransformStamped transformStamped;
-
-    static tf2_ros::StaticTransformBroadcaster br;
-    geometry_msgs::TransformStamped transformStampedArm; 
-
-    geometry_msgs::PoseStamped pose_target, pose_rel;
-
-    pose_rel.pose = part.pose;
     
     //--Activate gripper
     activateGripper("left_arm");
     geometry_msgs::Pose currentPose = left_arm_group_.getCurrentPose().pose;
+
+
+    tf2::Quaternion part_orientation (part.pose.orientation.x, part.pose.orientation.y, part.pose.orientation.z, part.pose.orientation.w);
+    part_orientation.normalize();
 
     part.pose.position.z = part.pose.position.z + model_height.at(part.type) + GRIPPER_HEIGHT - EPSILON;
     part.pose.orientation.x = currentPose.orientation.x;
     part.pose.orientation.y = currentPose.orientation.y;
     part.pose.orientation.z = currentPose.orientation.z;
     part.pose.orientation.w = currentPose.orientation.w;
+
+    tf2::Quaternion ee_link_orientation (currentPose.orientation.x, currentPose.orientation.y ,currentPose.orientation.z,
+                                            currentPose.orientation.w);
+
+    ee_link_orientation.normalize();
+    qr_part_left_arm_ = part_orientation * ee_link_orientation.inverse();
+
+    qr_part_left_arm_.normalize();
+   
+
     //    ROS_INFO_STREAM("["<< part.type<<"]= " << part.pose.position.x << ", " << part.pose.position.y << "," << part.pose.position.z << "," << part.pose.orientation.x << "," << part.pose.orientation.y << "," << part.pose.orientation.z << "," << part.pose.orientation.w);
 
     auto state = getGripperState("left_arm");
@@ -675,42 +676,11 @@ bool GantryControl::pickPartLeftArm(part part)
         if (state.attached)
         {
             ROS_INFO_STREAM("[Gripper] = object attached");
-
-            for (int i = 0; i < 17; i++) {
-                    try{
-                    transformStamped = tfBuffer.lookupTransform("left_ee_link", "world",
-                                            ros::Time(0), timeout);
-                    }
-                    catch (tf2::TransformException &ex) {
-                        ROS_WARN("%s",ex.what());
-                        ros::Duration(1.0).sleep();
-                    continue;
-                    }
-                }
                 
-            pose_rel.header.frame_id = transformStamped.header.frame_id + "_part";
-
             //--Move arm to previous position
             left_arm_group_.setPoseTarget(currentPose);
             left_arm_group_.move();
             // goToPresetLocation(start_);
-
-            tf2::doTransform(pose_rel, pose_target, transformStamped);
-
-            transformStampedArm.header.stamp = ros::Time::now();
-            transformStampedArm.header.frame_id = "left_ee_link";
-            transformStampedArm.child_frame_id = "part_frame";
-            transformStampedArm.transform.translation.x = pose_target.pose.position.x;
-            transformStampedArm.transform.translation.y = pose_target.pose.position.y;
-            transformStampedArm.transform.translation.z = pose_target.pose.position.z;
-            transformStampedArm.transform.rotation.x = pose_target.pose.orientation.x;
-            transformStampedArm.transform.rotation.y = pose_target.pose.orientation.y;
-            transformStampedArm.transform.rotation.z = pose_target.pose.orientation.z;
-            transformStampedArm.transform.rotation.w = pose_target.pose.orientation.w;
-
-            for (int i{0}; i < 15; ++i)
-                br.sendTransform(transformStampedArm);
-            return true;
         }
         else
         {
@@ -803,6 +773,11 @@ void GantryControl::placePart(part part, std::string agv)
 {
     auto target_pose_in_tray = getTargetWorldPose(part.pose, agv);
 
+    tf2::Quaternion target_orientation_in_tray (target_pose_in_tray.orientation.x, target_pose_in_tray.orientation.y, target_pose_in_tray.orientation.z,
+                                                    target_pose_in_tray.orientation.w);
+
+    // target_orientation_in_tray = qr_part_left_arm_ * target_orientation_in_tray;
+
     ROS_INFO_STREAM(target_pose_in_tray);
     ros::Duration(2.0).sleep();
     //--TODO: Consider agv1 too
@@ -810,6 +785,12 @@ void GantryControl::placePart(part part, std::string agv)
         goToPresetLocation(agv2_);
     target_pose_in_tray.position.z += (ABOVE_TARGET + 1.5 * model_height[part.type]);
 
+    
+    target_pose_in_tray.orientation.x = target_orientation_in_tray.x();
+    target_pose_in_tray.orientation.y = target_orientation_in_tray.y();
+    target_pose_in_tray.orientation.z = target_orientation_in_tray.z();
+    target_pose_in_tray.orientation.w = target_orientation_in_tray.w();
+    
     left_arm_group_.setPoseTarget(target_pose_in_tray);
     left_arm_group_.move();
 
@@ -1000,4 +981,23 @@ bool GantryControl::sendJointPosition(trajectory_msgs::JointTrajectory command_m
     {
         return false;
     }
+}
+
+void GantryControl::printPartOrient()
+{
+    geometry_msgs::Pose currentArmPose = left_arm_group_.getCurrentPose().pose;
+
+    tf2::Quaternion q_arm (currentArmPose.orientation.x, currentArmPose.orientation.y, currentArmPose.orientation.z, currentArmPose.orientation.w);
+
+    q_arm.normalize();
+
+    tf2::Quaternion q_part;
+
+    q_part = qr_part_left_arm_ * q_arm;
+    q_part.normalize();
+
+    double roll, pitch, yaw;
+    tf2::Matrix3x3(q_part).getRPY(yaw, pitch, roll);
+
+    ROS_INFO_STREAM("q of part with respect to world: " << roll << " " << pitch << " " << yaw);
 }

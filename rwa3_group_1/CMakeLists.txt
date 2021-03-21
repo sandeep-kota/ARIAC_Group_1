@@ -168,6 +168,7 @@ add_executable(rwa3_node
         src/gantry_control.cpp
         src/utils.cpp
         src/agv_control.cpp
+        src/sensor_control.cpp
         )
 
 ## Rename C++ executable without prefix

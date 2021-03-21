@@ -34,6 +34,7 @@
 #include "utils.h"
 #include "gantry_control.h"
 #include "agv_control.h"
+#include "sensor_control.h"
 
 #include <tf2/LinearMath/Quaternion.h>
 
@@ -51,6 +52,9 @@ int main(int argc, char ** argv) {
 
     GantryControl gantry(node);
     gantry.init();
+
+    SensorControl sensors(node);
+    sensors.init();
     
     //--1-Read order
     
@@ -88,7 +92,7 @@ int main(int argc, char ** argv) {
     my_part1.pose.orientation.z = 0.002;
     my_part1.pose.orientation.w = 1.000;
     tf2::Quaternion myQuaternion;
-    myQuaternion.setRPY(0.0, 0.00, 0.5);
+    myQuaternion.setRPY(0.029299, 0.000598, 0.000003);
     part my_part2;
     my_part2.type = "pulley_part_blue";
     my_part2.location = "shelf_5";
@@ -100,26 +104,30 @@ int main(int argc, char ** argv) {
     my_part2.pose.orientation.z = myQuaternion.z();
     my_part2.pose.orientation.w = myQuaternion.w();
 
-    //--Where to place the part in the tray?
+    //--Where to place the part in tmyQuaternion.y()he tray?
     //--TODO: Get this information from /ariac/orders (list_of_products in this case)
     part part_in_tray;
     part_in_tray.type = "pulley_part_red";
     part_in_tray.pose.position.x = -0.1;
     part_in_tray.pose.position.y = -0.2;
     part_in_tray.pose.position.z = 0.0;
-    
-    part_in_tray.pose.orientation.x = 0.0;
-    part_in_tray.pose.orientation.y = 0.0;
-    part_in_tray.pose.orientation.z = 0.382683;
-    part_in_tray.pose.orientation.w = 0.92388;
+    myQuaternion.setRPY(0.032322, 0.003832, 0.010435);
+    part_in_tray.pose.orientation.x = myQuaternion.x();;
+    part_in_tray.pose.orientation.y = myQuaternion.y();
+    part_in_tray.pose.orientation.z = myQuaternion.z();
+    part_in_tray.pose.orientation.w = myQuaternion.w();
     gantry.goToPresetLocation(gantry.start_);
 
     // gantry.getPart(my_part1);
     gantry.getPart(my_part2);
-    gantry.getPart(my_part1);
+    // gantry.getPart(my_part1);
     // gantry.retriveFromBottomShelf();
     gantry.goToPresetLocation(gantry.aisle1_);
     gantry.goToPresetLocation(gantry.start_);
+    gantry.goToPresetLocation(gantry.agv2_);
+
+    ros::Duration(2).sleep();
+    gantry.printPartOrient();
     // gantry.goToPresetLocation(gantry.bins2_);
     // gantry.rotateTorso(BR_RIGHT_ARM);
     // gantry.pickPartRightArm(my_part2);

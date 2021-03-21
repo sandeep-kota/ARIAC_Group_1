@@ -29,8 +29,8 @@
           -f $(find rwa3_group_1)/config/rwa3-final.yaml
           $(find rwa3_group_1)/config/rwa3_sensor_group_1.yaml
           " required="true" output="screen" />
-<!-- 
- <group ns='ariac/gantry'>
+
+ <!-- <group ns='ariac/gantry'>
    <include file="$(find gantry_moveit_config)/launch/moveit_rviz.launch">
      <arg name="rviz_config" value="$(find gantry_moveit_config)/launch/moveit.rviz"/>
    </include>

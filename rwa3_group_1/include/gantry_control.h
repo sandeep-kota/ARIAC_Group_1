@@ -70,6 +70,7 @@ class GantryControl {
     void moveOverPart(part part, std::string arm);
     void getPart(part part);
     std::string checkFreeGripper();
+    void printPartOrient();
 
     void activateGripper(std::string gripper_id);
     void deactivateGripper(std::string gripper_id);
@@ -100,6 +101,8 @@ class GantryControl {
     moveit::planning_interface::MoveGroupInterface right_arm_group_;
     moveit::planning_interface::MoveGroupInterface left_ee_link_group_;
     moveit::planning_interface::MoveGroupInterface right_ee_link_group_;
+
+    tf2::Quaternion qr_part_left_arm_;
 
     double left_ee_roll_;
     double left_ee_pitch_;
