@@ -86,7 +86,23 @@ void SensorControl::init()
             {"disk_part_blue", {}}
     };
 
-    current_parts_.insert(parts_.begin(), parts_.end());
+    // current_parts_ = {
+    //         {"piston_rod_part_red", {}}, 
+    //         {"piston_rod_part_green", {}},
+    //         {"piston_rod_part_blue", {}},
+    //         {"pulley_part_red", {}},
+    //         {"pulley_part_green", {}},
+    //         {"pulley_part_blue", {}},
+    //         {"gear_part_red", {}},
+    //         {"gear_part_green", {}},
+    //         {"gear_part_blue", {}},
+    //         {"gasket_part_red", {}},
+    //         {"gasket_part_green", {}},
+    //         {"gasket_part_blue", {}},
+    //         {"disk_part_red", {}},
+    //         {"disk_part_green", {}},
+    //         {"disk_part_blue", {}}
+    // };
     
 
 }
@@ -141,37 +157,37 @@ void SensorControl::logical_camera_callback (const nist_gear::LogicalCameraImage
     if (logic_call_ == 17)
     {   
 
-        current_parts_.at("piston_rod_part_red").clear(); 
-        current_parts_.at("piston_rod_part_green").clear();
-        current_parts_.at("piston_rod_part_blue").clear();
-        current_parts_.at("pulley_part_red").clear();
-        current_parts_.at("pulley_part_green").clear();
-        current_parts_.at("pulley_part_blue").clear();
-        current_parts_.at("gear_part_red").clear();
-        current_parts_.at("gear_part_green").clear();
-        current_parts_.at("gear_part_blue").clear();
-        current_parts_.at("gasket_part_red").clear();
-        current_parts_.at("gasket_part_green").clear();
-        current_parts_.at("gasket_part_blue").clear();
-        current_parts_.at("disk_part_red").clear();
-        current_parts_.at("disk_part_green").clear();
-        current_parts_.at("disk_part_blue").clear();
+        // current_parts_.at("piston_rod_part_red").clear(); 
+        // current_parts_.at("piston_rod_part_green").clear();
+        // current_parts_.at("piston_rod_part_blue").clear();
+        // current_parts_.at("pulley_part_red").clear();
+        // current_parts_.at("pulley_part_green").clear();
+        // current_parts_.at("pulley_part_blue").clear();
+        // current_parts_.at("gear_part_red").clear();
+        // current_parts_.at("gear_part_green").clear();
+        // current_parts_.at("gear_part_blue").clear();
+        // current_parts_.at("gasket_part_red").clear();
+        // current_parts_.at("gasket_part_green").clear();
+        // current_parts_.at("gasket_part_blue").clear();
+        // current_parts_.at("disk_part_red").clear();
+        // current_parts_.at("disk_part_green").clear();
+        // current_parts_.at("disk_part_blue").clear();
 
-        current_parts_.at("piston_rod_part_red") = parts_.at("piston_rod_part_red"); 
-        current_parts_.at("piston_rod_part_green") = parts_.at("piston_rod_part_green");
-        current_parts_.at("piston_rod_part_blue") = parts_.at("piston_rod_part_blue");
-        current_parts_.at("pulley_part_red") = parts_.at("pulley_part_red");
-        current_parts_.at("pulley_part_green") = parts_.at("pulley_part_green");
-        current_parts_.at("pulley_part_blue") = parts_.at("pulley_part_blue");
-        current_parts_.at("gear_part_red") = parts_.at("gear_part_red");
-        current_parts_.at("gear_part_green") = parts_.at("gear_part_green") ;
-        current_parts_.at("gear_part_blue") = parts_.at("gear_part_blue");
-        current_parts_.at("gasket_part_red") = parts_.at("gasket_part_red");
-        current_parts_.at("gasket_part_green") = parts_.at("gasket_part_green");
-        current_parts_.at("gasket_part_blue") = parts_.at("gasket_part_blue");
-        current_parts_.at("disk_part_red") = parts_.at("disk_part_red");
-        current_parts_.at("disk_part_green") = parts_.at("disk_part_green");
-        current_parts_.at("disk_part_blue") = parts_.at("disk_part_blue");
+        // current_parts_.at("piston_rod_part_red") = parts_.at("piston_rod_part_red"); 
+        // current_parts_.at("piston_rod_part_green") = parts_.at("piston_rod_part_green");
+        // current_parts_.at("piston_rod_part_blue") = parts_.at("piston_rod_part_blue");
+        // current_parts_.at("pulley_part_red") = parts_.at("pulley_part_red");
+        // current_parts_.at("pulley_part_green") = parts_.at("pulley_part_green");
+        // current_parts_.at("pulley_part_blue") = parts_.at("pulley_part_blue");
+        // current_parts_.at("gear_part_red") = parts_.at("gear_part_red");
+        // current_parts_.at("gear_part_green") = parts_.at("gear_part_green") ;
+        // current_parts_.at("gear_part_blue") = parts_.at("gear_part_blue");
+        // current_parts_.at("gasket_part_red") = parts_.at("gasket_part_red");
+        // current_parts_.at("gasket_part_green") = parts_.at("gasket_part_green");
+        // current_parts_.at("gasket_part_blue") = parts_.at("gasket_part_blue");
+        // current_parts_.at("disk_part_red") = parts_.at("disk_part_red");
+        // current_parts_.at("disk_part_green") = parts_.at("disk_part_green");
+        // current_parts_.at("disk_part_blue") = parts_.at("disk_part_blue");
 
         parts_.at("piston_rod_part_red").clear(); 
         parts_.at("piston_rod_part_green").clear();
@@ -209,5 +225,5 @@ geometry_msgs::Pose SensorControl::frame_to_world(int i, geometry_msgs::Pose ori
 
 Part SensorControl::findPart(std::string type)
 {
-  return current_parts_.at(type).at(0);
+  return parts_.at(type).at(0);
 }

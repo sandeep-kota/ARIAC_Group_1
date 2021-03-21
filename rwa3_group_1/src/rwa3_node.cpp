@@ -72,10 +72,14 @@ int main(int argc, char ** argv) {
         {
             Product current_product = list_of_products.at(p);
 
-            ROS_INFO_STREAM(current_product.type);
+            ROS_INFO_STREAM("PRODUCT TYPE: " << current_product.type);
 
             //--2-Look for parts in this order
             current_product.p = sensors.findPart(current_product.type);
+
+            ROS_INFO_STREAM("PART LOCATION: " << current_product.p.location);
+            ROS_INFO_STREAM("GRIPPER STATE: " << gantry.checkFreeGripper());
+            ROS_INFO_STREAM("GANTRY LOCATION: " << gantry.getGantryLocation());
 
             if (gantry.checkFreeGripper() == "none")
             {
@@ -104,107 +108,10 @@ int main(int argc, char ** argv) {
                 gantry.getProduct(current_product);
             }            
 
-            gantry.goToPresetLocation(gantry.start_);
+            // gantry.goToPresetLocation(gantry.start_);
         }
         
     }
-    
-    
-    
-    
-    //--We go to this bin because a camera above
-    //--this bin found one of the parts in the order
-    // gantry.goToPresetLocation(gantry.bins1_);
-    // gantry.goToPresetLocation(gantry.bins2_);
-    // gantry.goToPresetLocation(gantry.bins3_);
-    // gantry.goToPresetLocation(gantry.bins4_);
-    // gantry.rotateTorso(TR_RIGHT_ARM);
-    // gantry.rotateTorso(TL_RIGHT_ARM);
-    // gantry.rotateTorso(BR_RIGHT_ARM);
-    // gantry.rotateTorso(BL_RIGHT_ARM);
-
-    // gantry.rotateTorso(TR_LEFT_ARM);
-    // gantry.rotateTorso(TL_LEFT_ARM);
-    // gantry.rotateTorso(BR_LEFT_ARM);
-    // gantry.rotateTorso(BL_LEFT_ARM);
-
-    // gantry.goToPresetLocation(gantry.start_);
-    
-    //--TODO: Parse each product in list_of_products
-    //--TODO: For each product in list_of_product find the part in the environment using cameras
-    //--TODO: Choose one part and pick it up
-    //--Assume the following part was found by a camera
-    // part my_part1;
-    // my_part1.type = "pulley_part_red";
-    // my_part1.location = "shelf_5";
-    // my_part1.pose.position.x = -13.522081;
-    // my_part1.pose.position.y = 3.446263;
-    // my_part1.pose.position.z = 1.398754;
-    // my_part1.pose.orientation.x = 0.012;
-    // my_part1.pose.orientation.y = -0.004;
-    // my_part1.pose.orientation.z = 0.002;
-    // my_part1.pose.orientation.w = 1.000;
-    // tf2::Quaternion myQuaternion;
-    // myQuaternion.setRPY(0.029299, 0.000598, 0.000003);
-    // part my_part2;
-    // my_part2.type = "pulley_part_blue";
-    // my_part2.location = "shelf_5";
-    // my_part2.pose.position.x = -14.522080;
-    // my_part2.pose.position.y = 3.446263;
-    // my_part2.pose.position.z = 1.398766;
-    // my_part2.pose.orientation.x = myQuaternion.x();
-    // my_part2.pose.orientation.y = myQuaternion.y();
-    // my_part2.pose.orientation.z = myQuaternion.z();
-    // my_part2.pose.orientation.w = myQuaternion.w();
-
-    //--Where to place the part in tmyQuaternion.y()he tray?
-    //--TODO: Get this information from /ariac/orders (list_of_products in this case)
-    // part part_in_tray;
-    // part_in_tray.type = "pulley_part_red";
-    // part_in_tray.pose.position.x = -0.1;
-    // part_in_tray.pose.position.y = -0.2;
-    // part_in_tray.pose.position.z = 0.0;
-    // myQuaternion.setRPY(0.032322, 0.003832, 0.010435);
-    // part_in_tray.pose.orientation.x = myQuaternion.x();;
-    // part_in_tray.pose.orientation.y = myQuaternion.y();
-    // part_in_tray.pose.orientation.z = myQuaternion.z();
-    // part_in_tray.pose.orientation.w = myQuaternion.w();
-    
-
-    // gantry.getPart(my_part1);
-    // gantry.getPart(my_part2);
-    // gantry.getPart(my_part1);
-    // gantry.retriveFromBottomShelf();
-    // gantry.goToPresetLocation(gantry.aisle1_);
-    // gantry.goToPresetLocation(gantry.start_);
-    // gantry.goToPresetLocation(gantry.agv2_);
-
-    // ros::Duration(2).sleep();
-    // gantry.printPartOrient();
-    // gantry.goToPresetLocation(gantry.bins2_);
-    // gantry.rotateTorso(BR_RIGHT_ARM);
-    // gantry.pickPartRightArm(my_part2);
-
-    // gantry.reachPartShelfRightArm(my_part2);
-    // gantry.pickPartRightArm(my_part2);
-    // gantry.retriveFromBottomShelf();
-    // gantry.goToPresetLocation(gantry.aisle1_);
-    // gantry.goToPresetLocation(gantry.start_);
-    //--Go pick the part
-    // if (!gantry.pickPart(my_part1)){
-    //     gantry.goToPresetLocation(gantry.start_);
-    //     spinner.stop();
-    //     ros::shutdown();
-    // }
-    
-    //--Go place the part
-    //--TODO: agv2 should be retrieved from /ariac/orders (list_of_products in this case)
-    // gantry.placePart(part_in_tray, "agv2");
-
-    // AGVControl agv_control(node);
-    //--TODO: get the following arguments from the order
-    // agv_control.sendAGV("order_0_shipment_0", "kit_tray_2");
-    // comp.endCompetition();
     spinner.stop();
     ros::shutdown();
     return 0;
