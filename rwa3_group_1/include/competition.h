@@ -93,7 +93,7 @@ private:
     ros::Time competition_clock_;/*!< clock to check if we are close to the time limit */
     double competition_start_time_; /*!< wall time in second */
     std::vector<nist_gear::Order> received_orders_;/*!< vector to store orders */
-     std::vector<Order> order_list_;/*!< list of orders */
+    std::vector<Order> order_list_;/*!< list of orders */
     std::vector<Product> product_list_;
     std::vector<Shipment> shipment_list_;
     ros::Subscriber current_score_subscriber_;/*!< subscriber to the topic /ariac/current_score */

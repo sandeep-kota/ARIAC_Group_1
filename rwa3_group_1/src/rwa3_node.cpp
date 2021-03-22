@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 #include <algorithm>
 #include <vector>
 
@@ -38,11 +37,16 @@
 
 #include <tf2/LinearMath/Quaternion.h>
 
-int main(int argc, char ** argv) {
+int main(int argc, char **argv)
+{
     ros::init(argc, argv, "rwa3_node");
     ros::NodeHandle node;
     ros::AsyncSpinner spinner(8);
     spinner.start();
+
+    std::vector<Product> list_of_products;
+    std::vector<Shipment> list_of_shipments;
+    Product current_product;
 
     Competition comp(node);
     comp.init();
@@ -56,37 +60,33 @@ int main(int argc, char ** argv) {
     SensorControl sensors(node);
     sensors.init();
 
-    ros::Duration(5).sleep();
+    ros::Duration(2).sleep();
 
     gantry.goToPresetLocation(gantry.start_);
 
     //--1-Read order
     while(comp.processOrder())
+    // while (1)
     {
-        std::vector<Shipment> list_of_shipments = comp.get_shipment_list();
-        std::vector<Product> list_of_products = comp.get_product_list();
-
-        ROS_INFO_STREAM("Order processed");
+        list_of_shipments = comp.get_shipment_list();
+        list_of_products = comp.get_product_list();
 
         for (int p = 0; p < list_of_products.size(); p++)
         {
-            Product current_product = list_of_products.at(p);
+            current_product = list_of_products.at(p);
 
-            ROS_INFO_STREAM("PRODUCT TYPE: " << current_product.type);
+            ROS_WARN_STREAM(current_product.type);
 
             //--2-Look for parts in this order
             current_product.p = sensors.findPart(current_product.type);
 
-            ROS_INFO_STREAM("PART LOCATION: " << current_product.p.location);
-            ROS_INFO_STREAM("GRIPPER STATE: " << gantry.checkFreeGripper());
-            ROS_INFO_STREAM("GANTRY LOCATION: " << gantry.getGantryLocation());
-
-            if (gantry.checkFreeGripper() == "none")
+            if (gantry.checkFreeGripper().compare("none") == 0)
             {
-                if (gantry.getGantryLocation() == "aisle_1")
+                if (gantry.getGantryLocation().compare("aisle_1") == 0)
                 {
                     gantry.goToPresetLocation(gantry.aisle1_);
-                } else if (gantry.getGantryLocation() == "aisle_2")
+                }
+                else if (gantry.getGantryLocation().compare("aisle_2") == 0)
                 {
                     gantry.goToPresetLocation(gantry.aisle2_);
                 }
@@ -97,21 +97,14 @@ int main(int argc, char ** argv) {
 
                 gantry.placePartLeftArm();
 
-                ros::Duration(1).sleep();
+                // ros::Duration(2).sleep();
 
                 gantry.placePartRightArm();
-
-                gantry.getProduct(current_product);               
-                
-            } else {
-
-                gantry.getProduct(current_product);
-            }            
-
-            // gantry.goToPresetLocation(gantry.start_);
+            }
+            gantry.getProduct(current_product);
         }
-        
     }
+
     spinner.stop();
     ros::shutdown();
     return 0;

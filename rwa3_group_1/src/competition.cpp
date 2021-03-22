@@ -96,28 +96,35 @@ void Competition::competition_clock_callback(const rosgraph_msgs::Clock::ConstPt
 ////////////////////////
 bool Competition::processOrder(){
 
-  if (order_list_.size() == 0)
+
+  Order current_order;
+  if (order_list_.empty())
   { 
-    ROS_INFO_STREAM("Order empty");
+    // ROS_INFO_STREAM("Order empty");
     return false;
-  }
-  ROS_INFO_STREAM("Order not empty");
-  auto current_order = order_list_.front();
-  order_list_.erase(order_list_.begin());
+  } else {
+    // ROS_INFO_STREAM("Order not empty");
+    current_order = order_list_.front();
+    // ROS_INFO_STREAM("Got current order");
+    order_list_.erase(order_list_.begin());
+    // ROS_INFO_STREAM("Erase from order list");
 
-  shipment_list_.clear();
-  product_list_.clear();
+    shipment_list_.clear();
+    product_list_.clear();
 
-  for (int s = 0; s < current_order.shipments.size(); s++)
-  {
-    shipment_list_.push_back(current_order.shipments.at(s));
-    for (int p = 0; p < current_order.shipments.at(s).products.size(); p++)
+    // ROS_INFO_STREAM("Clear shipment an dproduct lists");
+
+    for (int s = 0; s < current_order.shipments.size(); s++)
     {
-      product_list_.push_back(current_order.shipments.at(s).products.at(p));
+      shipment_list_.push_back(current_order.shipments.at(s));
+      for (int p = 0; p < current_order.shipments.at(s).products.size(); p++)
+      {
+        product_list_.push_back(current_order.shipments.at(s).products.at(p));
+      }
     }
+    return true;
+    // ROS_INFO_STREAM("SHIPMENT SIZE: " << current_order.shipments.size());
   }
-
-  return true; 
 }
 
 

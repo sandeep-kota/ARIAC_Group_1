@@ -68,57 +68,58 @@ void SensorControl::init()
             c_w_transforms_.at(i) = transformStamped;
   }
 
-    parts_ = {
-            {"piston_rod_part_red", {}}, 
-            {"piston_rod_part_green", {}},
-            {"piston_rod_part_blue", {}},
-            {"pulley_part_red", {}},
-            {"pulley_part_green", {}},
-            {"pulley_part_blue", {}},
-            {"gear_part_red", {}},
-            {"gear_part_green", {}},
-            {"gear_part_blue", {}},
-            {"gasket_part_red", {}},
-            {"gasket_part_green", {}},
-            {"gasket_part_blue", {}},
-            {"disk_part_red", {}},
-            {"disk_part_green", {}},
-            {"disk_part_blue", {}}
-    };
-
-    // current_parts_ = {
-    //         {"piston_rod_part_red", {}}, 
-    //         {"piston_rod_part_green", {}},
-    //         {"piston_rod_part_blue", {}},
-    //         {"pulley_part_red", {}},
-    //         {"pulley_part_green", {}},
-    //         {"pulley_part_blue", {}},
-    //         {"gear_part_red", {}},
-    //         {"gear_part_green", {}},
-    //         {"gear_part_blue", {}},
-    //         {"gasket_part_red", {}},
-    //         {"gasket_part_green", {}},
-    //         {"gasket_part_blue", {}},
-    //         {"disk_part_red", {}},
-    //         {"disk_part_green", {}},
-    //         {"disk_part_blue", {}}
-    // };
-    
-
 }
+  /**
+   * @brief Maps part type to keys. 
+   */
+  part_code SensorControl::hashit_type (std::string const& partString) {
+    if (partString == "disk") return kDisk;
+    if (partString == "pulley") return kPulley;
+    if (partString == "gasket") return kGasket;
+    if (partString == "piston") return kPiston;
+    if (partString == "gear") return kGear;
+  }
+
+  /**
+   * @brief Maps part color to keys. 
+   */
+  color_code SensorControl::hashit_color (std::string const& colorString) {
+    if (colorString == "red") return kRed;
+    if (colorString == "blue") return kBlue;
+    if (colorString == "green") return kGreen;
+  }
 void SensorControl::logical_camera_callback (const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n)
 {
+    
+    int pos_t {};
+    int pos_c {};
+    int ktype {};
+    int kcolor {};
+    std::string type {};
+    std::string color {};
     part Part;
     logic_call_ ++;
+
+
     if (msg->models.size() > 0) {
       for (int i = 0; i < msg->models.size(); i++)
         {
+
+          pos_t = msg->models.at(i).type.find("_");
+          pos_c = msg->models.at(i).type.rfind("_");
+
+          type = msg->models.at(i).type.substr(0,pos_t);
+          color = msg->models.at(i).type.substr(pos_c+1);
+
+          ktype = hashit_type(type);
+          kcolor = hashit_color(color);
+
           Part.type = msg->models.at(i).type;
           Part.pose = frame_to_world(i, msg->models.at(i).pose, c_w_transforms_.at(sensor_n));
           Part.save_pose = Part.pose;
           Part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
           Part.time_stamp = ros::Time::now();
-          Part.id = Part.type + std::to_string(parts_.at(Part.type).size());
+          Part.id = Part.type + std::to_string(parts_.at(ktype).at(kcolor).size());
           if (sensor_n == 3 || sensor_n == 4 || sensor_n == 5 || sensor_n == 6)
           {
             Part.location = "bins";
@@ -148,7 +149,7 @@ void SensorControl::logical_camera_callback (const nist_gear::LogicalCameraImage
               Part.location = "conveyor_belt";
           }
 
-          parts_.at(Part.type).push_back(Part);         
+          parts_.at(ktype).at(kcolor).push_back(Part); 
           
           }
     }
@@ -156,57 +157,23 @@ void SensorControl::logical_camera_callback (const nist_gear::LogicalCameraImage
     // Once every logical camera sensor callback is runned (17) print the output and reset the parts_ data structure
     if (logic_call_ == 17)
     {   
+        current_parts_ = parts_;
+        for (int p = 0; p < 5; p++) {
+        for (int c = 0; c < 3; c++) {
+          for (int part = 0; part < parts_.at(p).at(c).size(); part++){
+          }
 
-        // current_parts_.at("piston_rod_part_red").clear(); 
-        // current_parts_.at("piston_rod_part_green").clear();
-        // current_parts_.at("piston_rod_part_blue").clear();
-        // current_parts_.at("pulley_part_red").clear();
-        // current_parts_.at("pulley_part_green").clear();
-        // current_parts_.at("pulley_part_blue").clear();
-        // current_parts_.at("gear_part_red").clear();
-        // current_parts_.at("gear_part_green").clear();
-        // current_parts_.at("gear_part_blue").clear();
-        // current_parts_.at("gasket_part_red").clear();
-        // current_parts_.at("gasket_part_green").clear();
-        // current_parts_.at("gasket_part_blue").clear();
-        // current_parts_.at("disk_part_red").clear();
-        // current_parts_.at("disk_part_green").clear();
-        // current_parts_.at("disk_part_blue").clear();
+          
+          parts_.at(p).at(c).clear();
+          ROS_WARN_STREAM(current_parts_.at(p).size());
+          ROS_WARN_STREAM("Parts size : " << parts_.at(p).size());
 
-        // current_parts_.at("piston_rod_part_red") = parts_.at("piston_rod_part_red"); 
-        // current_parts_.at("piston_rod_part_green") = parts_.at("piston_rod_part_green");
-        // current_parts_.at("piston_rod_part_blue") = parts_.at("piston_rod_part_blue");
-        // current_parts_.at("pulley_part_red") = parts_.at("pulley_part_red");
-        // current_parts_.at("pulley_part_green") = parts_.at("pulley_part_green");
-        // current_parts_.at("pulley_part_blue") = parts_.at("pulley_part_blue");
-        // current_parts_.at("gear_part_red") = parts_.at("gear_part_red");
-        // current_parts_.at("gear_part_green") = parts_.at("gear_part_green") ;
-        // current_parts_.at("gear_part_blue") = parts_.at("gear_part_blue");
-        // current_parts_.at("gasket_part_red") = parts_.at("gasket_part_red");
-        // current_parts_.at("gasket_part_green") = parts_.at("gasket_part_green");
-        // current_parts_.at("gasket_part_blue") = parts_.at("gasket_part_blue");
-        // current_parts_.at("disk_part_red") = parts_.at("disk_part_red");
-        // current_parts_.at("disk_part_green") = parts_.at("disk_part_green");
-        // current_parts_.at("disk_part_blue") = parts_.at("disk_part_blue");
-
-        parts_.at("piston_rod_part_red").clear(); 
-        parts_.at("piston_rod_part_green").clear();
-        parts_.at("piston_rod_part_blue").clear();
-        parts_.at("pulley_part_red").clear();
-        parts_.at("pulley_part_green").clear();
-        parts_.at("pulley_part_blue").clear();
-        parts_.at("gear_part_red").clear();
-        parts_.at("gear_part_green").clear();
-        parts_.at("gear_part_blue").clear();
-        parts_.at("gasket_part_red").clear();
-        parts_.at("gasket_part_green").clear();
-        parts_.at("gasket_part_blue").clear();
-        parts_.at("disk_part_red").clear();
-        parts_.at("disk_part_green").clear();
-        parts_.at("disk_part_blue").clear();            
-        logic_call_ = 0;
+            }
+          }
+      logic_call_ = 0;
+          }       
     }       
-}
+
 
 geometry_msgs::Pose SensorControl::frame_to_world(int i, geometry_msgs::Pose original_pos, geometry_msgs::TransformStamped c_w_transform)
   {   
@@ -225,5 +192,16 @@ geometry_msgs::Pose SensorControl::frame_to_world(int i, geometry_msgs::Pose ori
 
 Part SensorControl::findPart(std::string type)
 {
-  return parts_.at(type).at(0);
+
+  int pos_t = type.find("_");
+  int pos_c = type.rfind("_");
+  std::string parttype = type.substr(0,pos_t);
+  std::string partcolor = type.substr(pos_c+1);
+
+  int ktype = hashit_type(parttype);
+  int kcolor = hashit_color(partcolor);
+  return current_parts_.at(ktype).at(kcolor).at(0);
+  
 }
+
+

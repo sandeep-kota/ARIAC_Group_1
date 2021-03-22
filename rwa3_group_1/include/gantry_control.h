@@ -72,6 +72,11 @@ class GantryControl {
     void getProduct(product product);
     std::string checkFreeGripper();
     std::string getGantryLocation(){
+
+      if(gantry_location_.size() == 0)
+      {
+        ROS_INFO_STREAM("its none");
+      }
       return gantry_location_;
     }
     product getProductLeftArm(){

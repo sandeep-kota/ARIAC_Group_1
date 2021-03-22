@@ -16,6 +16,25 @@
 #include <ros/console.h>
 #include "utils.h"
 
+/**
+ * @brief Enumeration of the different types of parts
+ */
+enum part_code {
+    kDisk,
+    kPulley,
+    kPiston,
+    kGear,
+    kGasket
+};
+
+/**
+ * @brief Enumeration of the different colors of parts
+ */
+enum color_code {
+  kRed,
+  kBlue,
+  kGreen
+};
 
 class SensorControl 
 {
@@ -25,10 +44,14 @@ class SensorControl
     void logical_camera_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n);
     void init();
     Part findPart(std::string type);
+    void save_part_array(std::string type, std::string color, part part);
+    part_code hashit_type (std::string const& partString);
+    color_code hashit_color (std::string const& colorString);
+
     geometry_msgs::Pose frame_to_world(int i, geometry_msgs::Pose original_pos, geometry_msgs::TransformStamped c_w_transform);
 
   private:
-    ros::NodeHandle node_;
+    ros::NodeHandle node_;  
     
     ros::Subscriber logical_camera_0_subcriber_;
     ros::Subscriber logical_camera_1_subcriber_;
@@ -51,9 +74,9 @@ class SensorControl
     
     std::array <geometry_msgs::TransformStamped, 17> c_w_transforms_ {};
 
-    std::map <std::string, std::vector<part>> parts_;
-    std::map <std::string, std::vector<part>> current_parts_;
+    std::array <std::array <std::vector < part >, 3>, 5> parts_ {}; //Datastructure to store the info from each part detected by the sensors
     
+    std::array <std::array <std::vector < part >, 3>, 5> current_parts_ {};
 };
 
 #endif
