@@ -85,7 +85,15 @@ class GantryControl {
     product getProductRightArm(){
       return product_right_arm_;
     }
-    void printPartOrient();
+
+    void set_product_left_arm_(const product& product)
+    {
+        product_left_arm_ = product;
+    }
+    void set_product_right_arm_(const product& product)
+    {
+        product_right_arm_ = product;
+    }
 
     void activateGripper(std::string gripper_id);
     void deactivateGripper(std::string gripper_id);
@@ -119,8 +127,6 @@ class GantryControl {
     moveit::planning_interface::MoveGroupInterface right_arm_group_;
     moveit::planning_interface::MoveGroupInterface left_ee_link_group_;
     moveit::planning_interface::MoveGroupInterface right_ee_link_group_;
-
-    tf2::Quaternion qr_part_left_arm_;
 
     double left_ee_roll_;
     double left_ee_pitch_;

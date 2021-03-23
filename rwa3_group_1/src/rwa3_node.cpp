@@ -44,8 +44,8 @@ int main(int argc, char **argv)
     ros::AsyncSpinner spinner(8);
     spinner.start();
 
-    std::vector<Product> list_of_products;
-    std::vector<Shipment> list_of_shipments;
+    std::vector<Product> list_of_products;  // list of products to retrieve in order
+    std::vector<Shipment> list_of_shipments; // list of shipments to complete in order
     Product current_product;
 
     Competition comp(node);
@@ -58,31 +58,36 @@ int main(int argc, char **argv)
     gantry.init();
 
     SensorControl sensors(node);
-    sensors.init();
+    sensors.init();                 // initialize the sensor callbacks of the environment
 
-    ros::Duration(2).sleep();
+    gantry.goToPresetLocation(gantry.start_); // start the trial from start position
 
-    gantry.goToPresetLocation(gantry.start_);
-
-    //--1-Read order
-    while(comp.processOrder())
+    
+    while(comp.processOrder()) //--1-Read order until no more found
     // while (1)
     {
-        list_of_shipments = comp.get_shipment_list();
-        list_of_products = comp.get_product_list();
+        list_of_shipments = comp.get_shipment_list(); // get list of shipments of current order in priority order
+        list_of_products = comp.get_product_list();   // get list of products of current order in priority order  
 
-        for (int p = 0; p < list_of_products.size(); p++)
+        for (int p = 0; p < list_of_products.size(); p++)   // loop all the products to be retrieve from current order
         {
+
             current_product = list_of_products.at(p);
 
-            ROS_WARN_STREAM(current_product.type);
+            ROS_WARN_STREAM(current_product.type); 
 
-            //--2-Look for parts in this order
-            current_product.p = sensors.findPart(current_product.type);
+            current_product.p = sensors.findPart(current_product.type); //--2-Look for parts in this order
 
-            if (gantry.checkFreeGripper().compare("none") == 0)
+            ROS_WARN_STREAM(current_product.p.location);
+
+            if(current_product.p.type.empty())  // no parts of desired product found
             {
-                if (gantry.getGantryLocation().compare("aisle_1") == 0)
+                ROS_WARN_STREAM("NO PART FOUND");
+            }
+
+            if (gantry.checkFreeGripper().compare("none") == 0)     // if none of the grippers are free place both products in grippers
+            {
+                if (gantry.getGantryLocation().compare("aisle_1") == 0)     // go to start location from current gantry location
                 {
                     gantry.goToPresetLocation(gantry.aisle1_);
                 }
@@ -91,19 +96,43 @@ int main(int argc, char **argv)
                     gantry.goToPresetLocation(gantry.aisle2_);
                 }
 
-                gantry.goToPresetLocation(gantry.start_);
+                gantry.goToPresetLocation(gantry.start_);   
 
-                //First place product of left arm in agv
+                
+                gantry.placePartLeftArm();  // Place product of left arm in agv
 
-                gantry.placePartLeftArm();
+                gantry.placePartRightArm(); // Place product of right arm in agv
 
-                // ros::Duration(2).sleep();
-
-                gantry.placePartRightArm();
+                gantry.goToPresetLocation(gantry.start_); // go back to start position
             }
-            gantry.getProduct(current_product);
+            
+            if (p < list_of_products.size())    // get product not called in last iteration
+                gantry.getProduct(current_product); // get product after placing in agv
+            
         }
     }
+
+    // Place in agv the two last retrieved products
+    if (gantry.checkFreeGripper().compare("none") == 0)     // if none of the grippers are free place both products in grippers
+            {
+                if (gantry.getGantryLocation().compare("aisle_1") == 0)     // go to start location from current gantry location
+                {
+                    gantry.goToPresetLocation(gantry.aisle1_);
+                }
+                else if (gantry.getGantryLocation().compare("aisle_2") == 0)
+                {
+                    gantry.goToPresetLocation(gantry.aisle2_);
+                }
+
+                gantry.goToPresetLocation(gantry.start_);   
+
+                
+                gantry.placePartLeftArm();  // Place product of left arm in agv
+
+                gantry.placePartRightArm(); // Place product of right arm in agv
+
+                gantry.goToPresetLocation(gantry.start_); // go back to start position
+            }
 
     spinner.stop();
     ros::shutdown();

@@ -100,8 +100,10 @@ void SensorControl::logical_camera_callback (const nist_gear::LogicalCameraImage
     part Part;
     logic_call_ ++;
 
+    // ROS_WARN_STREAM(logic_call_);
 
-    if (msg->models.size() > 0) {
+
+    if (msg->models.size() > 0 && sensor_n != 0 && sensor_n != 1) {
       for (int i = 0; i < msg->models.size(); i++)
         {
 
@@ -155,18 +157,20 @@ void SensorControl::logical_camera_callback (const nist_gear::LogicalCameraImage
     }
 
     // Once every logical camera sensor callback is runned (17) print the output and reset the parts_ data structure
-    if (logic_call_ == 17)
+
+    // ROS_WARN_STREAM("BEFORE IF");
+    if (logic_call_ >= 17)
     {   
+      // ROS_WARN_STREAM("INSIDE IF");
         current_parts_ = parts_;
+        
         for (int p = 0; p < 5; p++) {
         for (int c = 0; c < 3; c++) {
           for (int part = 0; part < parts_.at(p).at(c).size(); part++){
           }
 
-          
+          // ROS_WARN_STREAM(current_parts_.at(0).at(0).size());
           parts_.at(p).at(c).clear();
-          ROS_WARN_STREAM(current_parts_.at(p).size());
-          ROS_WARN_STREAM("Parts size : " << parts_.at(p).size());
 
             }
           }
@@ -197,10 +201,17 @@ Part SensorControl::findPart(std::string type)
   int pos_c = type.rfind("_");
   std::string parttype = type.substr(0,pos_t);
   std::string partcolor = type.substr(pos_c+1);
+  part no_part;
 
   int ktype = hashit_type(parttype);
   int kcolor = hashit_color(partcolor);
-  return current_parts_.at(ktype).at(kcolor).at(0);
+  if(current_parts_.at(ktype).at(kcolor).empty())
+  {
+    return no_part;
+  } else{
+    return current_parts_.at(ktype).at(kcolor).at(0);
+  }
+  
   
 }
 
