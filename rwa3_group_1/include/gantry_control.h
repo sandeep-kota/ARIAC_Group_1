@@ -53,8 +53,8 @@ class GantryControl {
     bool pickPartRightArm(part part);
     void placePartLeftArm();
     void placePartRightArm();
-    bool throwLastPartLeft();
-    bool throwLastPartRight();
+    bool throwLastPartLeft(part part, std::string ptype);
+    bool throwLastPartRight(part part, std::string ptype);
     
     /// Send command message to robot controller
     bool sendJointPosition(trajectory_msgs::JointTrajectory command_msg);
@@ -113,6 +113,12 @@ class GantryControl {
     agv1_right agv1_right_;
     agv2_left agv2_left_;
     agv2_right agv2_right_;
+    tray1_left tray1_left_;
+    tray1_right tray1_right_;
+    tray2_left tray2_left_;
+    tray2_right tray2_right_;
+
+
     
   private:
     std::vector<double> joint_group_positions_;

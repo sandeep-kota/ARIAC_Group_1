@@ -122,20 +122,6 @@ color_code SensorControl::hashit_color(std::string const &colorString)
     return kGreen;
 }
 
-  /**
-  void SensorControl::quality_sensor_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n)
-  {
-    if (msg->models.size()>0) {
-      // ROS_INFO_STREAM("FAULTY PART");
-      faulty_parts_ = true;
-    }
-    if (msg->models.size() == 0) {
-      faulty_parts_ = false;
-    }
-
-  }
-  */
-
   void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n)
   {
 
@@ -270,41 +256,51 @@ void SensorControl::quality_cntrl_sensor_callback(const nist_gear::LogicalCamera
 
     setFaultyPartDetectedFlag(true);
     
-    ROS_INFO("Faulty part detected!");
+    ROS_INFO_STREAM("Faulty part detected!" << faultyProducts.size());
 
-    for (int i=0; i < msg->models.size(); i++) {
-      Product faultyProduct;
-      part faultyPart;
+    if(faultyProducts.size() == 0) {
 
-      faultyPart.picked_status = false;
-      faultyPart.type = msg->models.at(i).type;
-      faultyPart.pose = frame_to_world(i, msg->models.at(i).pose, qualitySensorsTransforms.at(sensor_n-1));
-      faultyPart.save_pose = faultyPart.pose;
-      faultyPart.frame = "quality_control_sensor_" + std::to_string(sensor_n) + "_frame";
-      faultyPart.time_stamp = ros::Time::now();
-      faultyPart.id = faultyPart.type + std::to_string(i);
-      faultyPart.location = "agv_" + std::to_string(sensor_n);
+      for (int i=0; i < msg->models.size(); i++) {
+        Product faultyProduct;
+        part faultyPart;
 
-      faultyProduct.p = faultyPart;
-      faultyProduct.type = faultyPart.type;
-      faultyProduct.pose = faultyPart.pose;
-      faultyProduct.actual_pose_frame = faultyPart.frame;
-      faultyProduct.agv_id = "agv" + std::to_string(sensor_n);
+        faultyPart.picked_status = false;
+        faultyPart.type = msg->models.at(i).type;
+        faultyPart.pose = frame_to_world(i, msg->models.at(i).pose, qualitySensorsTransforms.at(sensor_n-1));
+        faultyPart.save_pose = faultyPart.pose;
+        faultyPart.frame = "quality_control_sensor_" + std::to_string(sensor_n) + "_frame";
+        faultyPart.time_stamp = ros::Time::now();
+        faultyPart.id = faultyPart.type + std::to_string(i);
+        if(sensor_n == 2)
+        {
+          faultyPart.location = "agv_1";
+        }
+        else if(sensor_n == 1)
+        {
+          faultyPart.location = "agv_2";
+        }
 
-  
-      if (faultyProduct.agv_id == "agv1"){
-        faultyProduct.tray = "kit_tray_1";
+        faultyProduct.p = faultyPart;
+        faultyProduct.type = faultyPart.type;
+        faultyProduct.pose = faultyPart.pose;
+        faultyProduct.actual_pose_frame = faultyPart.frame;
+        faultyProduct.agv_id = "agv" + std::to_string(sensor_n);
+
+    
+        if (faultyProduct.agv_id == "agv1"){
+          faultyProduct.tray = "kit_tray_1";
+        }
+        
+        if (faultyProduct.agv_id == "agv2"){
+          faultyProduct.tray = "kit_tray_2";
+        }
+
+        if (faultyProduct.agv_id == "any"){
+          faultyProduct.tray = "kit_tray_1";
+        }
+        
+        faultyProducts.push_back(faultyProduct);
       }
-      
-      if (faultyProduct.agv_id == "agv2"){
-        faultyProduct.tray = "kit_tray_2";
-      }
-
-      if (faultyProduct.agv_id == "any"){
-        faultyProduct.tray = "kit_tray_1";
-      }
-      
-      faultyProducts.push_back(faultyProduct);
     }
   }
   
