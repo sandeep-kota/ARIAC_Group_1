@@ -53,7 +53,8 @@ class GantryControl {
     bool pickPartRightArm(part part);
     void placePartLeftArm();
     void placePartRightArm();
-
+    bool throwLastPartLeft();
+    bool throwLastPartRight();
     
     /// Send command message to robot controller
     bool sendJointPosition(trajectory_msgs::JointTrajectory command_msg);
@@ -139,6 +140,7 @@ class GantryControl {
 
     sensor_msgs::JointState current_joint_states_;
 
+    // geometry_msgs::Pose last_placed_part_pose_; //Not Necessary
 
     nist_gear::VacuumGripperState current_left_gripper_state_;
     nist_gear::VacuumGripperState current_right_gripper_state_;

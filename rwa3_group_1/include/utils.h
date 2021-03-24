@@ -88,7 +88,7 @@ typedef struct Part {
   ros::Time time_stamp;
   std::string id;
   std::string location;
-  bool faulty;
+//   bool faulty;
   bool picked_status;
 } part;
 

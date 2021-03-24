@@ -807,6 +807,72 @@ bool GantryControl::pickPartRightArm(part part)
     }
     return false;
 }
+
+
+bool GantryControl::throwLastPartLeft() 
+{
+
+    //--Activate gripper
+    activateGripper("left_arm");
+    geometry_msgs::Pose currentPose = left_arm_group_.getCurrentPose().pose;
+
+    auto target_pose_in_tray = getTargetWorldPose(product_left_arm_.pose, product_left_arm_.agv_id);
+
+    target_pose_in_tray.position.z = target_pose_in_tray.position.z + model_height.at(product_left_arm_.p.type) - EPSILON;
+    ROS_INFO_STREAM(currentPose.position.x << "," << currentPose.position.y << "," << currentPose.position.x);
+    // part.pose.orientation.x = currentPose.orientation.x;
+    // part.pose.orientation.y = currentPose.orientation.y;
+    // part.pose.orientation.z = currentPose.orientation.z;
+    // part.pose.orientation.w = currentPose.orientation.w;
+
+    //    ROS_INFO_STREAM("["<< part.type<<"]= " << part.pose.position.x << ", " << part.pose.position.y << "," << part.pose.position.z << "," << part.pose.orientation.x << "," << part.pose.orientation.y << "," << part.pose.orientation.z << "," << part.pose.orientation.w);
+
+    auto state = getGripperState("left_arm");
+    if (state.enabled)
+    {
+        ROS_INFO_STREAM("[Gripper] = enabled");
+        //--Move arm to part
+        left_arm_group_.setPoseTarget(target_pose_in_tray);
+        left_arm_group_.move();
+        auto state = getGripperState("left_arm");
+        if (state.attached)
+        {
+            ROS_INFO_STREAM("[Gripper] = object attached");
+
+            //--Move arm to previous position
+            left_arm_group_.setPoseTarget(currentPose);
+            left_arm_group_.move();
+        }
+        else
+        {
+            ROS_INFO_STREAM("[Gripper] = object not attached");
+            int max_attempts{5};
+            int current_attempt{0};
+            //--try to pick up the part 5 times
+            while (current_attempt < max_attempts)
+            {
+                left_arm_group_.setPoseTarget(currentPose);
+                left_arm_group_.move();
+                ros::Duration(0.5).sleep();
+                left_arm_group_.setPoseTarget(target_pose_in_tray);
+                left_arm_group_.move();
+
+                activateGripper("left_arm");
+                current_attempt++;
+            }
+
+            left_arm_group_.setPoseTarget(currentPose);
+            left_arm_group_.move();
+            deactivateGripper("left_arm");
+        }
+    }
+    else
+    {
+        ROS_INFO_STREAM("[Gripper] = not enabled");
+    }
+    return false;
+}
+
 ////////////////////////////
 void GantryControl::placePartLeftArm()
 {   
@@ -822,6 +888,9 @@ void GantryControl::placePartLeftArm()
     // // ROS_WARN_STREAM("TYPE: " << product_left_arm_.type);
     // // ROS_WARN_STREAM("POSE X: " << product_left_arm_.pose.position.x);
     auto target_pose_in_tray = getTargetWorldPose(product_left_arm_.pose, product_left_arm_.agv_id);
+    // last_placed_part_pose_.position.x = target_pose_in_tray.position.x;
+    // last_placed_part_pose_.position.y = target_pose_in_tray.position.y;
+    // last_placed_part_pose_.position.z = target_pose_in_tray.position.z;
     
     geometry_msgs::Pose currentArmPose = left_arm_group_.getCurrentPose().pose;
 
@@ -867,7 +936,10 @@ void GantryControl::placePartRightArm()
     // // ROS_WARN_STREAM("TYPE: " << product_left_arm_.type);
     // // ROS_WARN_STREAM("POSE X: " << product_left_arm_.pose.position.x);
     auto target_pose_in_tray = getTargetWorldPose(product_right_arm_.pose, product_right_arm_.agv_id);
-    
+    // last_placed_part_pose_.position.x = target_pose_in_tray.position.x;
+    // last_placed_part_pose_.position.y = target_pose_in_tray.position.y;
+    // last_placed_part_pose_.position.z = target_pose_in_tray.position.z;
+
     geometry_msgs::Pose currentArmPose = right_arm_group_.getCurrentPose().pose;
 
     // // //--TODO: Consider agv1 too

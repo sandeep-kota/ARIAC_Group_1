@@ -101,8 +101,11 @@ int main(int argc, char **argv)
 
                 
                 gantry.placePartLeftArm();  // Place product of left arm in agv
+                ROS_WARN_STREAM("FAULTY PARTS :" << sensors.faulty_parts_);
+                gantry.throwLastPartLeft();
 
-                gantry.placePartRightArm(); // Place product of right arm in agv
+                // gantry.placePartRightArm(); // Place product of right arm in agv
+                // ROS_WARN_STREAM("FAULTY PARTS :" << sensors.faulty_parts_);
 
                 gantry.goToPresetLocation(gantry.start_); // go back to start position
             }

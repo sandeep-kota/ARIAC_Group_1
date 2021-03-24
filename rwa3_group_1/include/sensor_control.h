@@ -42,6 +42,7 @@ class SensorControl
   public:
     explicit SensorControl(ros::NodeHandle & node);
     void logical_camera_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n);
+    void quality_sensor_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n);
     void init();
     Part findPart(std::string type);
     void save_part_array(std::string type, std::string color, part part);
@@ -51,6 +52,7 @@ class SensorControl
     geometry_msgs::Pose frame_to_world(int i, geometry_msgs::Pose original_pos, geometry_msgs::TransformStamped c_w_transform);
     void print_available_parts();
     bool read_all_sensors_ = false;
+    bool faulty_parts_ = false;
 
   private:
     ros::NodeHandle node_;  
@@ -72,6 +74,10 @@ class SensorControl
     ros::Subscriber logical_camera_14_subcriber_;
     ros::Subscriber logical_camera_15_subcriber_;
     ros::Subscriber logical_camera_16_subcriber_;
+
+    ros::Subscriber quality_control_sensor_1_subcriber_;
+    ros::Subscriber quality_control_sensor_2_subcriber_;
+    
     std::array<int, 17> logic_call_ {0};
     
     std::array <geometry_msgs::TransformStamped, 17> c_w_transforms_ {};

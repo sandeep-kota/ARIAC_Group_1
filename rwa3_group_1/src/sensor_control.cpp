@@ -11,6 +11,11 @@ SensorControl::SensorControl(ros::NodeHandle &node)
 void SensorControl::init()
 {
   read_all_sensors_ = false;
+  quality_control_sensor_1_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/quality_control_sensor_1", 1, boost::bind(&SensorControl::quality_sensor_callback, this, _1, 1));
+  quality_control_sensor_1_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/quality_control_sensor_2", 1, boost::bind(&SensorControl::quality_sensor_callback, this, _1, 2));
+
   logical_camera_0_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
       "/ariac/logical_camera_0", 1, boost::bind(&SensorControl::logical_camera_callback, this, _1, 0));
   logical_camera_1_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
@@ -100,89 +105,102 @@ color_code SensorControl::hashit_color(std::string const &colorString)
   if (colorString == "green")
     return kGreen;
 }
-void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n)
-{
 
-  // ROS_INFO_STREAM("READING LOGICAL CAMERAS");
-  int pos_t{};
-  int pos_c{};
-  int ktype{};
-  int kcolor{};
-  std::string type{};
-  std::string color{};
-  part Part;
-
-  int sum = 0;
-  for (int i = 0; i < 17; i++)
+  void SensorControl::quality_sensor_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n)
   {
-    sum += logic_call_[i];
-  }
-  
-
-  if(logic_call_[sensor_n] == 0) 
-  {
-    for (int i = 0; i < msg->models.size(); i++)
-    {
-
-      pos_t = msg->models.at(i).type.find("_");
-      pos_c = msg->models.at(i).type.rfind("_");
-
-      type = msg->models.at(i).type.substr(0, pos_t);
-      color = msg->models.at(i).type.substr(pos_c + 1);
-
-      ktype = hashit_type(type);
-      kcolor = hashit_color(color);
-
-      Part.picked_status = false;
-      Part.type = msg->models.at(i).type;
-      Part.pose = frame_to_world(i, msg->models.at(i).pose, c_w_transforms_.at(sensor_n));
-      Part.save_pose = Part.pose;
-      Part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
-      Part.time_stamp = ros::Time::now();
-      Part.id = Part.type + std::to_string(parts_.at(ktype).at(kcolor).size());
-      if (sensor_n == 3 || sensor_n == 4 || sensor_n == 5 || sensor_n == 6)
-      {
-        Part.location = "bins";
-      }
-      else if (sensor_n == 9 || sensor_n == 10)
-      {
-        Part.location = "shelf_2";
-      }
-      else if (sensor_n == 7 || sensor_n == 8)
-      {
-        Part.location = "shelf_1";
-      }
-      else if (sensor_n == 13 || sensor_n == 14)
-      {
-        Part.location = "shelf_5";
-      }
-      else if (sensor_n == 11 || sensor_n == 12)
-      {
-        Part.location = "shelf_8";
-      }
-      else if (sensor_n == 15 || sensor_n == 16)
-      {
-        Part.location = "shelf_11";
-      }
-      else if (sensor_n == 0)
-      {
-        Part.location = "agv_1";
-      }
-      else if (sensor_n == 1)
-      {
-        Part.location = "agv_2";
-      }
-      else
-      {
-        Part.location = "conveyor_belt";
-      }
-
-      parts_.at(ktype).at(kcolor).push_back(Part);
+    if (msg->models.size()>0) {
+      // ROS_INFO_STREAM("FAULTY PART");
+      faulty_parts_ = true;
     }
-    logic_call_[sensor_n] = 1;
+    if (msg->models.size() == 0) {
+      faulty_parts_ = false;
+    }
+
   }
 
-  if (logic_call_[sensor_n]==1 && sum==17) {
+  void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n)
+  {
+
+    // ROS_INFO_STREAM("READING LOGICAL CAMERAS");
+    int pos_t{};
+    int pos_c{};
+    int ktype{};
+    int kcolor{};
+    std::string type{};
+    std::string color{};
+    part Part;
+
+    int sum = 0;
+    for (int i = 0; i < 17; i++)
+    {
+      sum += logic_call_[i];
+    }
+
+    if (logic_call_[sensor_n] == 0)
+    {
+      for (int i = 0; i < msg->models.size(); i++)
+      {
+
+        pos_t = msg->models.at(i).type.find("_");
+        pos_c = msg->models.at(i).type.rfind("_");
+
+        type = msg->models.at(i).type.substr(0, pos_t);
+        color = msg->models.at(i).type.substr(pos_c + 1);
+
+        ktype = hashit_type(type);
+        kcolor = hashit_color(color);
+
+        Part.picked_status = false;
+        Part.type = msg->models.at(i).type;
+        Part.pose = frame_to_world(i, msg->models.at(i).pose, c_w_transforms_.at(sensor_n));
+        Part.save_pose = Part.pose;
+        Part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
+        Part.time_stamp = ros::Time::now();
+        Part.id = Part.type + std::to_string(parts_.at(ktype).at(kcolor).size());
+        if (sensor_n == 3 || sensor_n == 4 || sensor_n == 5 || sensor_n == 6)
+        {
+          Part.location = "bins";
+        }
+        else if (sensor_n == 9 || sensor_n == 10)
+        {
+          Part.location = "shelf_2";
+        }
+        else if (sensor_n == 7 || sensor_n == 8)
+        {
+          Part.location = "shelf_1";
+        }
+        else if (sensor_n == 13 || sensor_n == 14)
+        {
+          Part.location = "shelf_5";
+        }
+        else if (sensor_n == 11 || sensor_n == 12)
+        {
+          Part.location = "shelf_8";
+        }
+        else if (sensor_n == 15 || sensor_n == 16)
+        {
+          Part.location = "shelf_11";
+        }
+        else if (sensor_n == 0)
+        {
+          Part.location = "agv_1";
+        }
+        else if (sensor_n == 1)
+        {
+          Part.location = "agv_2";
+        }
+        else
+        {
+          Part.location = "conveyor_belt";
+        }
+
+        parts_.at(ktype).at(kcolor).push_back(Part);
+      }
+      logic_call_[sensor_n] = 1;
+    }
+
+    if (logic_call_[sensor_n] == 1 && sum == 17)
+    {
       read_all_sensors_ = true;
       }
 }
