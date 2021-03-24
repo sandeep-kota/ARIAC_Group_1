@@ -13,6 +13,7 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
+#include <queue>
 
 typedef struct Shipment shipment; // forward declarations
 typedef struct Order order;
@@ -57,6 +58,15 @@ const double L_LEFT_ARM = PI/2;
 const double R_LEFT_ARM = -PI/2;
 const double L_RIGHT_ARM = -PI/2;
 const double R_RIGHT_ARM = PI/2;
+
+const std::string AGV1 = "agv_1";
+const std::string AGV2 = "agv_2";
+
+const std::string AGV1_ID = "agv1";
+const std::string AGV2_ID = "agv2";
+
+const std::string AGV1_TRAY = "kit_tray_1";
+const std::string AGV2_TRAY = "kit_tray_2";
 
 extern std::string action_state_name[];
 extern std::unordered_map<std::string, double> model_height;

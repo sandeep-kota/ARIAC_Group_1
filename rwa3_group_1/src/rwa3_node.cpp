@@ -76,7 +76,8 @@ int main(int argc, char **argv)
 
     gantry.goToPresetLocation(gantry.start_); // start the trial from start position
 
-    
+    AGVControl agvControl(node);
+
     while(comp.processOrder() && sensors.read_all_sensors_) //--1-Read order until no more found
     // while (1)
     {
@@ -220,7 +221,19 @@ int main(int argc, char **argv)
 
                 gantry.goToPresetLocation(gantry.start_); // go back to start position
             }
+            if (agvControl.isAGVReady(AGV1_TRAY))
+            {
+                std::string shipmentType = comp.agvToShipmentMap.at(AGV1_ID).front();
+                comp.agvToShipmentMap.at(AGV1_ID).pop();
+                agvControl.sendAGV(shipmentType, AGV1_TRAY);
+            }
 
+            if (agvControl.isAGVReady(AGV2_TRAY))
+            {
+                std::string shipmentType = comp.agvToShipmentMap.at(AGV2_ID).front();
+                comp.agvToShipmentMap.at(AGV2_ID).pop();
+                agvControl.sendAGV(shipmentType, AGV2_TRAY);
+            }
     spinner.stop();
     ros::shutdown();
     return 0;

@@ -117,6 +117,15 @@ bool Competition::processOrder(){
     for (int s = 0; s < current_order.shipments.size(); s++)
     {
       shipment_list_.emplace_back(current_order.shipments.at(s));
+      std::string agv_id = current_order.shipments.at(s).agv_id;
+      std::string shipment_type = current_order.shipments.at(s).shipment_type;
+
+      if (agvToShipmentMap.find(agv_id) != agvToShipmentMap.end())
+      {
+        std::queue<std::string> shipmentQueue;
+        agvToShipmentMap.insert({agv_id, shipmentQueue});
+      }
+      agvToShipmentMap.at(agv_id).push(shipment_type);
       for (int p = 0; p < current_order.shipments.at(s).products.size(); p++)
       {
         product_list_.emplace_back(current_order.shipments.at(s).products.at(p));

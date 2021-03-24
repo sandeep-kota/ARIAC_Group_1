@@ -7,6 +7,8 @@
 #include <std_msgs/String.h>
 #include <rosgraph_msgs/Clock.h>
 #include <nist_gear/Order.h>
+#include<unordered_map>
+#include <queue>
 
 #include "utils.h"
 
@@ -18,6 +20,7 @@
 class Competition
 {
 public:
+    std::unordered_map<std::string, std::queue<std::string>> agvToShipmentMap;
     /**
      * @brief Construct a new Competition object
      * 
