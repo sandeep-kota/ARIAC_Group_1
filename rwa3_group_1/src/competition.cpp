@@ -116,14 +116,15 @@ bool Competition::processOrder(){
 
     for (int s = 0; s < current_order.shipments.size(); s++)
     {
-      shipment_list_.push_back(current_order.shipments.at(s));
+      shipment_list_.emplace_back(current_order.shipments.at(s));
       for (int p = 0; p < current_order.shipments.at(s).products.size(); p++)
       {
-        product_list_.push_back(current_order.shipments.at(s).products.at(p));
+        product_list_.emplace_back(current_order.shipments.at(s).products.at(p));
       }
     }
+    ROS_INFO_STREAM("SHIPMENT SIZE: " << shipment_list_.size());
+    ROS_INFO_STREAM("PRODUCT SIZE: " << product_list_.size());
     return true;
-    // ROS_INFO_STREAM("SHIPMENT SIZE: " << current_order.shipments.size());
   }
 }
 

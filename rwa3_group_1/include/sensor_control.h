@@ -49,6 +49,8 @@ class SensorControl
     color_code hashit_color (std::string const& colorString);
 
     geometry_msgs::Pose frame_to_world(int i, geometry_msgs::Pose original_pos, geometry_msgs::TransformStamped c_w_transform);
+    void print_available_parts();
+    bool read_all_sensors_ = false;
 
   private:
     ros::NodeHandle node_;  
@@ -70,13 +72,14 @@ class SensorControl
     ros::Subscriber logical_camera_14_subcriber_;
     ros::Subscriber logical_camera_15_subcriber_;
     ros::Subscriber logical_camera_16_subcriber_;
-    int logic_call_ {0};
+    std::array<int, 17> logic_call_ {0};
     
     std::array <geometry_msgs::TransformStamped, 17> c_w_transforms_ {};
 
     std::array <std::array <std::vector < part >, 3>, 5> parts_ {}; //Datastructure to store the info from each part detected by the sensors
     
-    std::array <std::array <std::vector < part >, 3>, 5> current_parts_ {};
+    // std::array <std::array <std::vector < part >, 3>, 5> current_parts_ {};
+
 };
 
 #endif

@@ -89,6 +89,7 @@ typedef struct Part {
   std::string id;
   std::string location;
   bool faulty;
+  bool picked_status;
 } part;
 
 /**

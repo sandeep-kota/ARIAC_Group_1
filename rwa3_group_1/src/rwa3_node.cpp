@@ -63,13 +63,14 @@ int main(int argc, char **argv)
     gantry.goToPresetLocation(gantry.start_); // start the trial from start position
 
     
-    while(comp.processOrder()) //--1-Read order until no more found
+    while(comp.processOrder() && sensors.read_all_sensors_) //--1-Read order until no more found
     // while (1)
     {
         list_of_shipments = comp.get_shipment_list(); // get list of shipments of current order in priority order
         list_of_products = comp.get_product_list();   // get list of products of current order in priority order  
 
         for (int p = 0; p < list_of_products.size(); p++)   // loop all the products to be retrieve from current order
+        // for (int p = 0; p = 1; p++)   // loop all the products to be retrieve from current order
         {
 
             current_product = list_of_products.at(p);

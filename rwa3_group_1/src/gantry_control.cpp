@@ -735,6 +735,8 @@ bool GantryControl::pickPartLeftArm(part part)
                 activateGripper("left_arm");
                 current_attempt++;
             }
+            part.picked_status = true;
+
             left_arm_group_.setPoseTarget(currentPose);
             left_arm_group_.move();
         }
@@ -793,6 +795,8 @@ bool GantryControl::pickPartRightArm(part part)
                 activateGripper("right_arm");
                 current_attempt++;
             }
+            part.picked_status = true;
+
             right_arm_group_.setPoseTarget(currentPose);
             right_arm_group_.move();
         }
