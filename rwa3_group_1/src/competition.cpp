@@ -120,7 +120,7 @@ bool Competition::processOrder(){
       std::string agv_id = current_order.shipments.at(s).agv_id;
       std::string shipment_type = current_order.shipments.at(s).shipment_type;
 
-      if (agvToShipmentMap.find(agv_id) != agvToShipmentMap.end())
+      if (agvToShipmentMap.find(agv_id) == agvToShipmentMap.end())
       {
         std::queue<std::string> shipmentQueue;
         agvToShipmentMap.insert({agv_id, shipmentQueue});
