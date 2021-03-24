@@ -22,8 +22,9 @@ const double PI = 3.141592; // TODO correct!
 
 // Logical cameras
 const int MAX_NUMBER_OF_CAMERAS = 17;
-
-
+const int NUM_QUALITY_SENSORS = 2;
+const std::string LEFT_ARM = "left_arm";
+const std::string RIGHT_ARM = "right_arm";
 
 const int MAX_PICKING_ATTEMPTS = 3; // for pickup
 const double ABOVE_TARGET = 0.2; // above target z pos when picking/placing part

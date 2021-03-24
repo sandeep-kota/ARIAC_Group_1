@@ -11,11 +11,7 @@ SensorControl::SensorControl(ros::NodeHandle &node)
 void SensorControl::init()
 {
   read_all_sensors_ = false;
-  quality_control_sensor_1_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/quality_control_sensor_1", 1, boost::bind(&SensorControl::quality_sensor_callback, this, _1, 1));
-  quality_control_sensor_1_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/quality_control_sensor_2", 1, boost::bind(&SensorControl::quality_sensor_callback, this, _1, 2));
-
+  
   logical_camera_0_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
       "/ariac/logical_camera_0", 1, boost::bind(&SensorControl::logical_camera_callback, this, _1, 0));
   logical_camera_1_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
@@ -51,6 +47,11 @@ void SensorControl::init()
   logical_camera_16_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
       "/ariac/logical_camera_16", 1, boost::bind(&SensorControl::logical_camera_callback, this, _1, 16));
 
+  quality_ctrl_sensor1_subs = node_.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/quality_control_sensor_1", 1, boost::bind(&SensorControl::quality_cntrl_sensor_callback, this, _1, 1));
+  quality_ctrl_sensor2_subs = node_.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/quality_control_sensor_2", 1, boost::bind(&SensorControl::quality_cntrl_sensor_callback, this, _1, 2));
+
   //Get transforms world to logical camera sensors
   tf2_ros::Buffer tfBuffer;
   tf2_ros::TransformListener tfListener(tfBuffer);
@@ -74,6 +75,21 @@ void SensorControl::init()
     }
     //Initialize attribute that stores the frame transforms to world of each camera
     c_w_transforms_.at(i) = transformStamped;
+  }
+
+  for (int i = 0; i < NUM_QUALITY_SENSORS; i++) {
+    try {
+      transformStamped = tfBuffer.lookupTransform("world", "quality_control_sensor_" + std::to_string(i+1) + "_frame", ros::Time(0), timeout);
+    }
+    catch (tf2::TransformException &ex)
+    {
+      ROS_WARN("%s", ex.what());
+      ros::Duration(1.0).sleep();
+      continue;
+    }
+    //Initialize attribute that stores the frame transforms to world of each camera
+    qualitySensorsTransforms.at(i) = transformStamped;
+
   }
 }
 /**
@@ -106,6 +122,7 @@ color_code SensorControl::hashit_color(std::string const &colorString)
     return kGreen;
 }
 
+  /**
   void SensorControl::quality_sensor_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n)
   {
     if (msg->models.size()>0) {
@@ -117,6 +134,7 @@ color_code SensorControl::hashit_color(std::string const &colorString)
     }
 
   }
+  */
 
   void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n)
   {
@@ -244,4 +262,51 @@ Part SensorControl::findPart(std::string type)
       }
     }
   }
+}
+
+
+void SensorControl::quality_cntrl_sensor_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n) {
+  if (msg->models.size() != 0) {
+
+    setFaultyPartDetectedFlag(true);
+    
+    ROS_INFO("Faulty part detected!");
+
+    for (int i=0; i < msg->models.size(); i++) {
+      Product faultyProduct;
+      part faultyPart;
+
+      faultyPart.picked_status = false;
+      faultyPart.type = msg->models.at(i).type;
+      faultyPart.pose = frame_to_world(i, msg->models.at(i).pose, qualitySensorsTransforms.at(sensor_n-1));
+      faultyPart.save_pose = faultyPart.pose;
+      faultyPart.frame = "quality_control_sensor_" + std::to_string(sensor_n) + "_frame";
+      faultyPart.time_stamp = ros::Time::now();
+      faultyPart.id = faultyPart.type + std::to_string(i);
+      faultyPart.location = "agv_" + std::to_string(sensor_n);
+
+      faultyProduct.p = faultyPart;
+      faultyProduct.type = faultyPart.type;
+      faultyProduct.pose = faultyPart.pose;
+      faultyProduct.actual_pose_frame = faultyPart.frame;
+      faultyProduct.agv_id = "agv" + std::to_string(sensor_n);
+
+  
+      if (faultyProduct.agv_id == "agv1"){
+        faultyProduct.tray = "kit_tray_1";
+      }
+      
+      if (faultyProduct.agv_id == "agv2"){
+        faultyProduct.tray = "kit_tray_2";
+      }
+
+      if (faultyProduct.agv_id == "any"){
+        faultyProduct.tray = "kit_tray_1";
+      }
+      
+      faultyProducts.push_back(faultyProduct);
+    }
+  }
+  
+  
 }

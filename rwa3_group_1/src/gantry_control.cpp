@@ -1153,3 +1153,7 @@ bool GantryControl::sendJointPosition(trajectory_msgs::JointTrajectory command_m
     }
 }
 
+void GantryControl::pickAndThrowFaultyProduct(const std::string& armName, const product& faultyProduct) {
+
+}
+

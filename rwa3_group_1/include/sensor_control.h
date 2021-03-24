@@ -42,7 +42,7 @@ class SensorControl
   public:
     explicit SensorControl(ros::NodeHandle & node);
     void logical_camera_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n);
-    void quality_sensor_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n);
+    void quality_cntrl_sensor_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n);
     void init();
     Part findPart(std::string type);
     void save_part_array(std::string type, std::string color, part part);
@@ -53,6 +53,22 @@ class SensorControl
     void print_available_parts();
     bool read_all_sensors_ = false;
     bool faulty_parts_ = false;
+
+    std::vector<Product> getFaultyProducts() {
+        return faultyProducts;
+    }
+
+    void clearFaultyProducts() { // as of now there will only be one and that will be processed then and there.
+        faultyProducts.erase(faultyProducts.begin());
+    }
+
+    bool isFaultyPartDetected() {
+      return faultyPartDetected;
+    }
+
+    void setFaultyPartDetectedFlag(bool isPartFaulty) {
+      faultyPartDetected = isPartFaulty;
+    }
 
   private:
     ros::NodeHandle node_;  
@@ -75,16 +91,20 @@ class SensorControl
     ros::Subscriber logical_camera_15_subcriber_;
     ros::Subscriber logical_camera_16_subcriber_;
 
-    ros::Subscriber quality_control_sensor_1_subcriber_;
-    ros::Subscriber quality_control_sensor_2_subcriber_;
+    ros::Subscriber quality_ctrl_sensor1_subs;
+    ros::Subscriber quality_ctrl_sensor2_subs;
     
     std::array<int, 17> logic_call_ {0};
     
     std::array <geometry_msgs::TransformStamped, 17> c_w_transforms_ {};
+    std::array <geometry_msgs::TransformStamped, NUM_QUALITY_SENSORS> qualitySensorsTransforms {};
 
     std::array <std::array <std::vector < part >, 3>, 5> parts_ {}; //Datastructure to store the info from each part detected by the sensors
     
     // std::array <std::array <std::vector < part >, 3>, 5> current_parts_ {};
+
+    std::vector<Product> faultyProducts;
+    bool faultyPartDetected = false;
 
 };
 

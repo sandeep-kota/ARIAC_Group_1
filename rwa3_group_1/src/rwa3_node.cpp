@@ -37,6 +37,20 @@
 
 #include <tf2/LinearMath/Quaternion.h>
 
+
+void updateOrderProductList(std::vector<Product> list_of_products, Product faultyProduct) {
+    Product productToBeReplaced;
+    productToBeReplaced.type = faultyProduct.type;
+    productToBeReplaced.p = faultyProduct.p;
+    productToBeReplaced.type = faultyProduct.type;
+    productToBeReplaced.pose = faultyProduct.pose;
+    productToBeReplaced.actual_pose_frame = faultyProduct.actual_pose_frame;
+    productToBeReplaced.agv_id = faultyProduct.agv_id;
+
+    list_of_products.push_back(productToBeReplaced);
+    ROS_INFO_STREAM("Product list updated with the product to be replaced. NewSize: " << list_of_products.size() << " Type: " << faultyProduct.type);
+}
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "rwa3_node");
@@ -102,7 +116,39 @@ int main(int argc, char **argv)
                 
                 gantry.placePartLeftArm();  // Place product of left arm in agv
                 ROS_WARN_STREAM("FAULTY PARTS :" << sensors.faulty_parts_);
-                gantry.throwLastPartLeft();
+                
+                //Check for faulty product
+                ros::Duration(0.5).sleep();
+                if (sensors.isFaultyPartDetected()) {
+                    std::vector<Product> faultyProducts = sensors.getFaultyProducts();
+                    
+                    gantry.pickAndThrowFaultyProduct(LEFT_ARM, faultyProducts.front()); // this will do nothing - the next method is going to pick and throw
+                    gantry.throwLastPartLeft();
+                    
+                    updateOrderProductList(list_of_products, faultyProducts.front()); 
+
+                    sensors.clearFaultyProducts();
+                    sensors.setFaultyPartDetectedFlag(false);
+                }
+                
+
+                gantry.placePartRightArm(); // Place product of right arm in agv
+                
+                //Check for faulty product
+                ros::Duration(0.5).sleep();
+                if (sensors.isFaultyPartDetected()) {
+                    std::vector<Product> faultyProducts = sensors.getFaultyProducts();
+
+                    gantry.pickAndThrowFaultyProduct(RIGHT_ARM, faultyProducts.front());
+                    //gantry.throwLastPartRight();
+                    
+                    updateOrderProductList(list_of_products, faultyProducts.front());
+
+                    sensors.clearFaultyProducts();
+                    sensors.setFaultyPartDetectedFlag(false);
+                }
+
+                
 
                 // gantry.placePartRightArm(); // Place product of right arm in agv
                 // ROS_WARN_STREAM("FAULTY PARTS :" << sensors.faulty_parts_);
@@ -142,3 +188,5 @@ int main(int argc, char **argv)
     ros::shutdown();
     return 0;
 }
+
+
