@@ -4,15 +4,24 @@
 #include "sensor_control.h"
 #include "utils.h"
 
+/**
+ * @brief Construct a new Sensor Control:: Sensor Control object
+ * 
+ * @param node 
+ */
 SensorControl::SensorControl(ros::NodeHandle &node)
 {
 
   node_ = node;
 }
+/**
+ * @brief Contructor
+ * 
+ */
 void SensorControl::init()
 {
   read_all_sensors_ = false;
-  
+
   logical_camera_0_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
       "/ariac/logical_camera_0", 1, boost::bind(&SensorControl::logical_camera_callback, this, _1, 0));
   logical_camera_1_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
@@ -78,9 +87,11 @@ void SensorControl::init()
     c_w_transforms_.at(i) = transformStamped;
   }
 
-  for (int i = 0; i < NUM_QUALITY_SENSORS; i++) {
-    try {
-      transformStamped = tfBuffer.lookupTransform("world", "quality_control_sensor_" + std::to_string(i+1) + "_frame", ros::Time(0), timeout);
+  for (int i = 0; i < NUM_QUALITY_SENSORS; i++)
+  {
+    try
+    {
+      transformStamped = tfBuffer.lookupTransform("world", "quality_control_sensor_" + std::to_string(i + 1) + "_frame", ros::Time(0), timeout);
     }
     catch (tf2::TransformException &ex)
     {
@@ -90,9 +101,9 @@ void SensorControl::init()
     }
     //Initialize attribute that stores the frame transforms to world of each camera
     qualitySensorsTransforms.at(i) = transformStamped;
-
   }
 }
+
 /**
    * @brief Maps part type to keys. 
    */
@@ -122,114 +133,128 @@ color_code SensorControl::hashit_color(std::string const &colorString)
   if (colorString == "green")
     return kGreen;
 }
+/**
+ * @brief Logical Camera Callback
+ * 
+ * @param msg Subscribed Message 
+ * @param sensor_n Sensor ID
+ */
+void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n)
+{
 
-  void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n)
+  // ROS_INFO_STREAM("READING LOGICAL CAMERAS");
+  int pos_t{};
+  int pos_c{};
+  int ktype{};
+  int kcolor{};
+  std::string type{};
+  std::string color{};
+  part Part;
+
+  int sum = 0;
+  for (int i = 0; i < 17; i++)
   {
+    sum += logic_call_[i];
+  }
 
-    // ROS_INFO_STREAM("READING LOGICAL CAMERAS");
-    int pos_t{};
-    int pos_c{};
-    int ktype{};
-    int kcolor{};
-    std::string type{};
-    std::string color{};
-    part Part;
-
-    int sum = 0;
-    for (int i = 0; i < 17; i++)
+  if (logic_call_[sensor_n] == 0)
+  {
+    for (int i = 0; i < msg->models.size(); i++)
     {
-      sum += logic_call_[i];
-    }
 
-    if (logic_call_[sensor_n] == 0)
-    {
-      for (int i = 0; i < msg->models.size(); i++)
+      pos_t = msg->models.at(i).type.find("_");
+      pos_c = msg->models.at(i).type.rfind("_");
+
+      type = msg->models.at(i).type.substr(0, pos_t);
+      color = msg->models.at(i).type.substr(pos_c + 1);
+
+      ktype = hashit_type(type);
+      kcolor = hashit_color(color);
+
+      Part.picked_status = false;
+      Part.type = msg->models.at(i).type;
+      Part.pose = frame_to_world(i, msg->models.at(i).pose, c_w_transforms_.at(sensor_n));
+      Part.save_pose = Part.pose;
+      Part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
+      Part.time_stamp = ros::Time::now();
+      Part.id = Part.type + std::to_string(parts_.at(ktype).at(kcolor).size());
+      if (sensor_n == 3 || sensor_n == 4 || sensor_n == 5 || sensor_n == 6)
       {
-
-        pos_t = msg->models.at(i).type.find("_");
-        pos_c = msg->models.at(i).type.rfind("_");
-
-        type = msg->models.at(i).type.substr(0, pos_t);
-        color = msg->models.at(i).type.substr(pos_c + 1);
-
-        ktype = hashit_type(type);
-        kcolor = hashit_color(color);
-
-        Part.picked_status = false;
-        Part.type = msg->models.at(i).type;
-        Part.pose = frame_to_world(i, msg->models.at(i).pose, c_w_transforms_.at(sensor_n));
-        Part.save_pose = Part.pose;
-        Part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
-        Part.time_stamp = ros::Time::now();
-        Part.id = Part.type + std::to_string(parts_.at(ktype).at(kcolor).size());
-        if (sensor_n == 3 || sensor_n == 4 || sensor_n == 5 || sensor_n == 6)
-        {
-          Part.location = "bins";
-        }
-        else if (sensor_n == 9 || sensor_n == 10)
-        {
-          Part.location = "shelf_2";
-        }
-        else if (sensor_n == 7 || sensor_n == 8)
-        {
-          Part.location = "shelf_1";
-        }
-        else if (sensor_n == 13 || sensor_n == 14)
-        {
-          Part.location = "shelf_5";
-        }
-        else if (sensor_n == 11 || sensor_n == 12)
-        {
-          Part.location = "shelf_8";
-        }
-        else if (sensor_n == 15 || sensor_n == 16)
-        {
-          Part.location = "shelf_11";
-        }
-        else if (sensor_n == 0)
-        {
-          Part.location = "agv_1";
-        }
-        else if (sensor_n == 1)
-        {
-          Part.location = "agv_2";
-        }
-        else
-        {
-          Part.location = "conveyor_belt";
-        }
-
-        int partsCount = parts_.at(ktype).at(kcolor).size();
-        bool canPartBeAdded = true;
-
-        for(int j=0; (j<partsCount && canPartBeAdded); j++) {
-          part partAlreadyPresent = parts_.at(ktype).at(kcolor).at(j);
-          float xDiff = partAlreadyPresent.pose.position.x - Part.pose.position.x;
-          float yDiff = partAlreadyPresent.pose.position.y - Part.pose.position.y;
-          float zDiff = partAlreadyPresent.pose.position.z - Part.pose.position.z;
-          double dist = pow(pow(xDiff, 2) + pow(yDiff, 2) + pow(zDiff, 2), 0.5);
-          if (dist <= 0.01) {  // dist threshold can be put into a constant.
-            ROS_INFO_STREAM("Part already exists. Cannot be added. Part type:: " << Part.type << " Location: [x,y,z]:: " << Part.pose.position.x << ", " << Part.pose.position.y << ", " << Part.pose.position.z);
-            canPartBeAdded = false;
-          }
-        }
-
-        if (canPartBeAdded) {
-          parts_.at(ktype).at(kcolor).push_back(Part);
-          ROS_INFO_STREAM("New part added. Part tye:: " << Part.type);
-        }
-
-        
+        Part.location = "bins";
       }
-      logic_call_[sensor_n] = 1;
+      else if (sensor_n == 9 || sensor_n == 10)
+      {
+        Part.location = "shelf_2";
+      }
+      else if (sensor_n == 7 || sensor_n == 8)
+      {
+        Part.location = "shelf_1";
+      }
+      else if (sensor_n == 13 || sensor_n == 14)
+      {
+        Part.location = "shelf_5";
+      }
+      else if (sensor_n == 11 || sensor_n == 12)
+      {
+        Part.location = "shelf_8";
+      }
+      else if (sensor_n == 15 || sensor_n == 16)
+      {
+        Part.location = "shelf_11";
+      }
+      else if (sensor_n == 0)
+      {
+        Part.location = "agv_1";
+      }
+      else if (sensor_n == 1)
+      {
+        Part.location = "agv_2";
+      }
+      else
+      {
+        Part.location = "conveyor_belt";
+      }
+
+      int partsCount = parts_.at(ktype).at(kcolor).size();
+      bool canPartBeAdded = true;
+
+      for (int j = 0; (j < partsCount && canPartBeAdded); j++)
+      {
+        part partAlreadyPresent = parts_.at(ktype).at(kcolor).at(j);
+        float xDiff = partAlreadyPresent.pose.position.x - Part.pose.position.x;
+        float yDiff = partAlreadyPresent.pose.position.y - Part.pose.position.y;
+        float zDiff = partAlreadyPresent.pose.position.z - Part.pose.position.z;
+        double dist = pow(pow(xDiff, 2) + pow(yDiff, 2) + pow(zDiff, 2), 0.5);
+        if (dist <= 0.01)
+        { // dist threshold can be put into a constant.
+          ROS_INFO_STREAM("Part already exists. Cannot be added. Part type:: " << Part.type << " Location: [x,y,z]:: " << Part.pose.position.x << ", " << Part.pose.position.y << ", " << Part.pose.position.z);
+          canPartBeAdded = false;
+        }
+      }
+
+      if (canPartBeAdded)
+      {
+        parts_.at(ktype).at(kcolor).push_back(Part);
+        ROS_INFO_STREAM("New part added. Part tye:: " << Part.type);
+      }
     }
+    logic_call_[sensor_n] = 1;
+  }
 
-    if (logic_call_[sensor_n] == 1 && sum == 17)
-    {
-      read_all_sensors_ = true;
-      }
+  if (logic_call_[sensor_n] == 1 && sum == 17)
+  {
+    read_all_sensors_ = true;
+  }
 }
 
+/**
+ * @brief Transform frame to World Frame
+ * 
+ * @param i Part ID
+ * @param original_pos Original Pose 
+ * @param c_w_transform Transform Stamped object for each transformation
+ * @return geometry_msgs::Pose 
+ */
 geometry_msgs::Pose SensorControl::frame_to_world(int i, geometry_msgs::Pose original_pos, geometry_msgs::TransformStamped c_w_transform)
 {
   geometry_msgs::PoseStamped pose_target, pose_rel;
@@ -245,6 +270,12 @@ geometry_msgs::Pose SensorControl::frame_to_world(int i, geometry_msgs::Pose ori
   return world_pose;
 }
 
+/**
+ * @brief Locate a part in the world
+ * 
+ * @param type Search Part type 
+ * @return Part 
+ */
 Part SensorControl::findPart(std::string type)
 {
 
@@ -262,8 +293,10 @@ Part SensorControl::findPart(std::string type)
   }
   else
   {
-    for (int i = 0; i < parts_.at(ktype).at(kcolor).size();i++) {
-      if (parts_.at(ktype).at(kcolor).at(i).picked_status == false) {
+    for (int i = 0; i < parts_.at(ktype).at(kcolor).size(); i++)
+    {
+      if (parts_.at(ktype).at(kcolor).at(i).picked_status == false)
+      {
         parts_.at(ktype).at(kcolor).at(i).picked_status = true;
         return parts_.at(ktype).at(kcolor).at(i);
       }
@@ -271,32 +304,41 @@ Part SensorControl::findPart(std::string type)
   }
 }
 
-
-void SensorControl::quality_cntrl_sensor_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n) {
-  if (msg->models.size() != 0) {
+/**
+ * @brief Quality Control Sensor Callback
+ * 
+ * @param msg Subscribed message
+ * @param sensor_n Sensor ID
+ */
+void SensorControl::quality_cntrl_sensor_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n)
+{
+  if (msg->models.size() != 0)
+  {
 
     setFaultyPartDetectedFlag(true);
-    
+
     ROS_INFO_STREAM("Faulty part detected!" << faultyProducts.size());
 
-    if(faultyProducts.size() == 0) {
+    if (faultyProducts.size() == 0)
+    {
 
-      for (int i=0; i < msg->models.size(); i++) {
+      for (int i = 0; i < msg->models.size(); i++)
+      {
         Product faultyProduct;
         part faultyPart;
 
         faultyPart.picked_status = false;
         faultyPart.type = msg->models.at(i).type;
-        faultyPart.pose = frame_to_world(i, msg->models.at(i).pose, qualitySensorsTransforms.at(sensor_n-1));
+        faultyPart.pose = frame_to_world(i, msg->models.at(i).pose, qualitySensorsTransforms.at(sensor_n - 1));
         faultyPart.save_pose = faultyPart.pose;
         faultyPart.frame = "quality_control_sensor_" + std::to_string(sensor_n) + "_frame";
         faultyPart.time_stamp = ros::Time::now();
         faultyPart.id = faultyPart.type + std::to_string(i);
-        if(sensor_n == 2)
+        if (sensor_n == 2)
         {
           faultyPart.location = "agv_1";
         }
-        else if(sensor_n == 1)
+        else if (sensor_n == 1)
         {
           faultyPart.location = "agv_2";
         }
@@ -305,25 +347,25 @@ void SensorControl::quality_cntrl_sensor_callback(const nist_gear::LogicalCamera
         faultyProduct.type = faultyPart.type;
         faultyProduct.pose = faultyPart.pose;
         faultyProduct.actual_pose_frame = faultyPart.frame;
-        faultyProduct.agv_id = "agv" + std::to_string(sensor_n);
+        faultyProduct.agv_id = "agv" + (sensor_n == 1) ? std::to_string(2) : std::to_string(1);
 
-    
-        if (faultyProduct.agv_id == "agv1"){
+        if (faultyProduct.agv_id == "agv1")
+        {
           faultyProduct.tray = "kit_tray_1";
         }
-        
-        if (faultyProduct.agv_id == "agv2"){
+
+        if (faultyProduct.agv_id == "agv2")
+        {
           faultyProduct.tray = "kit_tray_2";
         }
 
-        if (faultyProduct.agv_id == "any"){
+        if (faultyProduct.agv_id == "any")
+        {
           faultyProduct.tray = "kit_tray_1";
         }
-        
+
         faultyProducts.push_back(faultyProduct);
       }
     }
   }
-  
-  
 }

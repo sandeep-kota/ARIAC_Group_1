@@ -18,7 +18,6 @@
 #include <moveit_msgs/CollisionObject.h>
 #include <moveit_visual_tools/moveit_visual_tools.h>
 
-
 #include <boost/foreach.hpp>
 #define foreach BOOST_FOREACH
 
@@ -38,147 +37,147 @@
 
 #include "utils.h"
 
+class GantryControl
+{
 
-class GantryControl {
+public:
+  GantryControl(ros::NodeHandle &node);
 
-  public:
-    GantryControl(ros::NodeHandle & node);
+  void init();
 
-    void init();
+  //    bool moveGantry(std::string waypoints);
 
-//    bool moveGantry(std::string waypoints);
+  //    bool pickPart(part part, std::string arm_name);
+  bool pickPartLeftArm(part part);
+  bool pickPartRightArm(part part);
+  void placePartLeftArm();
+  void placePartRightArm();
+  bool throwLastPartLeft(part part, std::string ptype);
+  bool throwLastPartRight(part part, std::string ptype);
 
-//    bool pickPart(part part, std::string arm_name);
-    bool pickPartLeftArm(part part);
-    bool pickPartRightArm(part part);
-    void placePartLeftArm();
-    void placePartRightArm();
-    bool throwLastPartLeft(part part, std::string ptype);
-    bool throwLastPartRight(part part, std::string ptype);
-    
-    /// Send command message to robot controller
-    bool sendJointPosition(trajectory_msgs::JointTrajectory command_msg);
-    void goToPresetLocation(PresetLocation location);
-    void rotateTorso(const double angle);
-    void reachPartShelfLeftArm(part part);
-    void reachPartShelfRightArm(part part);
-    void reachPartBinLeftArm(part part);
-    void reachPartBinRightArm(part part);
-    void goToBottomShelfs();
-    void retriveFromBottomShelf();
-    void FKLeftArm(std::vector<double> joints);
-    void FKRightArm(std::vector<double> joints);
-    void FKGantry(std::vector<double> joints);
-    void moveOverPart(part part, std::string arm);
-    void getProduct(product product);
-    std::string checkFreeGripper();
-    std::string getGantryLocation(){
+  /// Send command message to robot controller
+  bool sendJointPosition(trajectory_msgs::JointTrajectory command_msg);
+  void goToPresetLocation(PresetLocation location);
+  void rotateTorso(const double angle);
+  void reachPartShelfLeftArm(part part);
+  void reachPartShelfRightArm(part part);
+  void reachPartBinLeftArm(part part);
+  void reachPartBinRightArm(part part);
+  void goToBottomShelfs();
+  void retriveFromBottomShelf();
+  void FKLeftArm(std::vector<double> joints);
+  void FKRightArm(std::vector<double> joints);
+  void FKGantry(std::vector<double> joints);
+  void moveOverPart(part part, std::string arm);
+  void getProduct(product product);
+  std::string checkFreeGripper();
+  std::string getGantryLocation()
+  {
 
-      if(gantry_location_.size() == 0)
-      {
-        ROS_INFO_STREAM("its none");
-      }
-      return gantry_location_;
-    }
-    product getProductLeftArm(){
-      return product_left_arm_;
-    }
-    product getProductRightArm(){
-      return product_right_arm_;
-    }
-
-    void set_product_left_arm_(const product& product)
+    if (gantry_location_.size() == 0)
     {
-        product_left_arm_ = product;
+      ROS_INFO_STREAM("its none");
     }
-    void set_product_right_arm_(const product& product)
-    {
-        product_right_arm_ = product;
-    }
+    return gantry_location_;
+  }
+  product getProductLeftArm()
+  {
+    return product_left_arm_;
+  }
+  product getProductRightArm()
+  {
+    return product_right_arm_;
+  }
 
-    void pickAndThrowFaultyProduct(const std::string& armName, const product& faultyProduct);
+  void set_product_left_arm_(const product &product)
+  {
+    product_left_arm_ = product;
+  }
+  void set_product_right_arm_(const product &product)
+  {
+    product_right_arm_ = product;
+  }
 
-    void activateGripper(std::string gripper_id);
-    void deactivateGripper(std::string gripper_id);
-    nist_gear::VacuumGripperState getGripperState(std::string arm_name);
-    geometry_msgs::Pose getTargetWorldPose(geometry_msgs::Pose target, std::string agv);
-    //--preset locations;
-    start start_;
-    aisle1 aisle1_;
-    aisle2 aisle2_;
-    shelf1 shelf1_;
-    shelf2 shelf2_;
-    bins bins_;
-    agv1_left agv1_left_;
-    agv1_right agv1_right_;
-    agv2_left agv2_left_;
-    agv2_right agv2_right_;
-    tray1_left tray1_left_;
-    tray1_right tray1_right_;
-    tray2_left tray2_left_;
-    tray2_right tray2_right_;
+  void pickAndThrowFaultyProduct(const std::string &armName, const product &faultyProduct);
 
+  void activateGripper(std::string gripper_id);
+  void deactivateGripper(std::string gripper_id);
+  nist_gear::VacuumGripperState getGripperState(std::string arm_name);
+  geometry_msgs::Pose getTargetWorldPose(geometry_msgs::Pose target, std::string agv);
+  //--preset locations;
+  start start_;
+  aisle1 aisle1_;
+  aisle2 aisle2_;
+  shelf1 shelf1_;
+  shelf2 shelf2_;
+  bins bins_;
+  agv1_left agv1_left_;
+  agv1_right agv1_right_;
+  agv2_left agv2_left_;
+  agv2_right agv2_right_;
+  tray1_left tray1_left_;
+  tray1_right tray1_right_;
+  tray2_left tray2_left_;
+  tray2_right tray2_right_;
 
-    
-  private:
-    std::vector<double> joint_group_positions_;
-    ros::NodeHandle node_;
-    std::string planning_group_;
-    moveit::planning_interface::MoveGroupInterface::Options full_robot_options_;
-    moveit::planning_interface::MoveGroupInterface::Options gantry_options_;
-    moveit::planning_interface::MoveGroupInterface::Options left_arm_options_;
-    moveit::planning_interface::MoveGroupInterface::Options right_arm_options_;
-    moveit::planning_interface::MoveGroupInterface::Options left_ee_link_options_;
-    moveit::planning_interface::MoveGroupInterface::Options right_ee_link_options_;
-    moveit::planning_interface::MoveGroupInterface full_robot_group_;
-    moveit::planning_interface::MoveGroupInterface gantry_group_;
-    moveit::planning_interface::MoveGroupInterface left_arm_group_;
-    moveit::planning_interface::MoveGroupInterface right_arm_group_;
-    moveit::planning_interface::MoveGroupInterface left_ee_link_group_;
-    moveit::planning_interface::MoveGroupInterface right_ee_link_group_;
+private:
+  std::vector<double> joint_group_positions_;
+  ros::NodeHandle node_;
+  std::string planning_group_;
+  moveit::planning_interface::MoveGroupInterface::Options full_robot_options_;
+  moveit::planning_interface::MoveGroupInterface::Options gantry_options_;
+  moveit::planning_interface::MoveGroupInterface::Options left_arm_options_;
+  moveit::planning_interface::MoveGroupInterface::Options right_arm_options_;
+  moveit::planning_interface::MoveGroupInterface::Options left_ee_link_options_;
+  moveit::planning_interface::MoveGroupInterface::Options right_ee_link_options_;
+  moveit::planning_interface::MoveGroupInterface full_robot_group_;
+  moveit::planning_interface::MoveGroupInterface gantry_group_;
+  moveit::planning_interface::MoveGroupInterface left_arm_group_;
+  moveit::planning_interface::MoveGroupInterface right_arm_group_;
+  moveit::planning_interface::MoveGroupInterface left_ee_link_group_;
+  moveit::planning_interface::MoveGroupInterface right_ee_link_group_;
 
-    double left_ee_roll_;
-    double left_ee_pitch_;
-    double left_ee_yaw_;
-    std::array<float,4> left_ee_quaternion_;
-    std::string gantry_location_;
+  double left_ee_roll_;
+  double left_ee_pitch_;
+  double left_ee_yaw_;
+  std::array<float, 4> left_ee_quaternion_;
+  std::string gantry_location_;
 
-    product product_left_arm_;
-    product product_right_arm_;
+  product product_left_arm_;
+  product product_right_arm_;
 
-    sensor_msgs::JointState current_joint_states_;
+  sensor_msgs::JointState current_joint_states_;
 
-    // geometry_msgs::Pose last_placed_part_pose_; //Not Necessary
+  // geometry_msgs::Pose last_placed_part_pose_; //Not Necessary
 
-    nist_gear::VacuumGripperState current_left_gripper_state_;
-    nist_gear::VacuumGripperState current_right_gripper_state_;
+  nist_gear::VacuumGripperState current_left_gripper_state_;
+  nist_gear::VacuumGripperState current_right_gripper_state_;
 
-    control_msgs::JointTrajectoryControllerState current_gantry_controller_state_;
-    control_msgs::JointTrajectoryControllerState current_left_arm_controller_state_;
-    control_msgs::JointTrajectoryControllerState current_right_arm_controller_state_;
+  control_msgs::JointTrajectoryControllerState current_gantry_controller_state_;
+  control_msgs::JointTrajectoryControllerState current_left_arm_controller_state_;
+  control_msgs::JointTrajectoryControllerState current_right_arm_controller_state_;
 
-    ros::Publisher gantry_joint_trajectory_publisher_;
-    ros::Publisher left_arm_joint_trajectory_publisher_;
-    ros::Publisher right_arm_joint_trajectory_publisher_;
+  ros::Publisher gantry_joint_trajectory_publisher_;
+  ros::Publisher left_arm_joint_trajectory_publisher_;
+  ros::Publisher right_arm_joint_trajectory_publisher_;
 
-    ros::Subscriber joint_states_subscriber_;
-    ros::Subscriber left_gripper_state_subscriber_;
-    ros::Subscriber right_gripper_state_subscriber_;
-    ros::Subscriber gantry_controller_state_subscriber_;
-    ros::Subscriber left_arm_controller_state_subscriber_;
-    ros::Subscriber right_arm_controller_state_subscriber_;
+  ros::Subscriber joint_states_subscriber_;
+  ros::Subscriber left_gripper_state_subscriber_;
+  ros::Subscriber right_gripper_state_subscriber_;
+  ros::Subscriber gantry_controller_state_subscriber_;
+  ros::Subscriber left_arm_controller_state_subscriber_;
+  ros::Subscriber right_arm_controller_state_subscriber_;
 
-    ros::ServiceClient left_gripper_control_client;
-    ros::ServiceClient right_gripper_control_client;
+  ros::ServiceClient left_gripper_control_client;
+  ros::ServiceClient right_gripper_control_client;
 
-    // ---------- Callbacks ----------
-    void joint_states_callback(const sensor_msgs::JointState::ConstPtr & joint_state_msg);
-    void left_gripper_state_callback(const nist_gear::VacuumGripperState::ConstPtr & msg);
-    void right_gripper_state_callback(const nist_gear::VacuumGripperState::ConstPtr & msg);
-    void gantry_controller_state_callback(const control_msgs::JointTrajectoryControllerState::ConstPtr & msg);
-    void left_arm_controller_state_callback(const control_msgs::JointTrajectoryControllerState::ConstPtr & msg);
-    void right_arm_controller_state_callback(const control_msgs::JointTrajectoryControllerState::ConstPtr & msg);
-
+  // ---------- Callbacks ----------
+  void joint_states_callback(const sensor_msgs::JointState::ConstPtr &joint_state_msg);
+  void left_gripper_state_callback(const nist_gear::VacuumGripperState::ConstPtr &msg);
+  void right_gripper_state_callback(const nist_gear::VacuumGripperState::ConstPtr &msg);
+  void gantry_controller_state_callback(const control_msgs::JointTrajectoryControllerState::ConstPtr &msg);
+  void left_arm_controller_state_callback(const control_msgs::JointTrajectoryControllerState::ConstPtr &msg);
+  void right_arm_controller_state_callback(const control_msgs::JointTrajectoryControllerState::ConstPtr &msg);
 };
 
 #endif

@@ -7,11 +7,10 @@
 #include <std_msgs/String.h>
 #include <rosgraph_msgs/Clock.h>
 #include <nist_gear/Order.h>
-#include<unordered_map>
+#include <unordered_map>
 #include <queue>
 
 #include "utils.h"
-
 
 /**
  * @brief Competition class
@@ -26,7 +25,7 @@ public:
      * 
      * @param node Node handle
      */
-    explicit Competition(ros::NodeHandle & node);
+    explicit Competition(ros::NodeHandle &node);
     /**
      * @brief Initialize components of the class (suscribers, publishers, etc)
      * 
@@ -47,19 +46,19 @@ public:
      * 
      * @param msg 
      */
-    void competition_state_callback(const std_msgs::String::ConstPtr & msg);
+    void competition_state_callback(const std_msgs::String::ConstPtr &msg);
     /**
      * @brief Time since the competition started
      * 
      * @param msg 
      */
-    void competition_clock_callback(const rosgraph_msgs::Clock::ConstPtr & msg);
+    void competition_clock_callback(const rosgraph_msgs::Clock::ConstPtr &msg);
     /**
      * @brief Deal with received orders from /ariac/orders topic
      * 
      * @param msg 
      */
-    void order_callback(const nist_gear::Order::ConstPtr & msg);
+    void order_callback(const nist_gear::Order::ConstPtr &msg);
     /**
      * @brief Handle products in the order
      * 
@@ -83,26 +82,29 @@ public:
      * @return std::string 
      */
     std::string getCompetitionState();
-    std::vector<Product> get_product_list(){
+    std::vector<Product> get_product_list()
+    {
         return product_list_;
     }
-    std::vector<Shipment> get_shipment_list(){
+    std::vector<Shipment> get_shipment_list()
+    {
         return shipment_list_;
     }
+
 private:
-    ros::NodeHandle node_;/*!< node h_type: "ordeandle for this class */
-    std::string competition_state_;/*!< state of the competition */
-    double current_score_;/*!< current score during the trial */
-    ros::Time competition_clock_;/*!< clock to check if we are close to the time limit */
-    double competition_start_time_; /*!< wall time in second */
-    std::vector<nist_gear::Order> received_orders_;/*!< vector to store orders */
-    std::vector<Order> order_list_;/*!< list of orders */
+    ros::NodeHandle node_;                          /*!< node h_type: "ordeandle for this class */
+    std::string competition_state_;                 /*!< state of the competition */
+    double current_score_;                          /*!< current score during the trial */
+    ros::Time competition_clock_;                   /*!< clock to check if we are close to the time limit */
+    double competition_start_time_;                 /*!< wall time in second */
+    std::vector<nist_gear::Order> received_orders_; /*!< vector to store orders */
+    std::vector<Order> order_list_;                 /*!< list of orders */
     std::vector<Product> product_list_;
     std::vector<Shipment> shipment_list_;
-    ros::Subscriber current_score_subscriber_;/*!< subscriber to the topic /ariac/current_score */
-    ros::Subscriber competition_state_subscriber_;/*!< subscriber to the topic /ariac/competition_state */
-    ros::Subscriber competition_clock_subscriber_;/*!< subscriber to the topic /clock */
-    ros::Subscriber orders_subscriber_;/*!< subscriber to the topic /ariac/orders */
+    ros::Subscriber current_score_subscriber_;     /*!< subscriber to the topic /ariac/current_score */
+    ros::Subscriber competition_state_subscriber_; /*!< subscriber to the topic /ariac/competition_state */
+    ros::Subscriber competition_clock_subscriber_; /*!< subscriber to the topic /clock */
+    ros::Subscriber orders_subscriber_;            /*!< subscriber to the topic /ariac/orders */
 };
 
 #endif
