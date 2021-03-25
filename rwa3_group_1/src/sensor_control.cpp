@@ -1,4 +1,5 @@
 #include <ros/ros.h>
+#include <math.h>
 
 #include "sensor_control.h"
 #include "utils.h"
@@ -198,7 +199,28 @@ color_code SensorControl::hashit_color(std::string const &colorString)
           Part.location = "conveyor_belt";
         }
 
-        parts_.at(ktype).at(kcolor).push_back(Part);
+        int partsCount = parts_.at(ktype).at(kcolor).size();
+        bool canPartBeAdded = true;
+
+        for(int j=0; (j<partsCount); j++) {
+          part partAlreadyPresent = parts_.at(ktype).at(kcolor).at(j);
+          float xDiff = partAlreadyPresent.pose.position.x - Part.pose.position.x;
+          float yDiff = partAlreadyPresent.pose.position.y - Part.pose.position.y;
+          float zDiff = partAlreadyPresent.pose.position.z - Part.pose.position.z;
+          double dist = pow(pow(xDiff, 2) + pow(yDiff, 2) + pow(zDiff, 2), 0.5);
+          if (dist <= 0.01) {
+            ROS_INFO_STREAM("Part already exists. Cannot be added. Part type:: " << Part.type << " Location: [x,y,z]:: " << Part.pose.position.x << Part.pose.position.y << Part.pose.position.z);
+            canPartBeAdded = false;
+            break;
+          }
+        }
+
+        if (canPartBeAdded) {
+          parts_.at(ktype).at(kcolor).push_back(Part);
+          ROS_INFO_STREAM("New part added. Part tye:: " << Part.type);
+        }
+
+        
       }
       logic_call_[sensor_n] = 1;
     }

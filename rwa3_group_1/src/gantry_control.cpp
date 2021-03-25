@@ -978,7 +978,7 @@ bool GantryControl::pickPartRightArm(part part)
                 activateGripper("right_arm");
                 current_attempt++;
             }
-            part.pose.position.z += 0.05;
+            //part.pose.position.z += 0.05;
             part.picked_status = true;
 
             right_arm_group_.setPoseTarget(currentPose);
