@@ -209,7 +209,7 @@ color_code SensorControl::hashit_color(std::string const &colorString)
           float zDiff = partAlreadyPresent.pose.position.z - Part.pose.position.z;
           double dist = pow(pow(xDiff, 2) + pow(yDiff, 2) + pow(zDiff, 2), 0.5);
           if (dist <= 0.01) {  // dist threshold can be put into a constant.
-            ROS_INFO_STREAM("Part already exists. Cannot be added. Part type:: " << Part.type << " Location: [x,y,z]:: " << Part.pose.position.x << Part.pose.position.y << Part.pose.position.z);
+            ROS_INFO_STREAM("Part already exists. Cannot be added. Part type:: " << Part.type << " Location: [x,y,z]:: " << Part.pose.position.x << ", " << Part.pose.position.y << ", " << Part.pose.position.z);
             canPartBeAdded = false;
           }
         }
