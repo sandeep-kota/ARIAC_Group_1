@@ -24,9 +24,15 @@ catkin build
 
 
 ## Run Instructions
- - The launch directory of the package `/rwa2_group_1` has a launch file `rwa2.launch`. All the necessary nodes will be launched within this node.
+ - The launch directory of the package `/rwa3_group_1` has a launch file `rwa3.launch`. All the necessary nodes will be launched within this node.
 
  ```
 source ~/ariac_ws/devel/setup.bash
-roslaunch rwa2_group_1 rwa2.launch
+roslaunch rwa3_group_1 rwa3.launch load_moveit:=true
+ ```
+
+ - Run the rwa3 node 
+ ```
+ source ~/ariac_ws/devel/setup.bash
+rosrun rwa3_group_1 rwa3_node
  ```            
