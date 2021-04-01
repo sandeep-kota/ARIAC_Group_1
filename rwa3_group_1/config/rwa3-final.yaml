@@ -104,4 +104,7 @@ models_over_shelves:
 faulty_products:
   - pulley_part_red_1
   - pulley_part_red_2
-  - disk_part_blue_1
+  - disk_part_green_9
+  - disk_part_blue_8
+  - pulley_part_red_3
+  - pulley_part_red_4

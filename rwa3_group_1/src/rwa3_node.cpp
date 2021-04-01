@@ -79,6 +79,7 @@ int main(int argc, char **argv)
 
     SensorControl sensors(node);
     sensors.init(); // initialize the sensor callbacks of the environment
+    ros::param::set("/activate_quality", false);
 
     gantry.goToPresetLocation(gantry.start_); // start the trial from start position
 
@@ -106,7 +107,7 @@ int main(int argc, char **argv)
                 ROS_WARN_STREAM("NO PART FOUND");
             }
 
-            if (gantry.checkFreeGripper().compare("none") == 0) // if none of the grippers are free place both products in grippers
+            if (gantry.checkFreeGripper().compare("none") == 0) // if none of the grippers are free place both products in trays
             {
                 if (gantry.getGantryLocation().compare("aisle_1") == 0) // go to start location from current gantry location
                 {
@@ -122,30 +123,38 @@ int main(int argc, char **argv)
                 gantry.placePartLeftArm(); // Place product of left arm in agv
 
                 //Check for faulty product
-                ros::Duration(0.5).sleep();
+                ros::Duration(1).sleep();
+                ros::param::set("/activate_quality", true);
+                ros::Duration(1).sleep();
+
+                bool activate_quality;
+                ros::param::get("/activate_quality", activate_quality);
+                ROS_WARN_STREAM("ACTIVATE QUALITY: " << activate_quality);
                 if (sensors.isFaultyPartDetected())
                 {
                     std::vector<Product> faultyProducts = sensors.getFaultyProducts();
                     ROS_WARN_STREAM("FAULTY PARTS :" << faultyProducts[0].p.location);
 
-                    gantry.pickAndThrowFaultyProduct(LEFT_ARM, faultyProducts.front()); // this will do nothing - the next method is going to pick and throw
-                    gantry.throwLastPartLeft(faultyProducts.front().p, current_product.p.type);
+                    gantry.throwLastPartLeft(faultyProducts.front().p);
                     updateOrderProductList(list_of_products, faultyProducts.front());
 
                     sensors.clearFaultyProducts();
                     sensors.setFaultyPartDetectedFlag(false);
                 }
+                ros::param::set("/activate_quality", false);
 
                 gantry.placePartRightArm(); // Place product of right arm in agv
 
                 //Check for faulty product
-                ros::Duration(0.5).sleep();
+                ros::Duration(1).sleep();
+                ros::param::set("/activate_quality", true);
+                ros::Duration(1).sleep();
+
                 if (sensors.isFaultyPartDetected())
                 {
                     std::vector<Product> faultyProducts = sensors.getFaultyProducts();
 
-                    gantry.pickAndThrowFaultyProduct(RIGHT_ARM, faultyProducts.front());
-                    gantry.throwLastPartRight(faultyProducts.front().p, current_product.p.type);
+                    gantry.throwLastPartRight(faultyProducts.front().p);
 
                     //gantry.throwLastPartRight();
 
@@ -154,6 +163,8 @@ int main(int argc, char **argv)
                     sensors.clearFaultyProducts();
                     sensors.setFaultyPartDetectedFlag(false);
                 }
+
+                ros::param::set("/activate_quality", false);
 
                 // gantry.placePartRightArm(); // Place product of right arm in agv
                 // ROS_WARN_STREAM("FAULTY PARTS :" << sensors.faulty_parts_);
@@ -183,36 +194,39 @@ int main(int argc, char **argv)
         gantry.placePartLeftArm(); // Place product of left arm in agv
 
         //Check for faulty product
-        ros::Duration(0.5).sleep();
+        ros::Duration(1).sleep();
+        ros::param::set("/activate_quality", true);
         if (sensors.isFaultyPartDetected())
         {
             std::vector<Product> faultyProducts = sensors.getFaultyProducts();
             ROS_WARN_STREAM("FAULTY PARTS :" << faultyProducts[0].p.location);
 
-            gantry.pickAndThrowFaultyProduct(LEFT_ARM, faultyProducts.front()); // this will do nothing - the next method is going to pick and throw
-            gantry.throwLastPartLeft(faultyProducts.front().p, current_product.p.type);
+            gantry.throwLastPartLeft(faultyProducts.front().p);
             updateOrderProductList(list_of_products, faultyProducts.front());
 
             sensors.clearFaultyProducts();
             sensors.setFaultyPartDetectedFlag(false);
         }
+        ros::param::set("/activate_quality", false);
 
         gantry.placePartRightArm(); // Place product of right arm in agv
 
         //Check for faulty product
-        ros::Duration(0.5).sleep();
+        ros::Duration(1).sleep();
+        ros::param::set("/activate_quality", true);
         if (sensors.isFaultyPartDetected())
         {
             std::vector<Product> faultyProducts = sensors.getFaultyProducts();
 
-            gantry.pickAndThrowFaultyProduct(RIGHT_ARM, faultyProducts.front());
-            gantry.throwLastPartRight(faultyProducts.front().p, current_product.p.type);
+            gantry.throwLastPartRight(faultyProducts.front().p);
 
             updateOrderProductList(list_of_products, faultyProducts.front());
 
             sensors.clearFaultyProducts();
             sensors.setFaultyPartDetectedFlag(false);
         }
+
+        ros::param::set("/activate_quality", false);
 
         gantry.goToPresetLocation(gantry.start_); // go back to start position
     }

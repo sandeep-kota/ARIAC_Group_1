@@ -52,8 +52,8 @@ public:
   bool pickPartRightArm(part part);
   void placePartLeftArm();
   void placePartRightArm();
-  bool throwLastPartLeft(part part, std::string ptype);
-  bool throwLastPartRight(part part, std::string ptype);
+  bool throwLastPartLeft(part part);
+  bool throwLastPartRight(part part);
 
   /// Send command message to robot controller
   bool sendJointPosition(trajectory_msgs::JointTrajectory command_msg);
@@ -97,8 +97,6 @@ public:
   {
     product_right_arm_ = product;
   }
-
-  void pickAndThrowFaultyProduct(const std::string &armName, const product &faultyProduct);
 
   void activateGripper(std::string gripper_id);
   void deactivateGripper(std::string gripper_id);

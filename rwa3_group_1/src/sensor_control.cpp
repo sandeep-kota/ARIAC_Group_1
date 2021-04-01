@@ -312,7 +312,10 @@ Part SensorControl::findPart(std::string type)
  */
 void SensorControl::quality_cntrl_sensor_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n)
 {
-  if (msg->models.size() != 0)
+  bool activate_quality;
+  ros::param::get("/activate_quality", activate_quality);
+  // ROS_WARN_STREAM("ACTIVATE QUALITY: " << activate_quality);
+  if (msg->models.size() != 0 && activate_quality)
   {
 
     setFaultyPartDetectedFlag(true);
@@ -334,6 +337,7 @@ void SensorControl::quality_cntrl_sensor_callback(const nist_gear::LogicalCamera
         faultyPart.frame = "quality_control_sensor_" + std::to_string(sensor_n) + "_frame";
         faultyPart.time_stamp = ros::Time::now();
         faultyPart.id = faultyPart.type + std::to_string(i);
+
         if (sensor_n == 2)
         {
           faultyPart.location = "agv_1";
