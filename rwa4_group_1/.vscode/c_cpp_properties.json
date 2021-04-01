@@ -1,0 +1,26 @@
+{
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "",
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "/home/zeid/Desktop/ariac_2020_ws/devel/include/**",
+                "/opt/ros/melodic/include/**",
+                "/home/zeid/Desktop/ariac_2020_ws/src/ariac-gazebo_ros_pkgs/gazebo_plugins/include/**",
+                "/home/zeid/Desktop/ariac_2020_ws/src/ariac-gazebo_ros_pkgs/gazebo_ros/include/**",
+                "/home/zeid/Desktop/ariac_2020_ws/src/ariac-gazebo_ros_pkgs/gazebo_ros_control/include/**",
+                "/home/zeid/Desktop/ariac_2020_ws/src/ARIAC/nist_gear/include/**",
+                "/home/zeid/Desktop/ariac_2020_ws/src/rwa4_kootbally/include/**",
+                "/usr/include/**"
+            ],
+            "name": "ROS",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu11",
+            "cppStandard": "gnu++14"
+        }
+    ],
+    "version": 4
+}

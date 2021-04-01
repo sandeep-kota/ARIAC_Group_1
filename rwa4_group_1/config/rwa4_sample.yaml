@@ -1,0 +1,145 @@
+#Number of orders: 2
+#Number of shipments per order: 1
+#Challenges:
+#  -Interruption: yes
+#  -Drop parts: yes
+#  -Sensor blackout: no
+#  -Part flipping: yes
+#  -Faulty parts: yes
+#  -Moving obstacle: no
+#Containers
+# -Belt: yes
+# -Bins: yes
+# -Shelf: yes
+#AGV
+# -order_0:
+#   -shipment_0: agv1
+# -order_1:
+#   -shipment_0: agv2
+#Time limit: no
+
+time_limit: -1
+options:
+  gazebo_state_logging: true
+  insert_models_over_bins: true
+  insert_models_over_shelves: true
+  belt_population_cycles: 10
+  spawn_extra_models: true
+
+shelf_layout:
+  row_1: ['base','collar',0,'base'] #shelves: 3, 4, 5
+  row_2: ['pipe', 0,'base','base']   #shelves: 6, 7, 8
+  row_3: ['base','pipe',0,'collar'] #shelves: 9, 10, 11
+
+
+orders:
+  order_0:
+    announcement_condition: time
+    announcement_condition_value: 0.0
+    shipment_count: 1
+    destinations: [agv1]
+    products:
+      part_0:
+        type: pulley_part_red
+        pose:
+          xyz: [0.12, 0.2, 0]
+          rpy: ['pi', 0, 0]
+      part_1:
+        type: gasket_part_green
+        pose:
+          xyz: [0.0, 0.0, 0]
+          rpy: [0, 0, '-pi/4']
+      part_2:
+        type: gasket_part_blue
+        pose:
+          xyz: [-0.15, 0.2, 0]
+          rpy: [0, 0, '-pi/4']
+      part_3:
+        type: disk_part_green
+        pose:
+          xyz: [0.15, -0.2, 0]
+          rpy: [0, 0, 0]
+  order_1:
+    announcement_condition: unwanted_products
+    announcement_condition_value: 1
+    shipment_count: 1
+    destinations: [agv2]
+    products:
+      part_0:
+        type: disk_part_green
+        pose:
+          xyz: [-0.15, -0.2, 0]
+          rpy: [0, 0, 0]
+      part_1:
+        type: gasket_part_blue
+        pose:
+          xyz: [0.15, 0.2, 0]
+          rpy: [0, 0, '-pi/4']
+
+models_over_bins:
+  bin13:
+    models:
+      disk_part_green:
+        xyz_start: [0.1, 0.1, 0.0]
+        xyz_end: [0.5, 0.5, 0.0]
+        rpy: [0, 0, 0]
+        num_models_x: 3
+        num_models_y: 3
+
+models_over_shelves:
+  shelf8:
+    models:
+      gasket_part_green:
+        xyz_start: [1, 0.45, 0.0]
+        xyz_end: [0., 0.45, 0.0]
+        rpy: [0, 0, 'pi/4']
+        num_models_x: 6
+        num_models_y: 1
+  shelf11:
+    models:
+      gasket_part_blue:
+        xyz_start: [1, 0.45, 0.0]
+        xyz_end: [0., 0.45, 0.0]
+        rpy: [0, 0, 'pi/2']
+        num_models_x: 6
+        num_models_y: 1
+
+belt_models:
+  pulley_part_red:
+    15.0:
+      pose:
+        xyz: [0.0, 4.3, 0.92]
+        rpy: [0, 0, 'pi/2']
+
+#Faulty gripper
+drops:
+  drop_regions:
+    shipping_box_0_impeding:
+      frame: agv1::kit_tray_1
+      min:
+        xyz: [-0.3, -0.3, 0.0]
+      max:
+        xyz: [0.3, 0.3, 0.5]
+      destination:
+        xyz: [0.2, 0.3, 0.05]
+        rpy: [0, 0, 0.2]
+      product_type_to_drop: gasket_part_green
+    shipping_box_1_impeding:
+      frame: agv2::kit_tray_2
+      min:
+        xyz: [-0.3, -0.3, 0.0]
+      max:
+        xyz: [0.3, 0.3, 0.5]
+      destination:
+        xyz: [0.15, 0.15, 0.05]
+        rpy: [0, 0, 0.2]
+      product_type_to_drop: disk_part_green
+
+#Faulty products
+faulty_products:
+  - disk_part_green_2
+  - disk_part_green_1
+  - gasket_part_blue_3
+  - gasket_part_blue_1
+  - gasket_part_green_1
+  - gasket_part_green_5
