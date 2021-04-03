@@ -22,6 +22,8 @@ void SensorControl::init()
 {
   read_all_sensors_ = false;
 
+  ros::param::set("/check_flipped", false);
+
   logical_camera_0_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
       "/ariac/logical_camera_0", 1, boost::bind(&SensorControl::logical_camera_callback, this, _1, 0));
   logical_camera_1_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
@@ -150,6 +152,7 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
   std::string type{};
   std::string color{};
   part Part;
+  bool check_flipped {false};
 
   int sum = 0;
   for (int i = 0; i < 17; i++)
@@ -245,6 +248,44 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
   {
     read_all_sensors_ = true;
   }
+
+  //Check for flippe parts on agvs
+  ros::param::get("/check_flipped", check_flipped);
+  
+  if (check_flipped && (sensor_n == 0 || sensor_n == 1))
+  {
+    logic_call_agv_[sensor_n] = 1;
+    for (int i = 0; i < msg->models.size(); i++)
+    {
+      pos_t = msg->models.at(i).type.find("_");
+      type = msg->models.at(i).type.substr(0, pos_t);
+
+      Part.picked_status = false;
+      Part.type = msg->models.at(i).type;
+      Part.pose = frame_to_world(i, msg->models.at(i).pose, c_w_transforms_.at(sensor_n));
+      Part.save_pose = Part.pose;
+      Part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
+      Part.time_stamp = ros::Time::now();
+
+      if (type.compare("pulley") == 0)   //flipped parts can only be pulleys
+      {
+        ROS_WARN_STREAM("TYPE: "<< type);
+        partsToFlip.push_back(Part);
+      }
+    }
+
+    sum = 0;
+    for (int i = 0; i < 2; i++)
+    {
+      sum += logic_call_agv_[i];
+    }
+    if (sum == 2)
+    {
+      ros::param::set("/check_flipped", false);
+      logic_call_agv_[0] = 0;
+      logic_call_agv_[1] = 0;
+    }
+  }
 }
 
 /**
@@ -314,7 +355,6 @@ void SensorControl::quality_cntrl_sensor_callback(const nist_gear::LogicalCamera
 {
   bool activate_quality;
   ros::param::get("/activate_quality", activate_quality);
-  // ROS_WARN_STREAM("ACTIVATE QUALITY: " << activate_quality);
   if (msg->models.size() != 0 && activate_quality)
   {
 

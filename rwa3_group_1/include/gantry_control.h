@@ -70,6 +70,8 @@ public:
   void FKGantry(std::vector<double> joints);
   void moveOverPart(part part, std::string arm);
   void getProduct(product product);
+  void getProductsToFlip(std::vector <Part> partsToFlip);
+  void flipProductsAGV();
   std::string checkFreeGripper();
   std::string getGantryLocation()
   {
@@ -145,6 +147,7 @@ private:
   double left_ee_yaw_;
   std::array<float, 4> left_ee_quaternion_;
   std::string gantry_location_;
+  std::vector<Product> products_to_flip_;
 
   product product_left_arm_;
   product product_right_arm_;

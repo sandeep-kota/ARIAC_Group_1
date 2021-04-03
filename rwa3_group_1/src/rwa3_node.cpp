@@ -91,7 +91,6 @@ int main(int argc, char **argv)
         list_of_products = comp.get_product_list();   // get list of products of current order in priority order
 
         for (int p = 0; p < list_of_products.size(); p++) // loop all the products to be retrieve from current order
-        // for (int p = 0; p = 1; p++)   // loop all the products to be retrieve from current order
         {
 
             current_product = list_of_products.at(p);
@@ -156,8 +155,6 @@ int main(int argc, char **argv)
 
                     gantry.throwLastPartRight(faultyProducts.front().p);
 
-                    //gantry.throwLastPartRight();
-
                     updateOrderProductList(list_of_products, faultyProducts.front());
 
                     sensors.clearFaultyProducts();
@@ -166,8 +163,12 @@ int main(int argc, char **argv)
 
                 ros::param::set("/activate_quality", false);
 
-                // gantry.placePartRightArm(); // Place product of right arm in agv
-                // ROS_WARN_STREAM("FAULTY PARTS :" << sensors.faulty_parts_);
+                ros::param::set("/check_flipped", true);
+                ros::Duration(2).sleep();
+
+                gantry.getProductsToFlip(sensors.getPartsToFlip());
+                gantry.flipProductsAGV();
+                sensors.clearPartsToFlip();
 
                 gantry.goToPresetLocation(gantry.start_); // go back to start position
             }
@@ -227,6 +228,13 @@ int main(int argc, char **argv)
         }
 
         ros::param::set("/activate_quality", false);
+
+        ros::param::set("/check_flipped", true);
+        ros::Duration(1).sleep();
+
+        gantry.getProductsToFlip(sensors.getPartsToFlip());
+        gantry.flipProductsAGV();
+        sensors.clearPartsToFlip();
 
         gantry.goToPresetLocation(gantry.start_); // go back to start position
     }

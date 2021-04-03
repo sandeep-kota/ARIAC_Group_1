@@ -76,6 +76,18 @@ public:
     faultyPartDetected = isPartFaulty;
   }
 
+  std::vector<Part> getPartsToFlip()
+  {
+    return partsToFlip;
+  }
+
+  void clearPartsToFlip()
+  {
+    if (partsToFlip.empty() != 1){
+      partsToFlip.clear();
+    }
+  }
+
 private:
   ros::NodeHandle node_;
 
@@ -100,7 +112,8 @@ private:
   ros::Subscriber quality_ctrl_sensor1_subs;
   ros::Subscriber quality_ctrl_sensor2_subs;
 
-  std::array<int, 17> logic_call_{0};
+  std::array<int, 17> logic_call_ {0};
+  std::array<int, 2> logic_call_agv_ {0};
 
   std::array<geometry_msgs::TransformStamped, 17> c_w_transforms_{};
   std::array<geometry_msgs::TransformStamped, NUM_QUALITY_SENSORS> qualitySensorsTransforms{};
@@ -110,6 +123,7 @@ private:
   // std::array <std::array <std::vector < part >, 3>, 5> current_parts_ {};
 
   std::vector<Product> faultyProducts;
+  std::vector<Part> partsToFlip;
   bool faultyPartDetected = false;
 };
 

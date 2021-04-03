@@ -156,6 +156,8 @@ void GantryControl::init()
     tray2_right_negative_.left_arm = start_.left_arm;
     tray2_right_negative_.right_arm = start_.right_arm;
 
+
+
     //--Raw pointers are frequently used to refer to the planning group for improved performance.
     //--To start, we will create a pointer that references the current robot’s state.
     const moveit::core::JointModelGroup *joint_model_group =
@@ -1073,7 +1075,6 @@ bool GantryControl::throwLastPartRight(part part)
     }
 
 
-    // // ROS_WARN_STREAM("TYPE: " << product_right_arm_.type);
     part.pose.orientation.x = 0;
     part.pose.orientation.y = 0.707;
     part.pose.orientation.z = 0;
@@ -1145,7 +1146,6 @@ void GantryControl::placePartLeftArm()
         }
     }
 
-    // // ROS_WARN_STREAM("TYPE: " << product_left_arm_.type);
     auto target_pose_in_tray = getTargetWorldPose(product_left_arm_.pose, product_left_arm_.agv_id);
 
     geometry_msgs::Pose currentArmPose = left_arm_group_.getCurrentPose().pose;
@@ -1190,7 +1190,6 @@ void GantryControl::placePartLeftArm()
  */
 void GantryControl::placePartRightArm()
 {
-
         if (product_right_arm_.agv_id.compare("agv2") == 0 || product_right_arm_.agv_id.compare("any") == 0)
     {
         goToPresetLocation(agv2_);
@@ -1301,6 +1300,149 @@ void GantryControl::rotateTorso(const double angle)
         full_robot_group_.move();
 }
 
+void GantryControl::getProductsToFlip(std::vector <Part> partsToFlip)
+{
+    auto target_pose_in_tray_left = getTargetWorldPose(product_left_arm_.pose, product_left_arm_.agv_id);
+    auto target_pose_in_tray_right = getTargetWorldPose(product_right_arm_.pose, product_right_arm_.agv_id);
+
+    double x_prod_l {target_pose_in_tray_left.position.x};
+    double y_prod_l {target_pose_in_tray_left.position.y};
+    double x_prod_r {target_pose_in_tray_right.position.x};
+    double y_prod_r {target_pose_in_tray_right.position.y};
+    double y_part {};
+    double x_part {};
+
+    tf2::Quaternion q_left(
+        product_left_arm_.pose.orientation.x,
+        product_left_arm_.pose.orientation.y,
+        product_left_arm_.pose.orientation.z,
+        product_left_arm_.pose.orientation.w);
+        tf2::Matrix3x3 m_left(q_left);
+        double roll_left, pitch_left, yaw_left;
+        m_left.getRPY(roll_left, pitch_left, yaw_left);
+    
+    tf2::Quaternion q_right(
+        product_right_arm_.pose.orientation.x,
+        product_right_arm_.pose.orientation.y,
+        product_right_arm_.pose.orientation.z,
+        product_right_arm_.pose.orientation.w);
+        tf2::Matrix3x3 m_right(q_right);
+        double roll_right, pitch_right, yaw_right;
+        m_right.getRPY(roll_right, pitch_right, yaw_right);
+
+    for (int i = 0; i < partsToFlip.size(); i++)
+    {
+        x_part = partsToFlip.at(i).pose.position.x;
+        y_part = partsToFlip.at(i).pose.position.y;
+
+        tf2::Quaternion q_part(
+        partsToFlip.at(i).pose.orientation.x,
+        partsToFlip.at(i).pose.orientation.y,
+        partsToFlip.at(i).pose.orientation.z,
+        partsToFlip.at(i).pose.orientation.w);
+        tf2::Matrix3x3 m_part(q_part);
+        double roll_part, pitch_part, yaw_part;
+        m_part.getRPY(roll_part, pitch_part, yaw_part);
+
+        if (-0.1 <= roll_part && 0.1 >= roll_part)
+        {
+            if ((x_prod_l - 0.1) <= x_part && (x_prod_l + 0.1) >= x_part && (y_prod_l - 0.1) <= y_part && (y_prod_l + 0.1) >= y_part && (((PI -0.1) <= roll_left
+            && (PI + 0.1) >= roll_left) || ((-PI -0.1) <= roll_left && (-PI + 0.1) >= roll_left)))
+            {
+                product_left_arm_.p = partsToFlip.at(i);
+                products_to_flip_.push_back(product_left_arm_);
+            } else if ((x_prod_r - 0.1) <= x_part && (x_prod_r + 0.1) >= x_part && (y_prod_r - 0.1) <= y_part && (y_prod_r + 0.1) >= y_part && (((PI -0.1) <= roll_right
+            && (PI + 0.1) >= roll_right) || ((-PI -0.1) <= roll_right && (-PI + 0.1) >= roll_right)))
+            {
+                product_right_arm_.p = partsToFlip.at(i);
+                products_to_flip_.push_back(product_right_arm_);
+            }
+        }      
+    }
+}
+
+void GantryControl::flipProductsAGV()
+{
+
+    if (products_to_flip_.empty() == 0)
+    {
+        for (int i = 0; i < products_to_flip_.size(); i++)
+        {
+            products_to_flip_.at(i).p.pose.position.z += 0.015;
+            if (products_to_flip_.at(i).agv_id.compare("agv2") == 0 || products_to_flip_.at(i).agv_id.compare("any") == 0)
+            {   
+                goToPresetLocation(agv2_);
+                if (products_to_flip_.at(i).p.pose.position.x >= 0)
+                {
+                    goToPresetLocation(tray2_left_positive_);
+                } else {
+                    goToPresetLocation(tray2_left_negative_);
+                }
+            }
+            else
+            {
+                goToPresetLocation(agv1_);
+                if (-products_to_flip_.at(i).p.pose.position.x >= 0)
+                {
+                    goToPresetLocation(tray1_left_positive_);
+                } else {
+                    goToPresetLocation(tray1_left_negative_);
+                }
+            }
+
+            geometry_msgs::Pose currentArmPose = left_arm_group_.getCurrentPose().pose;
+
+            const double offset_y = products_to_flip_.at(i).p.pose.position.y - currentArmPose.position.y;
+            const double offset_x = products_to_flip_.at(i).p.pose.position.x - currentArmPose.position.x;
+
+            joint_group_positions_.at(0) += offset_x;
+            joint_group_positions_.at(1) -= offset_y;
+
+            full_robot_group_.setJointValueTarget(joint_group_positions_);
+
+            moveit::planning_interface::MoveGroupInterface::Plan move_x;
+            bool success = (full_robot_group_.plan(move_x) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+            if (success)
+                full_robot_group_.move();
+
+            ros::Duration(1).sleep();
+            pickPartLeftArm(products_to_flip_.at(i).p);
+            ros::Duration(1).sleep();
+
+            std::vector<double> retrieve {joint_group_positions_.at(0) -= offset_x, joint_group_positions_.at(1) += offset_y};
+
+            FKGantry(retrieve);
+
+            if (products_to_flip_.at(i).agv_id.compare("agv2") == 0 || products_to_flip_.at(i).agv_id.compare("any") == 0)
+            {   
+                goToPresetLocation(agv2_);
+            } else
+            {
+                goToPresetLocation(agv1_);
+            }
+
+            FKLeftArm({1.29, -0.25, 1.82, 0.0, 1.59, 0.0}); //position left arm
+
+            FKRightArm({1.19, -0.12, 1.7, 0.0, 1.57, 0.0}); //position right arm
+
+            FKRightArm({1.19, 0.01, 1.57, 0.0, 1.57, 0.0}); //approximate to part right arm
+
+            activateGripper("right_arm");
+
+            ros::Duration(0.5).sleep();
+
+            deactivateGripper("left_arm");
+
+            product_right_arm_ = products_to_flip_.at(i);
+
+            ros::Duration(0.5).sleep();
+
+            placePartRightArm();
+        }
+
+        products_to_flip_.clear();
+    }
+}
 /**
  * @brief Activate the gripper
  * 
