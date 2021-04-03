@@ -106,6 +106,9 @@ typedef struct Part {
   bool picked_status;
 } part;
 
+
+
+
 /**
  * @brief Struct to store joint positions for each group
  * 
@@ -116,6 +119,8 @@ typedef struct Position {
     std::vector<double> right;
 } position;
 
+
+
 /**
  * @brief Struct to store shipments
  * 
@@ -125,6 +130,9 @@ typedef struct Shipment {
     std::string agv_id;
     std::vector<Product> products;
 } shipment;
+
+
+
 
 /**
  * @brief Struct to store products
@@ -142,6 +150,8 @@ typedef struct Product {
     std::string arm_name;
 } product;
 
+
+
 /**
  * @brief struct to parse and store orders published on /ariac/orders
  * 
@@ -151,6 +161,70 @@ typedef struct Order {
     std::vector<Shipment> shipments;
 } order;
 
+inline std::ostream& operator<<(std::ostream& os, const Part& part)
+{
+    os << "Part Details:\n"<< "model type: "<< part.type << 
+    "\nID: "<<part.id<<
+    "\nLocation: "<<part.location<<
+     std::fixed<< std::setprecision(2)<<
+    "\nPose Point: "<<part.pose.position.x<< " "<< part.pose.position.y<< " "<< part.pose.position.z<<"\n" ;
+    return os;
+}
 
+inline std::ostream& operator<<(std::ostream& os, const Position& pos)
+{
+    os << "Position Details:\n"<< 
+    "Gantry:";
+    for(auto i: pos.gantry) {
+      os<<i<<" ";
+    }
+    os<<"\nleft: ";
+    for(auto i: pos.left) {
+      os<<i<<" ";
+    }
+    os<<"\nright: ";
+    for(auto i: pos.right) {
+      os<<i<<" ";
+    }
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const Product& prod)
+{
+    os << "Product Details:\n"<< 
+    "model type: "<< prod.type << 
+    "\nAGV ID: "<<prod.agv_id<<
+    "\nArm Name: "<<prod.arm_name<<
+    "\nTray Name: "<<prod.tray<<
+    "\nActual Pose Frame: "<<prod.actual_pose_frame<<
+     std::fixed<< std::setprecision(2)<<
+    "\nPose Point: "<<prod.pose.position.x<< " "<< prod.pose.position.y<< " "<< prod.pose.position.z <<
+    "\nActual Pose Point: "<<prod.actual_pose.position.x<< " "<< prod.actual_pose.position.y<< " "<< prod.actual_pose.position.z <<
+    std::endl<<"Product "<<prod.p;
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const Shipment& ship)
+{
+    os << "Shipment Details:\n"<< 
+    "Shipment type: "<< ship.shipment_type << 
+    "\nShipment AGV ID: "<<ship.agv_id<<
+    "\nProduct List:\n";
+    for(int i =0; i< ship.products.size(); ++i) {
+      os<<"Product "<<i+1<<"\n"<<ship.products[i]<<std::endl;
+    }
+    return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, const Order& ord)
+{
+    os << "Order Details:\n"<< 
+    "Order ID: "<< ord.order_id <<std::endl;
+    for(int i=0; i<ord.shipments.size(); ++i) {
+      os<<"Shipment "<<i+1<<"\n"<<ord.shipments[i]<<std::endl;
+    }
+    
+    return os;
+}
 
 #endif
