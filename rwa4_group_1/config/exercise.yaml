@@ -23,8 +23,8 @@ options:
   gazebo_state_logging: true
   insert_models_over_bins: true
   insert_models_over_shelves: true
-  belt_population_cycles: 10
-  spawn_extra_models: true
+  # belt_population_cycles: 10
+  # spawn_extra_models: true
 
 shelf_layout:
   row_1: ['base','collar',0,'base'] #shelves: 3, 4, 5
@@ -55,10 +55,10 @@ models_over_bins:
         num_models_x: 2
         num_models_y: 1
 
-belt_models:
-  pulley_part_red:
-    15.0:
-      pose:
-        xyz: [0.0, 4.3, 0.92]
-        rpy: [0, 0, 'pi/2']
+# belt_models:
+#   pulley_part_red:
+#     15.0:
+#       pose:
+#         xyz: [0.0, 4.3, 0.92]
+#         rpy: [0, 0, 'pi/2']
 

@@ -229,7 +229,7 @@ install(TARGETS rwa4_node
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 install(FILES
         config/rwa4_sensor_group_1.yaml
-        config/rwa4-sample.yaml
+        config/exercise.yaml
         launch/rwa4.launch
         DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config
         )

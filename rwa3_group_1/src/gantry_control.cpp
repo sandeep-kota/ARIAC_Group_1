@@ -373,6 +373,7 @@ void GantryControl::getProduct(product product)
     }
     else if (location == "shelf_11")
     {
+        ROS_WARN_STREAM("GANTRY LOCATION: " << gantry_location);
         if (gantry_location_ == "shelf_1" || gantry_location_ == "shelf_2" || gantry_location_ == "bins" || gantry_location_ == "start")
         {
             FKGantry(start_.gantry);
@@ -621,13 +622,13 @@ void GantryControl::reachPartShelfLeftArm(part part)
 
     if (dy > 0)
     {
-        offset_y = 1.8 - dy;
+        offset_y = 1.6 - dy;
 
         rotateTorso(L_LEFT_ARM);
     }
     else
     {
-        offset_y = -1.8 - dy;
+        offset_y = -1.6 - dy;
         rotateTorso(R_LEFT_ARM);
     }
     FKLeftArm({0, -2.13, 1.49, -2.48, -1.57, 0});
@@ -668,14 +669,14 @@ void GantryControl::reachPartShelfRightArm(part part)
 
     if (dy > 0)
     {
-        offset_y = 1.8 - dy;
+        offset_y = 1.6 - dy;
 
         rotateTorso(L_RIGHT_ARM);
         //--left arm
     }
     else
     {
-        offset_y = -1.8 - dy;
+        offset_y = -1.6 - dy;
         rotateTorso(R_RIGHT_ARM);
         //--left arm
     }
