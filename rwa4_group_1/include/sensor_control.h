@@ -16,6 +16,7 @@
 #include <ros/console.h>
 #include "utils.h"
 
+
 /**
  * @brief Enumeration of the different types of parts
  */
@@ -44,9 +45,11 @@ class SensorControl
 public:
   explicit SensorControl(ros::NodeHandle &node);
   void logical_camera_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n);
+  void belt_camera_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n);
   void quality_cntrl_sensor_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n);
   void init();
   Part findPart(std::string type);
+  Part find_belt_part(std::string type);
   void save_part_array(std::string type, std::string color, part part);
   part_code hashit_type(std::string const &partString);
   color_code hashit_color(std::string const &colorString);
@@ -100,12 +103,14 @@ private:
   ros::Subscriber quality_ctrl_sensor1_subs;
   ros::Subscriber quality_ctrl_sensor2_subs;
 
-  std::array<int, 17> logic_call_{0};
+  std::array<int, NUM_LOGICAL_CAMERAS> logic_call_{0};
 
-  std::array<geometry_msgs::TransformStamped, 17> c_w_transforms_{};
+  std::array<geometry_msgs::TransformStamped, NUM_LOGICAL_CAMERAS> c_w_transforms_{};
   std::array<geometry_msgs::TransformStamped, NUM_QUALITY_SENSORS> qualitySensorsTransforms{};
+  std::array<geometry_msgs::TransformStamped, NUM_BELT_CAMERAS> beltCamTransforms_{};
 
   std::array<std::array<std::vector<part>, 3>, 5> parts_{}; //Datastructure to store the info from each part detected by the sensors
+  std::array<std::array<std::vector<part>, 3>, 5> belt_parts_{};
 
   // std::array <std::array <std::vector < part >, 3>, 5> current_parts_ {};
 

@@ -54,8 +54,10 @@ void SensorControl::init()
       "/ariac/logical_camera_14", 1, boost::bind(&SensorControl::logical_camera_callback, this, _1, 14));
   logical_camera_15_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
       "/ariac/logical_camera_15", 1, boost::bind(&SensorControl::logical_camera_callback, this, _1, 15));
+
+  // Separate Callback for Conveyor belt Logical Camera
   logical_camera_16_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_16", 1, boost::bind(&SensorControl::logical_camera_callback, this, _1, 16));
+      "/ariac/logical_camera_16", 1, boost::bind(&SensorControl::belt_camera_callback, this, _1, 0));
 
   quality_ctrl_sensor1_subs = node_.subscribe<nist_gear::LogicalCameraImage>(
       "/ariac/quality_control_sensor_1", 1, boost::bind(&SensorControl::quality_cntrl_sensor_callback, this, _1, 1));
@@ -70,7 +72,7 @@ void SensorControl::init()
 
   geometry_msgs::TransformStamped transformStamped;
 
-  for (int i = 0; i < 17; i++)
+  for (int i = 0; i < NUM_LOGICAL_CAMERAS; i++)
   {
     try
     {
@@ -101,6 +103,23 @@ void SensorControl::init()
     }
     //Initialize attribute that stores the frame transforms to world of each camera
     qualitySensorsTransforms.at(i) = transformStamped;
+  }
+
+  for (int i = 0; i < NUM_BELT_CAMERAS; i++)
+  {
+    try
+    {
+      transformStamped = tfBuffer.lookupTransform("world", "logical_camera_" + std::to_string(i) + "_frame",
+                                                  ros::Time(0), timeout);
+    }
+    catch (tf2::TransformException &ex)
+    {
+      ROS_WARN("%s", ex.what());
+      ros::Duration(1.0).sleep();
+      continue;
+    }
+    //Initialize attribute that stores the frame transforms to world of each camera
+    beltCamTransforms_.at(i) = transformStamped;
   }
 }
 
@@ -133,6 +152,7 @@ color_code SensorControl::hashit_color(std::string const &colorString)
   if (colorString == "green")
     return kGreen;
 }
+
 /**
  * @brief Logical Camera Callback
  * 
@@ -152,7 +172,7 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
   part Part;
 
   int sum = 0;
-  for (int i = 0; i < 17; i++)
+  for (int i = 0; i < NUM_LOGICAL_CAMERAS; i++)
   {
     sum += logic_call_[i];
   }
@@ -241,10 +261,80 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
     logic_call_[sensor_n] = 1;
   }
 
-  if (logic_call_[sensor_n] == 1 && sum == 17)
+  if (logic_call_[sensor_n] == 1 && sum == NUM_LOGICAL_CAMERAS)
   {
     read_all_sensors_ = true;
   }
+}
+
+/**
+ * @brief Logical Camera Callback specifically over the conveyor belt 
+ * 
+ * @param msg Subscribed Message 
+ * @param sensor_n Sensor ID
+ */
+void SensorControl::belt_camera_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n) {
+	
+	int pos_t;
+	int pos_c;
+	int ktype;
+	int kcolor;
+	int num_belt_parts;
+	std::string type;
+	std::string color;
+	part cur_part;
+
+	for (int i = 0; i < msg->models.size(); i++) {
+		pos_t = msg->models.at(i).type.find("_");
+		pos_c = msg->models.at(i).type.rfind("_");
+
+		type = msg->models.at(i).type.substr(0, pos_t);
+		color = msg->models.at(i).type.substr(pos_c + 1);
+
+		ktype = hashit_type(type);
+		kcolor = hashit_color(color);
+
+		cur_part.picked_status = false;
+		cur_part.type = msg->models.at(i).type;
+		cur_part.pose = frame_to_world(i, msg->models.at(i).pose, beltCamTransforms_.at(sensor_n));
+		cur_part.save_pose = cur_part.pose;
+		cur_part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
+		cur_part.time_stamp = ros::Time::now();
+
+
+		num_belt_parts = belt_parts_.at(ktype).at(kcolor).size();
+		cur_part.id = cur_part.type + std::to_string(num_belt_parts);
+
+		bool dupl = false;
+
+		for(int j =0; j< num_belt_parts; ++j) {
+			
+			part prev_part = belt_parts_[ktype][kcolor][j];
+			double detected_y_pos = prev_part.pose.position.y;
+			double detected_time = prev_part.time_stamp.toSec();
+
+			double cur_y_pos = cur_part.pose.position.y;
+			double cur_time = cur_part.time_stamp.toSec();
+
+
+			double expected_pos = detected_y_pos - BELT_SPEED*(cur_time - detected_time);
+
+			if(abs(cur_y_pos - expected_pos) <= 0.05) {
+				dupl = true;
+				break;
+			}
+
+		}
+
+
+		if(! dupl) {
+			belt_parts_.at(ktype).at(kcolor).emplace_back(cur_part);
+
+			print_available_parts();
+		}
+
+	}
+
 }
 
 /**
@@ -302,6 +392,46 @@ Part SensorControl::findPart(std::string type)
       }
     }
   }
+}
+
+/**
+ * @brief Locates Part on Belt 
+ * 
+ * @param type Search Part type 
+ * @return Part 
+ */
+Part SensorControl::find_belt_part(std::string type) {
+	int pos_t = type.find("_");
+	int pos_c = type.rfind("_");
+	std::string parttype = type.substr(0, pos_t);
+	std::string partcolor = type.substr(pos_c + 1);
+	part no_part;
+
+	int ktype = hashit_type(parttype);
+	int kcolor = hashit_color(partcolor);
+	if (belt_parts_.at(ktype).at(kcolor).empty()) {
+		return no_part;
+	} else {
+		std::cout<<belt_parts_.at(ktype).at(kcolor).size()<<std::endl;
+		for (int i = 0; i < belt_parts_.at(ktype).at(kcolor).size(); i++) {
+
+			double detected_y_pos = belt_parts_[ktype][kcolor][i].pose.position.y;
+			double detected_time = belt_parts_[ktype][kcolor][i].time_stamp.toSec();
+
+			double cur_time = ros::Time::now().toSec();
+
+
+			double expected_pos = detected_y_pos - BELT_SPEED*(cur_time - detected_time);
+
+			if (belt_parts_.at(ktype).at(kcolor).at(i).picked_status == false && expected_pos > - 3.5) {
+				belt_parts_.at(ktype).at(kcolor).at(i).picked_status = true;
+				return belt_parts_.at(ktype).at(kcolor).at(i);
+			}
+		}
+
+		return no_part;
+	}
+
 }
 
 /**
@@ -372,4 +502,28 @@ void SensorControl::quality_cntrl_sensor_callback(const nist_gear::LogicalCamera
       }
     }
   }
+}
+
+
+void SensorControl::print_available_parts() {
+
+	std::cout<< "Static Parts (not on conveyor belt):"<<std::endl;
+	for(int i= 0; i<5; ++i) {
+		for(int j=0; j<3; ++j) {
+			for(part p: parts_[i][j]) {
+				std::cout<<p<<std::endl;
+			}
+		}
+	}
+	std::cout<<std::endl;
+	std::cout<< "Parts on Conveyor Belt:"<<std::endl;
+	for(int i= 0; i<5; ++i) {
+		for(int j=0; j<3; ++j) {
+			for(part p: belt_parts_[i][j]) {
+				std::cout<<p<<std::endl;
+			}
+		}
+	}
+
+
 }

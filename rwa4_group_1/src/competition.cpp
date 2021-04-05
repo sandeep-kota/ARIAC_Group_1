@@ -125,9 +125,8 @@ bool Competition::processOrder()
   {
     // ROS_INFO_STREAM("Order not empty");
     current_order = order_list_.front();
-    // ROS_INFO_STREAM("Got current order");
+    ROS_INFO_STREAM("Current Order:\n"<<current_order);
     order_list_.erase(order_list_.begin());
-    // ROS_INFO_STREAM("Erase from order list");
 
     shipment_list_.clear();
     product_list_.clear();

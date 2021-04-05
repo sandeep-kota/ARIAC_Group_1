@@ -1275,6 +1275,7 @@ void GantryControl::goToPresetLocation(PresetLocation location)
     joint_group_positions_.at(14) = location.right_arm.at(5);
 
     full_robot_group_.setJointValueTarget(joint_group_positions_);
+    full_robot_group_.setGoalTolerance(0.0001);
 
     moveit::planning_interface::MoveGroupInterface::Plan my_plan;
     bool success = (full_robot_group_.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);

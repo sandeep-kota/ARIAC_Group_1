@@ -15,6 +15,9 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <queue>
 
+#define NUM_LOGICAL_CAMERAS 16
+#define NUM_BELT_CAMERAS 1
+
 typedef struct Shipment shipment; // forward declarations
 typedef struct Order order;
 typedef struct Product product;
