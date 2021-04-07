@@ -26,7 +26,8 @@
           $(arg gui_args)
           $(arg load_moveit_args)
           $(arg fill_demo_shipment_args)
-          -f $(find rwa3_group_1)/config/rwa3-final.yaml
+          --visualize-sensor-views
+          -f $(find rwa4_group_1)/config/rwa4_sample.yaml
           $(find rwa4_group_1)/config/rwa4_sensor_group_1.yaml
           " required="true" output="screen" />
 

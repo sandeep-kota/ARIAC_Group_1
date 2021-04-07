@@ -85,7 +85,7 @@ void GantryControl::init()
     aisle2_.right_arm = aisle_right_arm;
 
     // joint positions to go to agv2  // joint positions to go to agv2
-     agv2_.location = "agv2";
+    agv2_.location = "agv2";
     agv2_.gantry = {0, 5.5, 0};
     agv2_.left_arm = start_.left_arm;
     agv2_.right_arm = start_.right_arm;
@@ -621,13 +621,13 @@ void GantryControl::reachPartShelfLeftArm(part part)
 
     if (dy > 0)
     {
-        offset_y = 1.6 - dy;
+        offset_y = 1.55 - dy;
 
         rotateTorso(L_LEFT_ARM);
     }
     else
     {
-        offset_y = -1.6 - dy;
+        offset_y = -1.55 - dy;
         rotateTorso(R_LEFT_ARM);
     }
     FKLeftArm({0, -2.13, 1.49, -2.48, -1.57, 0});
@@ -668,14 +668,14 @@ void GantryControl::reachPartShelfRightArm(part part)
 
     if (dy > 0)
     {
-        offset_y = 1.6 - dy;
+        offset_y = 1.55 - dy;
 
         rotateTorso(L_RIGHT_ARM);
         //--left arm
     }
     else
     {
-        offset_y = -1.6 - dy;
+        offset_y = -1.55 - dy;
         rotateTorso(R_RIGHT_ARM);
         //--left arm
     }
@@ -856,6 +856,7 @@ bool GantryControl::pickPartLeftArm(part part)
             //--Move arm to previous position
             left_arm_group_.setPoseTarget(currentPose);
             left_arm_group_.move();
+            
         }
 
         else
@@ -885,6 +886,7 @@ bool GantryControl::pickPartLeftArm(part part)
     {
         ROS_INFO_STREAM("[Gripper] = not enabled");
     }
+
     return false;
 }
 
@@ -1487,6 +1489,176 @@ void GantryControl::flipProductsAGV()
         products_to_flip_.clear();
     }
 }
+
+bool GantryControl::getPartConveyorLeftArm(product product)
+{
+    double current_y;
+    double original_z;
+    double original_y;
+    bool picked {false};
+    double offset_y;
+    double offset_x;
+    geometry_msgs::Pose currentArmPose;
+
+    original_z = product.p.pose.position.z;
+    original_y = product.p.pose.position.y - 0.2*(ros::Time::now().toSec() - product.p.time_stamp.toSec());            
+    
+    gantry_location_ = "conveyor";   
+    rotateTorso(-PI/2);
+    int sum {0};
+    while(sum < 4)
+    {
+        currentArmPose = left_arm_group_.getCurrentPose().pose;
+        current_y = original_y - 0.2*(ros::Time::now().toSec() - product.p.time_stamp.toSec());
+        offset_y = current_y - currentArmPose.position.y;
+        offset_x = product.p.pose.position.x - currentArmPose.position.x;
+
+        joint_group_positions_.at(0) += offset_x;
+        joint_group_positions_.at(1) -= offset_y - 0.25;
+        gantry_group_.setJointValueTarget({joint_group_positions_.at(0), joint_group_positions_.at(1), joint_group_positions_.at(2)});
+        gantry_group_.move();
+
+        if (sum == 0)
+        {
+            currentArmPose = left_arm_group_.getCurrentPose().pose;
+            product.p.pose.position.z = product.p.pose.position.z + model_height.at(product.p.type) + GRIPPER_HEIGHT - EPSILON + 0.02;
+            product.p.pose.position.y = currentArmPose.position.y;
+            product.p.pose.orientation.x = currentArmPose.orientation.x;
+            product.p.pose.orientation.y = currentArmPose.orientation.y;
+            product.p.pose.orientation.z = currentArmPose.orientation.z;
+            product.p.pose.orientation.w = currentArmPose.orientation.w;
+            left_arm_group_.setPoseTarget(product.p.pose);
+            left_arm_group_.move();
+        }
+
+        sum += 1;
+    }
+
+    currentArmPose = left_arm_group_.getCurrentPose().pose;
+    current_y = original_y - 0.2*(ros::Time::now().toSec() - product.p.time_stamp.toSec());
+    offset_y = current_y - currentArmPose.position.y;
+    offset_x = product.p.pose.position.x - currentArmPose.position.x;
+
+    joint_group_positions_.at(0) += offset_x;
+    joint_group_positions_.at(1) -= offset_y - 0.35;
+
+    gantry_group_.setJointValueTarget({joint_group_positions_.at(0), joint_group_positions_.at(1), joint_group_positions_.at(2)});
+    gantry_group_.move();
+                                
+    product.p.pose.position.y = current_y - 0.35;
+    product.p.pose.position.z = original_z + 0.01; 
+    activateGripper("left_arm");
+
+    product.p.pose.position.z = product.p.pose.position.z + model_height.at(product.p.type) + GRIPPER_HEIGHT - EPSILON;
+    product.p.pose.orientation.x = currentArmPose.orientation.x;
+    product.p.pose.orientation.y = currentArmPose.orientation.y;
+    product.p.pose.orientation.z = currentArmPose.orientation.z;
+    product.p.pose.orientation.w = currentArmPose.orientation.w;
+    left_arm_group_.setPoseTarget(product.p.pose);
+    left_arm_group_.move();
+
+    joint_group_positions_.at(1) += 0.8;
+
+    full_robot_group_.setJointValueTarget({joint_group_positions_.at(0), joint_group_positions_.at(1), joint_group_positions_.at(2),
+            -0.19, -0.74, 1.49, -0.75, 1.39, 0, joint_group_positions_.at(9), joint_group_positions_.at(10), joint_group_positions_.at(11),
+            joint_group_positions_.at(12), joint_group_positions_.at(13), joint_group_positions_.at(14)});
+    full_robot_group_.move();
+    ros::Duration(0.5).sleep();
+    goToPresetLocation(start_);
+    gantry_location_ = "start";               
+    
+    picked = true;
+
+    product_left_arm_ = product;
+
+    return picked;
+}
+
+bool GantryControl::getPartConveyorRightArm(product product)
+{
+    double current_y;
+    double original_z;
+    double original_y;
+    bool picked {false};
+    double offset_y;
+    double offset_x;
+    geometry_msgs::Pose currentArmPose;
+
+    original_z = product.p.pose.position.z;
+    original_y = product.p.pose.position.y - 0.2*(ros::Time::now().toSec() - product.p.time_stamp.toSec());            
+    
+    gantry_location_ = "conveyor";   
+    rotateTorso(PI/2);
+    int sum {0};
+    while(sum < 4)
+    {
+        currentArmPose = right_arm_group_.getCurrentPose().pose;
+        current_y = original_y - 0.2*(ros::Time::now().toSec() - product.p.time_stamp.toSec());
+        offset_y = current_y - currentArmPose.position.y;
+        offset_x = product.p.pose.position.x - currentArmPose.position.x;
+
+        joint_group_positions_.at(0) += offset_x;
+        joint_group_positions_.at(1) -= offset_y - 0.25;
+        gantry_group_.setJointValueTarget({joint_group_positions_.at(0), joint_group_positions_.at(1), joint_group_positions_.at(2)});
+        gantry_group_.move();
+
+        if (sum == 0)
+        {
+            currentArmPose = right_arm_group_.getCurrentPose().pose;
+            product.p.pose.position.z = product.p.pose.position.z + model_height.at(product.p.type) + GRIPPER_HEIGHT - EPSILON + 0.02;
+            product.p.pose.position.y = currentArmPose.position.y;
+            product.p.pose.orientation.x = currentArmPose.orientation.x;
+            product.p.pose.orientation.y = currentArmPose.orientation.y;
+            product.p.pose.orientation.z = currentArmPose.orientation.z;
+            product.p.pose.orientation.w = currentArmPose.orientation.w;
+            right_arm_group_.setPoseTarget(product.p.pose);
+            right_arm_group_.move();
+        }
+
+        sum += 1;
+    }
+
+    currentArmPose = right_arm_group_.getCurrentPose().pose;
+    current_y = original_y - 0.2*(ros::Time::now().toSec() - product.p.time_stamp.toSec());
+    offset_y = current_y - currentArmPose.position.y;
+    offset_x = product.p.pose.position.x - currentArmPose.position.x;
+
+    joint_group_positions_.at(0) += offset_x;
+    joint_group_positions_.at(1) -= offset_y - 0.35;
+
+    gantry_group_.setJointValueTarget({joint_group_positions_.at(0), joint_group_positions_.at(1), joint_group_positions_.at(2)});
+    gantry_group_.move();
+                                
+    product.p.pose.position.y = current_y - 0.35;
+    product.p.pose.position.z = original_z + 0.01; 
+    activateGripper("right_arm");
+
+    product.p.pose.position.z = product.p.pose.position.z + model_height.at(product.p.type) + GRIPPER_HEIGHT - EPSILON;
+    product.p.pose.orientation.x = currentArmPose.orientation.x;
+    product.p.pose.orientation.y = currentArmPose.orientation.y;
+    product.p.pose.orientation.z = currentArmPose.orientation.z;
+    product.p.pose.orientation.w = currentArmPose.orientation.w;
+    right_arm_group_.setPoseTarget(product.p.pose);
+    right_arm_group_.move();
+
+    joint_group_positions_.at(1) += 0.8;
+
+    full_robot_group_.setJointValueTarget({joint_group_positions_.at(0), joint_group_positions_.at(1), joint_group_positions_.at(2),
+            -0.19, -0.74, 1.49, -0.75, 1.39, 0, joint_group_positions_.at(9), joint_group_positions_.at(10), joint_group_positions_.at(11),
+            joint_group_positions_.at(12), joint_group_positions_.at(13), joint_group_positions_.at(14)});
+    full_robot_group_.move();
+    ros::Duration(0.5).sleep();
+    goToPresetLocation(start_);
+
+    gantry_location_ = "start";              
+    
+    picked = true;
+
+    product_right_arm_ = product;
+
+    return picked;
+}
+
 /**
  * @brief Activate the gripper
  * 

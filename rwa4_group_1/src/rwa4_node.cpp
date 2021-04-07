@@ -80,11 +80,19 @@ int main(int argc, char **argv)
     SensorControl sensors(node);
     sensors.init(); // initialize the sensor callbacks of the environment
     ros::param::set("/activate_quality", false);
+    ros::param::set("/ariac/new_part_conveyor", false);
 
     gantry.goToPresetLocation(gantry.start_); // start the trial from start position
 
     AGVControl agvControl(node);
 
+    bool get_product_from_conveyor {false};
+
+    std::vector<Part> partsConveyor;
+    double startig_time = ros::Time::now().toSec();
+    double time = 0.0;
+    bool pickedConveyor;
+    
     while (comp.processOrder() && sensors.read_all_sensors_) //--1-Read order until no more found
     {
         list_of_shipments = comp.get_shipment_list(); // get list of shipments of current order in priority order
@@ -103,7 +111,9 @@ int main(int argc, char **argv)
 
             if (current_product.p.type.empty()) // no parts of desired product found
             {
-                ROS_WARN_STREAM("NO PART FOUND");
+                get_product_from_conveyor = true;
+            } else {
+                get_product_from_conveyor = false;
             }
 
             if (gantry.checkFreeGripper().compare("none") == 0) // if none of the grippers are free place both products in trays
@@ -174,7 +184,52 @@ int main(int argc, char **argv)
             }
 
             if (p < list_of_products.size())        // get product not called in last iteration
-                gantry.getProduct(current_product); // get product after placing in agv
+            {
+                if (get_product_from_conveyor)
+                {
+                    time = 0.0;
+                    ROS_WARN_STREAM("GET PROD FROM CONVEYOR");
+                    while(time <= 120)
+                    {
+                        partsConveyor = sensors.getPartsConveyor();
+                        if (partsConveyor.empty() != 1){
+                            double original_y;
+                            ROS_WARN_STREAM("PART CONVEYOR DETECTED");
+                            ROS_WARN_STREAM("PROD TYPE: " << current_product.type);
+                            for (int prt = 0; prt < partsConveyor.size(); prt++)
+                            {
+                                original_y = partsConveyor.at(prt).pose.position.y - 0.2*(ros::Time::now().toSec() - partsConveyor.at(prt).time_stamp.toSec());
+                                if (partsConveyor.at(prt).type.compare(current_product.type) == 0 && original_y >= -2.0)
+                                {
+                                    current_product.p = partsConveyor.at(prt);
+
+                                    if (gantry.checkFreeGripper().compare("left") == 0 || gantry.checkFreeGripper().compare("any") == 0)
+                                    {
+                                        ROS_WARN_STREAM("LEFT FREE");
+                                        pickedConveyor = gantry.getPartConveyorLeftArm(current_product);
+                                    } else if (gantry.checkFreeGripper().compare("right") == 0){
+                                        pickedConveyor = gantry.getPartConveyorRightArm(current_product);
+                                    }
+                                    
+                                    sensors.erasePartConveyor(prt);
+                                    break;
+                                } else if (original_y < -2.0)
+                                {
+                                    sensors.erasePartConveyor(prt);
+                                }
+
+                            }
+                        if (pickedConveyor == 1)
+                        {
+                            break;
+                        }
+                        time = ros::Time::now().toSec() - startig_time;
+                        }
+                    }
+                } else {
+                    gantry.getProduct(current_product); // get product after placing in agv
+                }
+            }        
         }
     }
 

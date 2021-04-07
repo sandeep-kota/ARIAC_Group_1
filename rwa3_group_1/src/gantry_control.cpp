@@ -373,7 +373,6 @@ void GantryControl::getProduct(product product)
     }
     else if (location == "shelf_11")
     {
-        ROS_WARN_STREAM("GANTRY LOCATION: " << gantry_location);
         if (gantry_location_ == "shelf_1" || gantry_location_ == "shelf_2" || gantry_location_ == "bins" || gantry_location_ == "start")
         {
             FKGantry(start_.gantry);

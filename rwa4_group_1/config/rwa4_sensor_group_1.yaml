@@ -69,8 +69,8 @@ sensors:
   breakbeam_0:
     type: break_beam
     pose:
-      xyz: [-0.004795, 4.492549, 0.879306]
-      rpy: [0, 0, -1.557900]
+      xyz: [-0.020862, 4.956811, 0.879306]
+      rpy: [0, 0, -1.57]
 
   logical_camera_11: # over shelf 8 inner
     type: logical_camera

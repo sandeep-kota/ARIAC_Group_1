@@ -64,6 +64,9 @@ void SensorControl::init()
   quality_ctrl_sensor2_subs = node_.subscribe<nist_gear::LogicalCameraImage>(
       "/ariac/quality_control_sensor_2", 1, boost::bind(&SensorControl::quality_cntrl_sensor_callback, this, _1, 2));
 
+  // Subscribe to the '/ariac/breakbeam' Topic.
+  break_beam_subscriber_ = node_.subscribe("/ariac/breakbeam_0_change", 1, &SensorControl::break_beam_callback, this);
+
   //Get transforms world to logical camera sensors
   tf2_ros::Buffer tfBuffer;
   tf2_ros::TransformListener tfListener(tfBuffer);
@@ -153,6 +156,7 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
   std::string color{};
   part Part;
   bool check_flipped {false};
+  bool new_part_conveyor {false};
 
   int sum = 0;
   for (int i = 0; i < 17; i++)
@@ -287,6 +291,44 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
       logic_call_agv_[1] = 0;
     }
   }
+
+  //Check for new parts in conveyor
+
+  ros::param::get("/ariac/new_part_conveyor", new_part_conveyor);
+
+  if (new_part_conveyor && sensor_n == 2)
+  {
+    part last_part_conveyor;
+    double current_y;
+
+    for (int i = 0; i < msg->models.size(); i++)
+    {
+      pos_t = msg->models.at(i).type.find("_");
+      type = msg->models.at(i).type.substr(0, pos_t);
+
+      Part.picked_status = false;
+      Part.type = msg->models.at(i).type;
+      Part.pose = frame_to_world(i, msg->models.at(i).pose, c_w_transforms_.at(sensor_n));
+      Part.save_pose = Part.pose;
+      Part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
+      Part.time_stamp = ros::Time::now();
+    
+    if (partsConveyor.empty())
+    {
+      partsConveyor.push_back(Part);
+    } else {
+      last_part_conveyor = partsConveyor.back();
+      current_y = last_part_conveyor.pose.position.y - 0.2*(ros::Time::now().toSec() - last_part_conveyor.time_stamp.toSec());
+
+      if ((current_y + 0.1) < Part.pose.position.y)
+      {
+        partsConveyor.push_back(Part);
+      }
+    }
+    
+    }
+    ros::param::set("/ariac/new_part_conveyor", false);
+  }
 }
 
 /**
@@ -345,6 +387,17 @@ Part SensorControl::findPart(std::string type)
     }
   }
 }
+
+void SensorControl::break_beam_callback(const nist_gear::Proximity::ConstPtr &msg)
+  {
+    if (msg->object_detected) // If there is an object in proximity.
+    {
+        ROS_WARN("Break beam triggered.");
+    } else {
+        ros::param::set("/ariac/new_part_conveyor", true);
+    }
+    
+  }
 
 /**
  * @brief Quality Control Sensor Callback
@@ -414,3 +467,4 @@ void SensorControl::quality_cntrl_sensor_callback(const nist_gear::LogicalCamera
     }
   }
 }
+

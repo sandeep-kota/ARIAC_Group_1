@@ -72,6 +72,8 @@ public:
   void getProduct(product product);
   void getProductsToFlip(std::vector <Part> partsToFlip);
   void flipProductsAGV();
+  bool getPartConveyorLeftArm(product product);
+  bool getPartConveyorRightArm(product product);
   std::string checkFreeGripper();
   std::string getGantryLocation()
   {

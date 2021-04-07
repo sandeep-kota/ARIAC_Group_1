@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 #include <nist_gear/LogicalCameraImage.h>
+#include <nist_gear/Proximity.h>
 #include <geometry_msgs/TransformStamped.h>
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/PoseStamped.h>
@@ -45,6 +46,7 @@ public:
   explicit SensorControl(ros::NodeHandle &node);
   void logical_camera_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n);
   void quality_cntrl_sensor_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n);
+  void break_beam_callback(const nist_gear::Proximity::ConstPtr &msg);
   void init();
   Part findPart(std::string type);
   void save_part_array(std::string type, std::string color, part part);
@@ -87,6 +89,15 @@ public:
       partsToFlip.clear();
     }
   }
+  
+  std::vector<Part> getPartsConveyor()
+  {
+    return partsConveyor;
+  }
+
+  void erasePartConveyor(int p){
+    partsConveyor.erase(partsConveyor.begin() + p);
+  }
 
 private:
   ros::NodeHandle node_;
@@ -108,6 +119,7 @@ private:
   ros::Subscriber logical_camera_14_subcriber_;
   ros::Subscriber logical_camera_15_subcriber_;
   ros::Subscriber logical_camera_16_subcriber_;
+  ros::Subscriber break_beam_subscriber_;
 
   ros::Subscriber quality_ctrl_sensor1_subs;
   ros::Subscriber quality_ctrl_sensor2_subs;
@@ -124,6 +136,7 @@ private:
 
   std::vector<Product> faultyProducts;
   std::vector<Part> partsToFlip;
+  std::vector<Part> partsConveyor;
   bool faultyPartDetected = false;
 };
 
