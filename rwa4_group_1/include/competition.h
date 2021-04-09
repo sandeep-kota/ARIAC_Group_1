@@ -7,10 +7,12 @@
 #include <std_msgs/String.h>
 #include <rosgraph_msgs/Clock.h>
 #include <nist_gear/Order.h>
-#include <unordered_map>
+#include <unordered_map> 
+#include <unordered_set> 
 #include <queue>
 
 #include "utils.h"
+#include "gantry_control.h"
 
 /**
  * @brief Competition class
@@ -82,14 +84,40 @@ public:
      * @return std::string 
      */
     std::string getCompetitionState();
-    std::vector<Product> get_product_list()
-    {
-        return product_list_;
-    }
+    std::vector<Product> get_product_list();
+    
     std::vector<Shipment> get_shipment_list()
     {
+        shipment_list_ = orderStack.top();
+        orderStack.pop();
         return shipment_list_;
     }
+
+    int getTotalReceivedOrdersCount() const {
+        return receivedOrdersCount;
+    }
+
+    int updateTotalOrderCount() {
+        receivedOrdersCount++;
+    }
+
+    void updateAGVProductMap(std::string agvid, Product prod) {
+        agvToProductsMap.at(agvid).emplace_back(prod);
+    }
+
+    bool areOrdersLeft() {
+        return !orderStack.empty();
+    }
+
+    bool newOrderAlert() {
+        return newOrderAlertFlag;
+    }
+
+    bool setNewOrderAlert(bool flag) {
+        return newOrderAlertFlag = flag;
+    }
+
+    void orderTransition(std::vector<Shipment> prevShipments, GantryControl& gantry);
 
 private:
     ros::NodeHandle node_;                          /*!< node h_type: "ordeandle for this class */
@@ -105,6 +133,15 @@ private:
     ros::Subscriber competition_state_subscriber_; /*!< subscriber to the topic /ariac/competition_state */
     ros::Subscriber competition_clock_subscriber_; /*!< subscriber to the topic /clock */
     ros::Subscriber orders_subscriber_;            /*!< subscriber to the topic /ariac/orders */
+
+    std::unordered_map<std::string, std::vector<Product>> agvToProductsMap {{AGV1_ID, {}}, {AGV2_ID, {}}};
+    std::stack<std::vector<Shipment>> orderStack;
+    std::unordered_set<std::string> orderSet;
+
+    bool newOrderAlertFlag = false;
+
+    int receivedOrdersCount;
+
 };
 
 #endif
