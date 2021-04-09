@@ -100,6 +100,11 @@ public:
   void set_product_right_arm_(const product &product)
   {
     product_right_arm_ = product;
+  } 
+
+  void setGantryLocation(std::string location)
+  {
+    gantry_location_ = location;
   }
 
   void activateGripper(std::string gripper_id);

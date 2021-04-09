@@ -60,6 +60,7 @@ public:
 
   std::vector<Product> getFaultyProducts()
   {
+    
     return faultyProducts;
   }
 

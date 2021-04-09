@@ -1012,9 +1012,9 @@ bool GantryControl::throwLastPartLeft(part part)
 
     if (currentArmPose.position.y > 0)
     {
-        joint_group_positions_.at(1) -= offset_y - 0.2;
+        joint_group_positions_.at(1) -= offset_y - 0.1;
     } else {
-        joint_group_positions_.at(1) -= offset_y + 0.2;
+        joint_group_positions_.at(1) -= offset_y + 0.1;
     }
 
     joint_group_positions_.at(0) += offset_x;
@@ -1099,9 +1099,9 @@ bool GantryControl::throwLastPartRight(part part)
 
     if (currentArmPose.position.y > 0)
     {
-        joint_group_positions_.at(1) -= offset_y - 0.2;
+        joint_group_positions_.at(1) -= offset_y - 0.1;
     } else {
-        joint_group_positions_.at(1) -= offset_y + 0.2;
+        joint_group_positions_.at(1) -= offset_y + 0.1;
     }
 
     joint_group_positions_.at(0) += offset_x;
@@ -1384,15 +1384,15 @@ void GantryControl::getProductsToFlip(std::vector <Part> partsToFlip)
         double roll_part, pitch_part, yaw_part;
         m_part.getRPY(roll_part, pitch_part, yaw_part);
 
-            if (-0.1 <= roll_part && 0.1 >= roll_part)
+            if (-1 <= roll_part && 1 >= roll_part)
             {
-                if ((x_prod_l - 0.1) <= x_part && (x_prod_l + 0.1) >= x_part && (y_prod_l - 0.1) <= y_part && (y_prod_l + 0.1) >= y_part && (((PI -0.1) <= roll_left
-                && (PI + 0.1) >= roll_left) || ((-PI -0.1) <= roll_left && (-PI + 0.1) >= roll_left)))
+                if ((x_prod_l - 1) <= x_part && (x_prod_l + 1) >= x_part && (y_prod_l - 1) <= y_part && (y_prod_l + 1) >= y_part && (((PI - 1) <= roll_left
+                && (PI + 1) >= roll_left) || ((-PI - 1) <= roll_left && (-PI + 1) >= roll_left)))
                 {
                     product_left_arm_.p = partsToFlip.at(i);
                     products_to_flip_.push_back(product_left_arm_);
-                } else if ((x_prod_r - 0.1) <= x_part && (x_prod_r + 0.1) >= x_part && (y_prod_r - 0.1) <= y_part && (y_prod_r + 0.1) >= y_part && (((PI -0.1) <= roll_right
-                && (PI + 0.1) >= roll_right) || ((-PI -0.1) <= roll_right && (-PI + 0.1) >= roll_right)) && is_no_prod_right != 1)
+                } else if ((x_prod_r - 1) <= x_part && (x_prod_r + 1) >= x_part && (y_prod_r - 1) <= y_part && (y_prod_r + 1) >= y_part && (((PI - 1) <= roll_right
+                && (PI + 1) >= roll_right) || ((-PI - 1) <= roll_right && (-PI + 1) >= roll_right)) && is_no_prod_right != 1)
                 {
                     product_right_arm_.p = partsToFlip.at(i);
                     products_to_flip_.push_back(product_right_arm_);
@@ -1501,7 +1501,7 @@ bool GantryControl::getPartConveyorLeftArm(product product)
     geometry_msgs::Pose currentArmPose;
 
     original_z = product.p.pose.position.z;
-    original_y = product.p.pose.position.y - 0.2*(ros::Time::now().toSec() - product.p.time_stamp.toSec());            
+    original_y = product.p.pose.position.y - 0.2*(ros::Time::now().toSec() - product.p.time_stamp.toSec());
     
     gantry_location_ = "conveyor";   
     rotateTorso(-PI/2);
@@ -1509,12 +1509,17 @@ bool GantryControl::getPartConveyorLeftArm(product product)
     while(sum < 4)
     {
         currentArmPose = left_arm_group_.getCurrentPose().pose;
-        current_y = original_y - 0.2*(ros::Time::now().toSec() - product.p.time_stamp.toSec());
+
+
+        current_y = product.p.pose.position.y - 0.2*(ros::Time::now().toSec() - product.p.time_stamp.toSec());
+        ROS_WARN_STREAM("SUM: " <<  sum);
+        ROS_WARN_STREAM("CURRENT Y ARM POSE: " <<  currentArmPose.position.y);
+        ROS_WARN_STREAM("CURRENT Y PART POSE: " <<  current_y);
         offset_y = current_y - currentArmPose.position.y;
         offset_x = product.p.pose.position.x - currentArmPose.position.x;
 
         joint_group_positions_.at(0) += offset_x;
-        joint_group_positions_.at(1) -= offset_y - 0.25;
+        joint_group_positions_.at(1) -= offset_y + 0.07;
         gantry_group_.setJointValueTarget({joint_group_positions_.at(0), joint_group_positions_.at(1), joint_group_positions_.at(2)});
         gantry_group_.move();
 
@@ -1535,17 +1540,17 @@ bool GantryControl::getPartConveyorLeftArm(product product)
     }
 
     currentArmPose = left_arm_group_.getCurrentPose().pose;
-    current_y = original_y - 0.2*(ros::Time::now().toSec() - product.p.time_stamp.toSec());
+    current_y = product.p.pose.position.y - 0.2*(ros::Time::now().toSec() - product.p.time_stamp.toSec());
     offset_y = current_y - currentArmPose.position.y;
     offset_x = product.p.pose.position.x - currentArmPose.position.x;
 
     joint_group_positions_.at(0) += offset_x;
-    joint_group_positions_.at(1) -= offset_y - 0.35;
+    joint_group_positions_.at(1) -= offset_y + 0.07;
 
     gantry_group_.setJointValueTarget({joint_group_positions_.at(0), joint_group_positions_.at(1), joint_group_positions_.at(2)});
     gantry_group_.move();
                                 
-    product.p.pose.position.y = current_y - 0.35;
+    product.p.pose.position.y = current_y + 0.07;
     product.p.pose.position.z = original_z + 0.01; 
     activateGripper("left_arm");
 

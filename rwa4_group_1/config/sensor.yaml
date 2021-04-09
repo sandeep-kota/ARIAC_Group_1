@@ -1,0 +1,270 @@
+sensors:
+  # depth_camera_0:
+  #   type: depth_camera
+  #   pose:
+  #     xyz: [3.082385, 1.750927, 1.82]
+  #     rpy: [0, 'pi/2', 0]
+
+
+  # laser_profiler_0:
+  #   type: laser_profiler
+  #   pose:
+  #     xyz: [0., 1.486, 1.526]
+  #     rpy: ['pi/2', 'pi/2', 0]
+
+  # range_finder_0:
+  #   type: proximity_sensor
+  #   pose:
+  #     xyz: [0, 2.840000, 0.970000]
+  #     rpy: [1.570796, 0.524365, 1.570796]
+
+  breakbeam_0:
+    type: break_beam
+    pose:
+      xyz: [-0.004336, 4.907427, 0.879702]
+      rpy: [0, 0, -1.568891]
+  breakbeam_1:
+    type: break_beam
+    pose:
+      xyz: [ -0.004994, 2.633750, 0.879702 ]
+      rpy: [ 0, 0, 1.57]
+
+
+  breakbeam_21:
+    type: break_beam
+    pose:
+      xyz: [ -1.9, 0.585950, 0.21 ]
+      rpy: [ 0, 0, 1.54 ]
+  breakbeam_22:
+    type: break_beam
+    pose:
+      xyz: [ -3.1, 0.585950, 0.21 ]
+      rpy: [ 0, 0, 1.54 ]
+  breakbeam_23:
+    type: break_beam
+    pose:
+      xyz: [ -8.488, 0.585950, 0.21 ]
+      rpy: [ 0, 0,1.54 ]
+  breakbeam_24:
+    type: break_beam
+    pose:
+      xyz: [ -11.183661,0.585950, 0.21 ]
+      rpy: [ 0, 0, 1.54 ]
+  breakbeam_25:
+    type: break_beam
+    pose:
+      xyz: [ -12.454859, 0.585950, 0.21 ]
+      rpy: [ 0, 0, 1.54 ]
+  breakbeam_26:
+    type: break_beam
+    pose:
+      xyz: [ -16.595247, 0.585950, 0.21 ]
+      rpy: [ 0, 0, 1.54 ]
+
+
+  breakbeam_11:
+    type: break_beam
+    pose:
+      xyz: [ -1.9, 3.75, 0.21 ]
+      rpy: [ 0, 0, 1.54 ]
+  breakbeam_12:
+    type: break_beam
+    pose:
+      xyz: [ -3.1, 3.75, 0.21 ]
+      rpy: [ 0, 0, 1.54 ]
+  breakbeam_13:
+    type: break_beam
+    pose:
+      xyz: [ -8.488, 3.75, 0.21 ]
+      rpy: [ 0, 0,1.54 ]
+  breakbeam_14:
+    type: break_beam
+    pose:
+      xyz: [ -11.183661,3.75, 0.21 ]
+      rpy: [ 0, 0, 1.54 ]
+  breakbeam_15:
+    type: break_beam
+    pose:
+      xyz: [ -12.454859, 3.75, 0.21 ]
+      rpy: [ 0, 0, 1.54 ]
+  breakbeam_16:
+    type: break_beam
+    pose:
+      xyz: [ -16.595247, 3.75, 0.21 ]
+      rpy: [ 0, 0, 1.54 ]
+
+
+
+
+  breakbeam_31:
+    type: break_beam
+    pose:
+      xyz: [ -1.9, -0.657948, 0.21 ]
+      rpy: [ 0, 0,-1.54 ]
+#  breakbeam_32:
+#    type: break_beam
+#    pose:
+#      xyz: [ -7.2831, -0.657948, 0.21 ]
+#      rpy: [ 0, 0,-1.54 ]
+  breakbeam_32:
+    type: break_beam
+    pose:
+      xyz: [ -3.1, -0.657948, 0.21 ]
+      rpy: [ 0, 0,-1.54 ]
+  breakbeam_33:
+    type: break_beam
+    pose:
+      xyz: [ -8.488, -0.657948, 0.21 ]
+      rpy: [ 0, 0,-1.54 ]
+  breakbeam_34:
+    type: break_beam
+    pose:
+      xyz: [ -11.183661, -0.657948, 0.21 ]
+      rpy: [ 0, 0,-1.54 ]
+  breakbeam_35:
+    type: break_beam
+    pose:
+      xyz: [ -12.454859, -0.657948, 0.21 ]
+      rpy: [ 0, 0,-1.54 ]
+  breakbeam_36:
+    type: break_beam
+    pose:
+      xyz: [ -16.595247, -0.657948, 0.21 ]
+      rpy: [ 0, 0,-1.54 ]
+
+
+
+  breakbeam_41:
+    type: break_beam
+    pose:
+      xyz: [ -1.9, -3.7039, 0.21 ]
+      rpy: [ 0, 0,-1.54 ]
+  breakbeam_42:
+    type: break_beam
+    pose:
+      xyz: [ -3.1, -3.7039, 0.21 ]
+      rpy: [ 0, 0,-1.54 ]
+  breakbeam_43:
+    type: break_beam
+    pose:
+      xyz: [ -8.488, -3.7039, 0.21 ]
+      rpy: [ 0, 0,-1.54 ]
+  breakbeam_44:
+    type: break_beam
+    pose:
+      xyz: [ -11.183661, -3.7039, 0.21 ]
+      rpy: [ 0, 0,-1.54 ]
+  breakbeam_45:
+    type: break_beam
+    pose:
+      xyz: [ -12.454859, -3.7039, 0.21 ]
+      rpy: [ 0, 0,-1.54 ]
+  breakbeam_46:
+    type: break_beam
+    pose:
+      xyz: [ -16.595247, -3.7039, 0.21 ]
+      rpy: [ 0, 0,-1.54 ]
+
+
+#old z - value - 2.49
+  logical_camera_1: # left_topshelf_1
+    type: logical_camera
+    pose:
+      xyz: [-3.25- 6*2.04, 3.020797, 2.20]
+      rpy: [0, 'pi/2', 'pi/2']
+
+  logical_camera_2: # left_topshelf_2
+    type: logical_camera
+    pose:
+      xyz: [-13.332640, 3.020797, 2.20]
+      rpy: [0, 'pi/2', 'pi/2']
+
+  logical_camera_3: 
+    type: logical_camera
+    pose:
+      xyz: [-3.25 - 6*2.04, 0, 2.20]
+      rpy: [0, 'pi/2', 'pi/2']
+
+  logical_camera_4: 
+    type: logical_camera
+    pose:
+      xyz: [-13.332640, 0, 2.20]
+      rpy: [0, 'pi/2', 'pi/2']
+
+  logical_camera_5: # left_bottomshelf_1
+    type: logical_camera
+    pose:
+      xyz: [-3.25-6*2.04, -3.020797, 2.20]
+      rpy: [0, 'pi/2', 'pi/2']
+
+  logical_camera_6: # left_bottomshelf_2
+    type: logical_camera
+    pose:
+      xyz: [-13.332640, -3.020797, 2.20]
+      rpy: [0, 'pi/2', 'pi/2']
+
+  logical_camera_7: # right_topshelf_1
+    type: logical_camera
+    pose:
+      xyz: [5, 3.737781, 2.20]
+      rpy: [0, 'pi/2', 'pi/2']
+
+  logical_camera_8: # right_topshelf_2
+    type: logical_camera
+    pose:
+      xyz: [2.946275, -3.737781, 2.20]
+      rpy: [0, 'pi/2', 'pi/2']
+
+  logical_camera_9: # right_topshelf_1
+    type: logical_camera
+    pose:
+      xyz: [5, -3.737781, 2.20]
+      rpy: [0, 'pi/2', 'pi/2']
+
+  logical_camera_10: # right_topshelf_2
+    type: logical_camera
+    pose:
+      xyz: [2.946275, 3.737781, 2.20]
+      rpy: [0, 'pi/2', 'pi/2']
+
+  logical_camera_11:
+    type: logical_camera
+    pose:
+      xyz: [2.954065, 1.750927, 1.82]
+      rpy: [0, 'pi/2', 'pi/2']
+
+  logical_camera_12:
+    type: logical_camera
+    pose:
+      xyz: [5, 1.750927, 1.82]
+      rpy: [0, 'pi/2', 'pi/2']
+
+  logical_camera_13:
+    type: logical_camera
+    pose:
+      xyz: [2.954065, -1.750927, 1.82]
+      rpy: [0, 'pi/2', 'pi/2']
+
+  logical_camera_14:
+    type: logical_camera
+    pose:
+      xyz: [5, -1.750927, 1.82]
+      rpy: [0, 'pi/2', 'pi/2']
+
+  logical_camera_15:
+    type: logical_camera
+    pose:
+      xyz: [0,3.019730, 1.94]
+      rpy: [0, 'pi/2', 'pi/2']
+
+  logical_camera_16:
+    type: logical_camera
+    pose:
+      xyz: [0,7.455913, 1.819]
+      rpy: [0, 'pi/2', 'pi/2']
+
+  logical_camera_17:
+    type: logical_camera
+    pose:
+      xyz: [0,-7.455913, 1.819]
+      rpy: [0, 'pi/2', 'pi/2']
