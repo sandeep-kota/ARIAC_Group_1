@@ -164,8 +164,16 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
     sum += logic_call_[i];
   }
 
+  std::string sensorLoc = sensorLocationMap.find(sensor_n) != sensorLocationMap.end() ? sensorLocationMap.at(sensor_n) : CONV_BELT;
+
+
   if (logic_call_[sensor_n] == 0)
   {
+    //getting the set of empty locations to be used to place the products as temp locations
+    if (msg->models.size() == 0 && sensor_n > 2 && sensorLoc != CONV_BELT) {
+      emptyLocations.insert(sensorLoc);
+    }
+    
     for (int i = 0; i < msg->models.size(); i++)
     {
 
@@ -185,42 +193,9 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
       Part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
       Part.time_stamp = ros::Time::now();
       Part.id = Part.type + std::to_string(parts_.at(ktype).at(kcolor).size());
-      if (sensor_n == 3 || sensor_n == 4 || sensor_n == 5 || sensor_n == 6)
-      {
-        Part.location = "bins";
-      }
-      else if (sensor_n == 9 || sensor_n == 10)
-      {
-        Part.location = "shelf_2";
-      }
-      else if (sensor_n == 7 || sensor_n == 8)
-      {
-        Part.location = "shelf_1";
-      }
-      else if (sensor_n == 13 || sensor_n == 14)
-      {
-        Part.location = "shelf_5";
-      }
-      else if (sensor_n == 11 || sensor_n == 12)
-      {
-        Part.location = "shelf_8";
-      }
-      else if (sensor_n == 15 || sensor_n == 16)
-      {
-        Part.location = "shelf_11";
-      }
-      else if (sensor_n == 0)
-      {
-        Part.location = "agv_1";
-      }
-      else if (sensor_n == 1)
-      {
-        Part.location = "agv_2";
-      }
-      else
-      {
-        Part.location = "conveyor_belt";
-      }
+    
+      Part.location = sensorLoc;
+      
 
       int partsCount = parts_.at(ktype).at(kcolor).size();
       bool canPartBeAdded = true;

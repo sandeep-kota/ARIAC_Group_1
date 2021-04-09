@@ -5,6 +5,7 @@
 #include <vector>
 #include <array>
 #include <unordered_map>
+#include <unordered_set>
 
 #include <nist_gear/LogicalCameraImage.h>
 #include <nist_gear/Proximity.h>
@@ -100,6 +101,10 @@ public:
     partsConveyor.erase(partsConveyor.begin() + p);
   }
 
+  std::unordered_set<std::string> getEmptyLocations() const {
+    return emptyLocations;
+  }
+
 private:
   ros::NodeHandle node_;
 
@@ -139,6 +144,8 @@ private:
   std::vector<Part> partsToFlip;
   std::vector<Part> partsConveyor;
   bool faultyPartDetected = false;
+
+  std::unordered_set<std::string> emptyLocations;
 };
 
 #endif
