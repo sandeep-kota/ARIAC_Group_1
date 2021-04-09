@@ -107,6 +107,8 @@ public:
     gantry_location_ = location;
   }
 
+  void removePrevProductsFromAGV(std::string fromAGV);
+
   void activateGripper(std::string gripper_id);
   void deactivateGripper(std::string gripper_id);
   nist_gear::VacuumGripperState getGripperState(std::string arm_name);

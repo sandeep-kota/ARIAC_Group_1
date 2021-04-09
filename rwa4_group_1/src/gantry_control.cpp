@@ -1843,3 +1843,9 @@ bool GantryControl::sendJointPosition(trajectory_msgs::JointTrajectory command_m
         return false;
     }
 }
+
+void GantryControl::removePrevProductsFromAGV(std::string fromAGV) {
+    // std::array<std::array<std::vector<part>, 3>, 5> parts = getPartsFromAGV(fromAGV);
+    std::string toAGV = oppositeAGV.at(fromAGV);
+    
+}
