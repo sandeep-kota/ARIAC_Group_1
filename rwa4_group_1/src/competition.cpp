@@ -305,7 +305,7 @@ void Competition::orderTransition(std::vector<Shipment> prevShipments, GantryCon
 
   ROS_WARN_STREAM("clearing AGV map");
   agvToProductsMap.at(AGV1_ID).clear();
-  agvToProductsMap.at(AGV1_ID).clear();
+  agvToProductsMap.at(AGV2_ID).clear();
 
   ROS_INFO_STREAM("Starting building kit for new order.");
 
