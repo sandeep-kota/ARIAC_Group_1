@@ -13,6 +13,7 @@
 
 #include "utils.h"
 #include "gantry_control.h"
+#include "sensor_control.h"
 
 /**
  * @brief Competition class
@@ -118,6 +119,7 @@ public:
     }
 
     void orderTransition(std::vector<Shipment> prevShipments, GantryControl& gantry);
+    void removePrevProductsFromAGV(std::string fromAGV, SensorControl &sensors, GantryControl &gantry);
 
 private:
     ros::NodeHandle node_;                          /*!< node h_type: "ordeandle for this class */

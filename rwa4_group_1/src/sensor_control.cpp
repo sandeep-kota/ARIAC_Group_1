@@ -155,25 +155,25 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
   std::string type{};
   std::string color{};
   part Part;
-  bool check_flipped {false};
-  bool new_part_conveyor {false};
+  bool check_flipped{false};
+  bool new_part_conveyor{false};
 
   int sum = 0;
-  for (int i = 0; i < 17; i++)
+  for (int i = 3; i < 17; i++)
   {
     sum += logic_call_[i];
   }
 
   std::string sensorLoc = sensorLocationMap.find(sensor_n) != sensorLocationMap.end() ? sensorLocationMap.at(sensor_n) : CONV_BELT;
 
-
-  if (logic_call_[sensor_n] == 0)
+  if ((logic_call_[sensor_n] == 0) && (read_all_sensors_ == false) && ((sensor_n != 0 && sensor_n != 1 && sensor_n != 2)))
   {
     //getting the set of empty locations to be used to place the products as temp locations
-    if (msg->models.size() == 0 && sensor_n > 2 && sensorLoc != CONV_BELT) {
+    if (msg->models.size() == 0 && sensor_n > 2 && sensorLoc != CONV_BELT)
+    {
       emptyLocations.insert(sensorLoc);
     }
-    
+
     for (int i = 0; i < msg->models.size(); i++)
     {
 
@@ -193,9 +193,8 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
       Part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
       Part.time_stamp = ros::Time::now();
       Part.id = Part.type + std::to_string(parts_.at(ktype).at(kcolor).size());
-    
+
       Part.location = sensorLoc;
-      
 
       int partsCount = parts_.at(ktype).at(kcolor).size();
       bool canPartBeAdded = true;
@@ -217,53 +216,55 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
       if (canPartBeAdded)
       {
         parts_.at(ktype).at(kcolor).push_back(Part);
-        ROS_INFO_STREAM("New part added. Part tye:: " << Part.type);
+        ROS_INFO_STREAM("New part added from camera " << sensor_n << ". Part type, Part Location " << Part.type << "," << Part.location);
       }
     }
     logic_call_[sensor_n] = 1;
   }
 
-  if (logic_call_[sensor_n] == 1 && sum == 17)
+  if (logic_call_[sensor_n] == 1 && sum == 14)
   {
     read_all_sensors_ = true;
   }
 
   //Check for flippe parts on agvs
   ros::param::get("/check_flipped", check_flipped);
-  
+
   if (check_flipped && (sensor_n == 0 || sensor_n == 1))
   {
-    ROS_WARN_STREAM("SENSOR: " << sensor_n);
-    logic_call_agv_[sensor_n] = 1;
-    for (int i = 0; i < msg->models.size(); i++)
-    {
-      pos_t = msg->models.at(i).type.find("_");
-      type = msg->models.at(i).type.substr(0, pos_t);
-
-      Part.picked_status = false;
-      Part.type = msg->models.at(i).type;
-      Part.pose = frame_to_world(i, msg->models.at(i).pose, c_w_transforms_.at(sensor_n));
-      Part.save_pose = Part.pose;
-      Part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
-      Part.time_stamp = ros::Time::now();
-
-      if (type.compare("pulley") == 0)   //flipped parts can only be pulleys
-      {
-        ROS_WARN_STREAM("TYPE: "<< type);
-        partsToFlip.push_back(Part);
-      }
-    }
-
-    sum = 0;
+    int t_sum = 0;
     for (int i = 0; i < 2; i++)
     {
-      sum += logic_call_agv_[i];
+      t_sum += logic_call_agv_[i];
     }
-    if (sum == 2)
+    if (t_sum == 2)
     {
-      ros::param::set("/check_flipped", false);
+      ros::param::set("/update_agv_parts", false);
       logic_call_agv_[0] = 0;
       logic_call_agv_[1] = 0;
+    }
+    if ((logic_call_agv_[sensor_n] == 0) && t_sum < 2)
+    {
+      ROS_WARN_STREAM("SENSOR: " << sensor_n);
+      logic_call_agv_[sensor_n] = 1;
+      for (int i = 0; i < msg->models.size(); i++)
+      {
+        pos_t = msg->models.at(i).type.find("_");
+        type = msg->models.at(i).type.substr(0, pos_t);
+
+        Part.picked_status = false;
+        Part.type = msg->models.at(i).type;
+        Part.pose = frame_to_world(i, msg->models.at(i).pose, c_w_transforms_.at(sensor_n));
+        Part.save_pose = Part.pose;
+        Part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
+        Part.time_stamp = ros::Time::now();
+
+        if (type.compare("pulley") == 0) //flipped parts can only be pulleys
+        {
+          ROS_WARN_STREAM("TYPE: " << type);
+          partsToFlip.push_back(Part);
+        }
+      }
     }
   }
 
@@ -287,22 +288,94 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
       Part.save_pose = Part.pose;
       Part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
       Part.time_stamp = ros::Time::now();
-    
-    if (partsConveyor.empty())
-    {
-      partsConveyor.push_back(Part);
-    } else {
-      last_part_conveyor = partsConveyor.back();
-      current_y = last_part_conveyor.pose.position.y - 0.2*(ros::Time::now().toSec() - last_part_conveyor.time_stamp.toSec());
 
-      if ((current_y + 0.1) < Part.pose.position.y)
+      if (partsConveyor.empty())
       {
         partsConveyor.push_back(Part);
       }
-    }
-    
+      else
+      {
+        last_part_conveyor = partsConveyor.back();
+        current_y = last_part_conveyor.pose.position.y - 0.2 * (ros::Time::now().toSec() - last_part_conveyor.time_stamp.toSec());
+
+        if ((current_y + 0.1) < Part.pose.position.y)
+        {
+          partsConveyor.push_back(Part);
+        }
+      }
     }
     ros::param::set("/ariac/new_part_conveyor", false);
+  }
+
+  bool update_agv_parts;
+  ros::param::get("/update_agv_parts", update_agv_parts);
+  if (update_agv_parts && (sensor_n == 0 || sensor_n == 1))
+  {
+    int t_sum = 0;
+    for (int i = 0; i < 2; i++)
+    {
+      t_sum += logic_call_agv_[i];
+    }
+    ROS_WARN_STREAM("SUM AGV :" << t_sum);
+    if (t_sum == 2)
+    {
+      ros::param::set("/update_agv_parts", false);
+      logic_call_agv_[0] = 0;
+      logic_call_agv_[1] = 0;
+    }
+    if ((logic_call_agv_[sensor_n] == 0) && t_sum < 2)
+    {
+      logic_call_agv_[sensor_n] = 1;
+      ROS_WARN_STREAM("Update AGV Parts" << sensor_n);
+      for (int i = 0; i < 5; i++)
+      {
+        for (int j = 0; j < 3; j++)
+        {
+          if (sensor_n == 0)
+          {
+            parts_agv1_.at(i).at(j).clear();
+          }
+          if (sensor_n == 1)
+          {
+            parts_agv2_.at(i).at(j).clear();
+          }
+        }
+      }
+
+      for (int i = 0; i < msg->models.size(); i++)
+      {
+        pos_t = msg->models.at(i).type.find("_");
+        pos_c = msg->models.at(i).type.rfind("_");
+
+        type = msg->models.at(i).type.substr(0, pos_t);
+        color = msg->models.at(i).type.substr(pos_c + 1);
+
+        ktype = hashit_type(type);
+        kcolor = hashit_color(color);
+
+        Part.picked_status = false;
+        Part.type = msg->models.at(i).type;
+        Part.pose = frame_to_world(i, msg->models.at(i).pose, c_w_transforms_.at(sensor_n));
+        Part.save_pose = Part.pose;
+        Part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
+        Part.time_stamp = ros::Time::now();
+
+        if (sensor_n == 0)
+        {
+          Part.location = "agv_1";
+          Part.id = Part.type + std::to_string(parts_agv1_.at(ktype).at(kcolor).size());
+          parts_agv1_.at(ktype).at(kcolor).push_back(Part);
+          ROS_INFO_STREAM("New part added to AGV1. Part tye:: " << Part.type);
+        }
+        if (sensor_n == 1)
+        {
+          Part.location = "agv_2";
+          Part.id = Part.type + std::to_string(parts_agv2_.at(ktype).at(kcolor).size());
+          parts_agv2_.at(ktype).at(kcolor).push_back(Part);
+          ROS_INFO_STREAM("New part added to AGV2. Part tye:: " << Part.type);
+        }
+      }
+    }
   }
 }
 
@@ -364,15 +437,16 @@ Part SensorControl::findPart(std::string type)
 }
 
 void SensorControl::break_beam_callback(const nist_gear::Proximity::ConstPtr &msg)
+{
+  if (msg->object_detected) // If there is an object in proximity.
   {
-    if (msg->object_detected) // If there is an object in proximity.
-    {
-        ROS_WARN("Break beam triggered.");
-    } else {
-        ros::param::set("/ariac/new_part_conveyor", true);
-    }
-    
+    ROS_WARN("Break beam triggered.");
   }
+  else
+  {
+    ros::param::set("/ariac/new_part_conveyor", true);
+  }
+}
 
 /**
  * @brief Quality Control Sensor Callback
@@ -442,4 +516,125 @@ void SensorControl::quality_cntrl_sensor_callback(const nist_gear::LogicalCamera
     }
   }
 }
+std::array<std::array<std::vector<part>, 3>, 5> SensorControl::getPartsAGV(std::string agv_id)
+{
+  if (agv_id.compare("agv1") == 1)
+  {
+    return parts_agv1_;
+  }
+  else
+  {
+    return parts_agv2_;
+  }
+}
 
+/**
+ * @brief Check if the given part is aligned  properly in the tray
+ * 
+ * @param target Target part that has to be checked
+ * @param agv_id AGV ID
+ * @return true 
+ * @return false 
+ */
+bool SensorControl::isPartPoseAGVCorrect(part target, std::string agv_id)
+{
+  int pos_t = target.type.find("_");
+  int pos_c = target.type.rfind("_");
+  std::string parttype = target.type.substr(0, pos_t);
+  std::string partcolor = target.type.substr(pos_c + 1);
+
+  int ktype = hashit_type(parttype);
+  int kcolor = hashit_color(partcolor);
+  bool ret_val = false;
+  if (agv_id == "agv1")
+  {
+    // tf2_ros::Buffer tfBuffer;
+    // tf2_ros::TransformListener tfListener(tfBuffer);
+    // ros::Duration timeout(1.0);
+    // geometry_msgs::TransformStamped transformStamped = tfBuffer.lookupTransform("world", "kit_tray_2",ros::Time(0), timeout);
+
+    // tf2::doTransform(p.pose,p.pose,transformStamped);
+
+    for (int j = 0; j < parts_agv1_.at(ktype).at(kcolor).size(); j++)
+    {
+      part partAlreadyPresent = parts_agv1_.at(ktype).at(kcolor).at(j);
+      float p_xDiff = partAlreadyPresent.pose.position.x - target.pose.position.x;
+      float p_yDiff = partAlreadyPresent.pose.position.y - target.pose.position.y;
+      float p_zDiff = partAlreadyPresent.pose.position.z - target.pose.position.z;
+      double dist = pow(pow(p_xDiff, 2) + pow(p_yDiff, 2) + pow(p_zDiff, 2), 0.5);
+
+      tf2::Quaternion q1(partAlreadyPresent.pose.orientation.x, partAlreadyPresent.pose.orientation.y, partAlreadyPresent.pose.orientation.z, partAlreadyPresent.pose.orientation.w);
+      tf2::Quaternion q2(target.pose.orientation.x, target.pose.orientation.y, target.pose.orientation.z, target.pose.orientation.w);
+
+      tf2::Matrix3x3 m1(q1);
+      tf2::Matrix3x3 m2(q2);
+
+      double r1, r2, p1, p2, y1, y2;
+      m1.getRPY(r1, p1, y1);
+      m2.getRPY(r2, p2, y2);
+
+      float o_xDiff = (r2 - r1) * (180 / PI);
+      float o_yDiff = (p2 - p1) * (180 / PI);
+      float o_zDiff = (y2 - y1) * (180 / PI);
+
+      if (o_zDiff < 0 && abs(o_zDiff) > 180)
+      {
+        o_zDiff += 360;
+      }
+
+      ROS_INFO_STREAM("Difference AGV1 " << j << ":(Dist,Ori) :" << dist << ";(" << o_xDiff << "," << o_yDiff << "," << o_zDiff << ");" << ((dist <= 0.01) || (std::abs(o_zDiff) < 2)));
+      incorrect_part_agv1 = parts_agv1_.at(ktype).at(kcolor).at(j);
+      if ((dist <= 0.01) && (std::abs(o_zDiff) < 2))
+      {
+        ROS_INFO_STREAM("Part Aligned Properly");
+        Part dummy_part;
+        incorrect_part_agv1 = dummy_part;
+        ret_val = true;
+        break;
+      }
+    }
+  }
+
+  else if (agv_id == "agv2")
+  {
+    // tf2_ros::Buffer tfBuffer;
+    // tf2_ros::TransformListener tfListener(tfBuffer);
+    // ros::Duration timeout(1.0);
+    // geometry_msgs::TransformStamped transformStamped = tfBuffer.lookupTransform("world", "kit_tray_2",ros::Time(0), timeout);
+
+    // tf2::doTransform(p.pose,p.pose,transformStamped);
+
+    for (int j = 0; j < parts_agv2_.at(ktype).at(kcolor).size(); j++)
+    {
+      part partAlreadyPresent = parts_agv2_.at(ktype).at(kcolor).at(j);
+      float p_xDiff = partAlreadyPresent.pose.position.x - target.pose.position.x;
+      float p_yDiff = partAlreadyPresent.pose.position.y - target.pose.position.y;
+      float p_zDiff = partAlreadyPresent.pose.position.z - target.pose.position.z;
+      double dist = pow(pow(p_xDiff, 2) + pow(p_yDiff, 2) + pow(p_zDiff, 2), 0.5);
+
+      tf2::Quaternion q1(partAlreadyPresent.pose.orientation.x, partAlreadyPresent.pose.orientation.y, partAlreadyPresent.pose.orientation.z, partAlreadyPresent.pose.orientation.w);
+      tf2::Quaternion q2(target.pose.orientation.x, target.pose.orientation.y, target.pose.orientation.z, target.pose.orientation.w);
+
+      tf2::Matrix3x3 m1(q1);
+      tf2::Matrix3x3 m2(q2);
+
+      double r1, r2, p1, p2, y1, y2;
+      m1.getRPY(r1, p1, y1);
+      m2.getRPY(r2, p2, y2);
+
+      float o_xDiff = (r2 - r1) * (180 / PI);
+      float o_yDiff = (p2 - p1) * (180 / PI);
+      float o_zDiff = (y2 - y1) * (180 / PI);
+
+      ROS_INFO_STREAM("Difference AGV2 " << j << ":(Dist,Ori) :" << dist << ";(" << o_xDiff << "," << o_yDiff << "," << o_zDiff << ");" << ((dist <= 0.01) || (std::abs(o_zDiff) < 2)));
+      incorrect_part_agv2 = parts_agv2_.at(ktype).at(kcolor).at(j);
+      if ((dist <= 0.01) && (std::abs(o_zDiff) < 2))
+      {
+        incorrect_part_agv2 = parts_agv2_.at(ktype).at(kcolor).at(j - 1);
+        ret_val = true;
+        break;
+      }
+    }
+  }
+  return ret_val;
+}

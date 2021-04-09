@@ -256,7 +256,68 @@ std::string Competition::getCompetitionState()
   return competition_state_;
 }
 
+/**
+ * @brief Transfer Products from one AGV tray to another
+ * 
+ * @param fromAGV From AGV ID
+ * @param sensors Sensors object
+ * @param gantry Gantry Object
+ */
+void Competition::removePrevProductsFromAGV(std::string fromAGV, SensorControl& sensors, GantryControl& gantry)
+{
+  std::array<std::array<std::vector<part>, 3>, 5> parts_agv = sensors.getPartsAGV(fromAGV);
+  for (int i=0; i<5; i++)
+  {
+    for (int j=0; j<3; j++) 
+    {
+      int t_sum = 0;
+      for (int k = 0; k < parts_agv.at(i).at(j).size(); k++)
+      {
+        Part current_part = parts_agv.at(i).at(j).at(k);
+        
+        if (k%2==0 && t_sum < 2)
+        {
+          
+          gantry.pickPartFromTrayLeftArm(current_part, fromAGV);
+          if (fromAGV.compare("agv1"))
+          {
+            gantry.product_left_arm_.agv_id = "agv2";
+          }
+          if (fromAGV.compare("agv2"))
+          {
+            gantry.product_left_arm_.agv_id = "agv1";
+          }
+          t_sum += 1;
 
+        }
+        else if (k%2==1 && t_sum <2)
+        {
+          gantry.pickPartFromTrayRightArm(current_part, fromAGV);
+          if (fromAGV.compare("agv1"))
+          {
+            gantry.product_right_arm_.agv_id = "agv2";
+          }
+          if (fromAGV.compare("agv2"))
+          {
+            gantry.product_right_arm_.agv_id = "agv1";
+          }
+          t_sum += 1;
+        }
+        if (t_sum ==2)
+        {
+          t_sum = 0;
+          gantry.placePartLeftArm();
+          gantry.placePartRightArm();
+        }
+
+      }
+
+    }
+  }
+
+
+  // std::string toAGV = oppositeAGV.at(fromAGV);
+}
 
 void Competition::orderTransition(std::vector<Shipment> prevShipments, GantryControl& gantry) {
   
@@ -270,7 +331,7 @@ void Competition::orderTransition(std::vector<Shipment> prevShipments, GantryCon
 
   // check for agvid:
   if (prevShipment.agv_id.compare(newShipment.agv_id) == 0) {
-    gantry.removePrevProductsFromAGV(prevShipment.agv_id);
+    removePrevProductsFromAGV(prevShipment.agv_id);
   }
   else {
     // update the pending items and done items for the previous AGV

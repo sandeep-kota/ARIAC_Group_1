@@ -15,8 +15,6 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <queue>
 
-#include "constants.h"
-
 typedef struct Shipment shipment; // forward declarations
 typedef struct Order order;
 typedef struct Product product;

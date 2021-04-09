@@ -34,6 +34,7 @@
 #include <sensor_msgs/JointState.h>
 #include <control_msgs/JointTrajectoryControllerState.h>
 #include <trajectory_msgs/JointTrajectory.h>
+#include <tf/tf.h>
 
 #include "utils.h"
 
@@ -52,6 +53,13 @@ public:
   bool pickPartRightArm(part part);
   void placePartLeftArm();
   void placePartRightArm();
+
+  bool pickPartFromTrayLeftArm(part part, std::string agv_id);
+  bool correctPosePartLeftArm(Part part, geometry_msgs::Pose target, std::string agv_id);
+
+  bool pickPartFromTrayRightArm(part part, std::string agv_id);
+  bool correctPosePartRightArm(Part part, geometry_msgs::Pose target, std::string agv_id);
+
   bool throwLastPartLeft(part part);
   bool throwLastPartRight(part part);
 
@@ -70,7 +78,7 @@ public:
   void FKGantry(std::vector<double> joints);
   void moveOverPart(part part, std::string arm);
   void getProduct(product product);
-  void getProductsToFlip(std::vector <Part> partsToFlip);
+  void getProductsToFlip(std::vector<Part> partsToFlip);
   void flipProductsAGV();
   bool getPartConveyorLeftArm(product product);
   bool getPartConveyorRightArm(product product);
@@ -100,40 +108,42 @@ public:
   void set_product_right_arm_(const product &product)
   {
     product_right_arm_ = product;
-  } 
+  }
 
   void setGantryLocation(std::string location)
   {
     gantry_location_ = location;
   }
 
-  void removePrevProductsFromAGV(std::string fromAGV);
 
   void activateGripper(std::string gripper_id);
   void deactivateGripper(std::string gripper_id);
   nist_gear::VacuumGripperState getGripperState(std::string arm_name);
   geometry_msgs::Pose getTargetWorldPose(geometry_msgs::Pose target, std::string agv);
   //--preset locations;
-    start start_;
-    aisle1 aisle1_;
-    aisle2 aisle2_;
-    shelf1 shelf1_;
-    shelf2 shelf2_;
-    bins bins_;
-    agv1 agv1_;
-    agv2 agv2_;
-    agv1_left agv1_left_;
-    agv1_right agv1_right_;
-    agv2_left agv2_left_;
-    agv2_right agv2_right_;
-    tray1_left_positive tray1_left_positive_;
-    tray1_left_negative tray1_left_negative_;
-    tray1_right_positive tray1_right_positive_;
-    tray1_right_negative tray1_right_negative_;
-    tray2_left_positive tray2_left_positive_;
-    tray2_left_negative tray2_left_negative_;
-    tray2_right_positive tray2_right_positive_;
-    tray2_right_negative tray2_right_negative_;
+  start start_;
+  aisle1 aisle1_;
+  aisle2 aisle2_;
+  shelf1 shelf1_;
+  shelf2 shelf2_;
+  bins bins_;
+  agv1 agv1_;
+  agv2 agv2_;
+  agv1_left agv1_left_;
+  agv1_right agv1_right_;
+  agv2_left agv2_left_;
+  agv2_right agv2_right_;
+  tray1_left_positive tray1_left_positive_;
+  tray1_left_negative tray1_left_negative_;
+  tray1_right_positive tray1_right_positive_;
+  tray1_right_negative tray1_right_negative_;
+  tray2_left_positive tray2_left_positive_;
+  tray2_left_negative tray2_left_negative_;
+  tray2_right_positive tray2_right_positive_;
+  tray2_right_negative tray2_right_negative_;
+  product product_left_arm_;
+  product product_right_arm_;
+
 private:
   std::vector<double> joint_group_positions_;
   ros::NodeHandle node_;
@@ -158,8 +168,6 @@ private:
   std::string gantry_location_;
   std::vector<Product> products_to_flip_;
 
-  product product_left_arm_;
-  product product_right_arm_;
 
   sensor_msgs::JointState current_joint_states_;
 

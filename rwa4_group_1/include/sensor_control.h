@@ -17,6 +17,7 @@
 #include <ros/ros.h>
 #include <ros/console.h>
 #include "utils.h"
+#include <tf/tf.h>
 
 /**
  * @brief Enumeration of the different types of parts
@@ -61,7 +62,6 @@ public:
 
   std::vector<Product> getFaultyProducts()
   {
-    
     return faultyProducts;
   }
 
@@ -104,48 +104,55 @@ public:
   std::unordered_set<std::string> getEmptyLocations() const {
     return emptyLocations;
   }
+  bool isPartPoseAGVCorrect(part p, std::string agv_id);
+  Part incorrect_part_agv1;
+  Part incorrect_part_agv2;
 
-private:
-  ros::NodeHandle node_;
+  std::array<std::array<std::vector<part>, 3>, 5> getPartsAGV(std::string agv_id);
 
-  ros::Subscriber logical_camera_0_subcriber_;
-  ros::Subscriber logical_camera_1_subcriber_;
-  ros::Subscriber logical_camera_2_subcriber_;
-  ros::Subscriber logical_camera_3_subcriber_;
-  ros::Subscriber logical_camera_4_subcriber_;
-  ros::Subscriber logical_camera_5_subcriber_;
-  ros::Subscriber logical_camera_6_subcriber_;
-  ros::Subscriber logical_camera_7_subcriber_;
-  ros::Subscriber logical_camera_8_subcriber_;
-  ros::Subscriber logical_camera_9_subcriber_;
-  ros::Subscriber logical_camera_10_subcriber_;
-  ros::Subscriber logical_camera_11_subcriber_;
-  ros::Subscriber logical_camera_12_subcriber_;
-  ros::Subscriber logical_camera_13_subcriber_;
-  ros::Subscriber logical_camera_14_subcriber_;
-  ros::Subscriber logical_camera_15_subcriber_;
-  ros::Subscriber logical_camera_16_subcriber_;
-  ros::Subscriber break_beam_subscriber_;
+  private:
+    ros::NodeHandle node_;
 
-  ros::Subscriber quality_ctrl_sensor1_subs;
-  ros::Subscriber quality_ctrl_sensor2_subs;
+    ros::Subscriber logical_camera_0_subcriber_;
+    ros::Subscriber logical_camera_1_subcriber_;
+    ros::Subscriber logical_camera_2_subcriber_;
+    ros::Subscriber logical_camera_3_subcriber_;
+    ros::Subscriber logical_camera_4_subcriber_;
+    ros::Subscriber logical_camera_5_subcriber_;
+    ros::Subscriber logical_camera_6_subcriber_;
+    ros::Subscriber logical_camera_7_subcriber_;
+    ros::Subscriber logical_camera_8_subcriber_;
+    ros::Subscriber logical_camera_9_subcriber_;
+    ros::Subscriber logical_camera_10_subcriber_;
+    ros::Subscriber logical_camera_11_subcriber_;
+    ros::Subscriber logical_camera_12_subcriber_;
+    ros::Subscriber logical_camera_13_subcriber_;
+    ros::Subscriber logical_camera_14_subcriber_;
+    ros::Subscriber logical_camera_15_subcriber_;
+    ros::Subscriber logical_camera_16_subcriber_;
+    ros::Subscriber break_beam_subscriber_;
 
-  std::array<int, 17> logic_call_ {0};
-  std::array<int, 2> logic_call_agv_ {0};
+    ros::Subscriber quality_ctrl_sensor1_subs;
+    ros::Subscriber quality_ctrl_sensor2_subs;
 
-  std::array<geometry_msgs::TransformStamped, 17> c_w_transforms_{};
-  std::array<geometry_msgs::TransformStamped, NUM_QUALITY_SENSORS> qualitySensorsTransforms{};
+    std::array<int, 17> logic_call_{0};
+    std::array<int, 2> logic_call_agv_{0};
 
-  std::array<std::array<std::vector<part>, 3>, 5> parts_{}; //Datastructure to store the info from each part detected by the sensors
+    std::array<geometry_msgs::TransformStamped, 17> c_w_transforms_{};
+    std::array<geometry_msgs::TransformStamped, NUM_QUALITY_SENSORS> qualitySensorsTransforms{};
 
-  // std::array <std::array <std::vector < part >, 3>, 5> current_parts_ {};
+    std::array<std::array<std::vector<part>, 3>, 5> parts_{};      //Datastructure to store the info from each part detected by the sensors
+    std::array<std::array<std::vector<part>, 3>, 5> parts_agv1_{}; //Datastructure to store the info from each part detected by the sensors
+    std::array<std::array<std::vector<part>, 3>, 5> parts_agv2_{}; //Datastructure to store the info from each part detected by the sensors
 
-  std::vector<Product> faultyProducts;
-  std::vector<Part> partsToFlip;
-  std::vector<Part> partsConveyor;
-  bool faultyPartDetected = false;
+    // std::array <std::array <std::vector < part >, 3>, 5> current_parts_ {};
 
-  std::unordered_set<std::string> emptyLocations;
-};
+    std::vector<Product> faultyProducts;
+    std::vector<Part> partsToFlip;
+    std::vector<Part> partsConveyor;
+    bool faultyPartDetected = false;
+
+    std::unordered_set<std::string> emptyLocations;
+  };
 
 #endif
