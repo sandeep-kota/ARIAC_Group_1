@@ -436,6 +436,11 @@ Part SensorControl::findPart(std::string type)
   }
 }
 
+/**
+ * @brief callback function for breakbeam sensor
+ * 
+ * @param msg  Subscribed message
+ */
 void SensorControl::break_beam_callback(const nist_gear::Proximity::ConstPtr &msg)
 {
   if (msg->object_detected) // If there is an object in proximity.
@@ -542,6 +547,8 @@ bool SensorControl::isPartPoseAGVCorrect(part target, std::string agv_id)
   int pos_c = target.type.rfind("_");
   std::string parttype = target.type.substr(0, pos_t);
   std::string partcolor = target.type.substr(pos_c + 1);
+
+  ROS_WARN_STREAM("PART TO BE INSPECTION FOR ORIENTATION: " << target.type);
 
   int ktype = hashit_type(parttype);
   int kcolor = hashit_color(partcolor);

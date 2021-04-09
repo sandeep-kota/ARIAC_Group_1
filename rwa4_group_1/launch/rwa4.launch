@@ -20,7 +20,7 @@
   <arg     if="$(arg load_moveit)" name="load_moveit_args" value="--load-moveit" />
 
   <node name="ariac_sim" pkg="nist_gear" type="gear.py"
-        args="--development-mode
+        args="
           $(arg verbose_args)
           $(arg state_logging_args)
           $(arg gui_args)

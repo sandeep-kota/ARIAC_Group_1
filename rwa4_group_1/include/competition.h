@@ -118,7 +118,7 @@ public:
         return newOrderAlertFlag = flag;
     }
 
-    void orderTransition(std::vector<Shipment> prevShipments, GantryControl& gantry);
+    void orderTransition(std::vector<Shipment> prevShipments, SensorControl &sensors, GantryControl& gantry);
     void removePrevProductsFromAGV(std::string fromAGV, SensorControl &sensors, GantryControl &gantry);
 
 private:

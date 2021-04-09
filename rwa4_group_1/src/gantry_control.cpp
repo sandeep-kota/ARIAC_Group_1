@@ -995,6 +995,7 @@ bool GantryControl::correctPosePartLeftArm(Part part, geometry_msgs::Pose target
         {
             goToPresetLocation(tray2_left_positive_);
             ros::Duration(0.5).sleep();
+            ROS_WARN_STREAM("IN_TRAY POSITIONING");
         }
         else
         {
@@ -1105,11 +1106,7 @@ bool GantryControl::pickPartFromTrayLeftArm(part part, std::string agv_id)
     joint_group_positions_.at(1) -= offset_y;
 
     full_robot_group_.setJointValueTarget(joint_group_positions_);
-
-    moveit::planning_interface::MoveGroupInterface::Plan move_x;
-    bool success = (full_robot_group_.plan(move_x) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-    if (success)
-        full_robot_group_.move();
+    full_robot_group_.move();
 
     ros::Duration(0.5).sleep();
     part.pose.position.z = 0.73 + 0.021;
@@ -1298,11 +1295,7 @@ bool GantryControl::pickPartFromTrayRightArm(part part, std::string agv_id)
     joint_group_positions_.at(1) -= offset_y;
 
     full_robot_group_.setJointValueTarget(joint_group_positions_);
-
-    moveit::planning_interface::MoveGroupInterface::Plan move_x;
-    bool success = (full_robot_group_.plan(move_x) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-    if (success)
-        full_robot_group_.move();
+    full_robot_group_.move();
 
     ros::Duration(0.5).sleep();
     part.pose.position.z = 0.73 + 0.021;
@@ -1922,6 +1915,13 @@ void GantryControl::flipProductsAGV()
     }
 }
 
+/**
+ * @brief flow to get a part from the conveyorbelt with the left arm
+ * 
+ * @param product which product to get
+ * @return true 
+ * @return false 
+ */
 bool GantryControl::getPartConveyorLeftArm(product product)
 {
     double current_y;
@@ -2010,6 +2010,13 @@ bool GantryControl::getPartConveyorLeftArm(product product)
     return picked;
 }
 
+/**
+ * @brief flow to get a part from the conveyorbelt with the right arm
+ * 
+ * @param product which product to get
+ * @return true 
+ * @return false 
+ */
 bool GantryControl::getPartConveyorRightArm(product product)
 {
     double current_y;

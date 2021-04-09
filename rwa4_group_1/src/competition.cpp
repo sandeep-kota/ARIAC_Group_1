@@ -319,7 +319,13 @@ void Competition::removePrevProductsFromAGV(std::string fromAGV, SensorControl& 
   // std::string toAGV = oppositeAGV.at(fromAGV);
 }
 
-void Competition::orderTransition(std::vector<Shipment> prevShipments, GantryControl& gantry) {
+/**
+ * @brief Process a new priority order
+ * 
+ * @param prevShipments shipment that is currently being build and needs to be stored
+ * @param gantry Gantry class passed by reference
+ */
+void Competition::orderTransition(std::vector<Shipment> prevShipments, SensorControl &sensors, GantryControl& gantry) {
   
   // Assuming there will be only one shipment in the new and the previous orders.
   // That is why collecting the element from index=0
@@ -331,7 +337,7 @@ void Competition::orderTransition(std::vector<Shipment> prevShipments, GantryCon
 
   // check for agvid:
   if (prevShipment.agv_id.compare(newShipment.agv_id) == 0) {
-    removePrevProductsFromAGV(prevShipment.agv_id);
+    removePrevProductsFromAGV(prevShipment.agv_id, sensors, gantry);
   }
   else {
     // update the pending items and done items for the previous AGV
@@ -373,7 +379,11 @@ void Competition::orderTransition(std::vector<Shipment> prevShipments, GantryCon
 
 }
 
-
+/**
+ * @brief getter to obtain the current list of products
+ * 
+ * @return std::vector<Product> list of products being processed
+ */
 std::vector<Product> Competition::get_product_list() {
   product_list_.clear();
   
