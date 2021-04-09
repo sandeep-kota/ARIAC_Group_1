@@ -15,6 +15,8 @@
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <queue>
 
+#include "constants.h"
+
 typedef struct Shipment shipment; // forward declarations
 typedef struct Order order;
 typedef struct Product product;
@@ -65,11 +67,26 @@ const std::string AGV2 = "agv_2";
 const std::string AGV1_ID = "agv1";
 const std::string AGV2_ID = "agv2";
 
+const std::string ANY_AGV = "any";
+
 const std::string AGV1_TRAY = "kit_tray_1";
 const std::string AGV2_TRAY = "kit_tray_2";
 
+const std::string BINS = "bins";
+const std::string SHELF_1 = "shelf_1";
+const std::string SHELF_2 = "shelf_2";
+const std::string SHELF_5 = "shelf_5";
+const std::string SHELF_8 = "shelf_8";
+const std::string SHELF_11 = "shelf_11";
+const std::string CONV_BELT = "conveyor_belt";
+
+
 extern std::string action_state_name[];
 extern std::unordered_map<std::string, double> model_height;
+extern std::unordered_map<int, std::string> sensorLocationMap;
+
+extern std::unordered_map<std::string, std::string> oppositeAGV;// {{AGV1_ID, AGV2_ID}, {AGV2_ID, AGV1_ID}, {ANY_AGV, AGV2_ID}}; // logic for "any" should be changed
+extern std::unordered_map<std::string, std::string> agvTrayMap;// {{AGV1_ID, AGV1_TRAY}, {AGV2_ID, AGV2_TRAY}}; 
 
 enum PartStates {FREE, BOOKED, UNREACHABLE, ON_TRAY, GRIPPED, GOING_HOME,
   REMOVE_FROM_TRAY, LOST};
@@ -102,7 +119,7 @@ typedef struct Part {
   ros::Time time_stamp;
   std::string id;
   std::string location;
-//   bool faulty;
+  //   bool faulty;
   bool picked_status;
 } part;
 
@@ -140,6 +157,7 @@ typedef struct Product {
     std::string agv_id;
     std::string tray;
     std::string arm_name;
+    bool isPlacedOnAGV; 
 } product;
 
 /**
