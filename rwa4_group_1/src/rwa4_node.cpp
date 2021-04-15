@@ -349,7 +349,7 @@ int main(int argc, char **argv)
                 {
                     if (gantry.getProductRightArm().agv_id == "agv1")
                     {
-                        ROS_WARN_STREAM("")
+                        // ROS_WARN_STREAM("")
                         gantry.pickPartFromTrayRightArm(sensors.incorrect_part_agv1, gantry.getProductRightArm().agv_id);
                         gantry.correctPosePartRightArm(sensors.incorrect_part_agv1, target_part.pose, gantry.getProductRightArm().agv_id);
                         gantry.goToPresetLocation(gantry.agv1_);
