@@ -19,6 +19,8 @@
   <arg unless="$(arg load_moveit)" name="load_moveit_args" value="" />
   <arg     if="$(arg load_moveit)" name="load_moveit_args" value="--load-moveit" />
 
+  <param name="/use_sim_time" value="true"></param>
+
   <node name="ariac_sim" pkg="nist_gear" type="gear.py"
         args="
           $(arg verbose_args)
@@ -27,7 +29,7 @@
           $(arg load_moveit_args)
           $(arg fill_demo_shipment_args)
           --visualize-sensor-views
-          -f $(find rwa5_group_1)/config/rwa4_sample.yaml
+          -f $(find rwa5_group_1)/config/rwa5-sample.yaml
           $(find rwa5_group_1)/config/rwa4_sensor_group_1.yaml
           " required="true" output="screen" />
 
@@ -38,4 +40,5 @@
  </group>  -->
   
   <!-- <node name="rwa3_node" pkg="rwa3_group_1" type="rwa3_node" output="screen"/> -->
+  <!-- <node name="dyn_obs_node" pkg="rwa5_group_1" type="dyn_obs_node" output="screen"/> -->
 </launch>

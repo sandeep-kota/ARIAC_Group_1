@@ -122,6 +122,7 @@ public:
   geometry_msgs::Pose getTargetWorldPose(geometry_msgs::Pose target, std::string agv);
   //--preset locations;
   start start_;
+  PresetLocation safe_spot_1_, safe_spot_2_;
   aisle1 aisle1_;
   aisle2 aisle2_;
   shelf1 shelf1_;
@@ -143,6 +144,11 @@ public:
   tray2_right_negative tray2_right_negative_;
   product product_left_arm_;
   product product_right_arm_;
+
+
+  PresetLocation safe_spot_3_, ssi1, ssi2, ssi3, ssi4, ssi5, ssi6,
+
+
 
 private:
   std::vector<double> joint_group_positions_;

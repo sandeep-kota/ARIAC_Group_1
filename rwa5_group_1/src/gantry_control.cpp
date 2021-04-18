@@ -48,6 +48,9 @@ void GantryControl::init()
 
     std::vector<double> aisle_left_arm = {0.0, -PI, 3 * PI / 4, -3 * PI / 4, -PI / 2, 0.};
     std::vector<double> aisle_right_arm = {PI, -PI, 3 * PI / 4, -3 * PI / 4, -PI / 2, 0.};
+    std::vector<double> zero_rarm = {0., -PI, 0., 0., 0., 0.};
+    std::vector<double> zero_larm = {0., 0., 0., 0., 0., 0.};
+    double safe_x = -11.3;
 
     // joint positions to go to start location
     start_.location = "start";
@@ -83,6 +86,19 @@ void GantryControl::init()
     aisle2_.gantry = {0, 1.5, 0.};
     aisle2_.left_arm = aisle_left_arm;
     aisle2_.right_arm = aisle_right_arm;
+
+
+    // Safe spot near Aisle 1
+    safe_spot_1_.location = "safe_spot_1_";
+    safe_spot_1_.gantry = {safe_x, -3, 0.};
+    safe_spot_1_.left_arm = zero_larm;
+    safe_spot_1_.right_arm = zero_rarm;
+
+    // Safe spot near Aisle 2
+    safe_spot_2_.location = "safe_spot_2_";
+    safe_spot_2_.gantry = {safe_x, 3, 0.};
+    safe_spot_2_.left_arm = zero_larm;
+    safe_spot_2_.right_arm = zero_rarm;
 
     // joint positions to go to agv2  // joint positions to go to agv2
     agv2_.location = "agv2";
@@ -155,6 +171,48 @@ void GantryControl::init()
     tray2_right_negative_.gantry = {0, 5.5, PI / 4};
     tray2_right_negative_.left_arm = {0.0, -PI / 4, PI / 2, -PI / 4, PI / 2, PI / 4};
     tray2_right_negative_.right_arm = {PI, -PI / 4, PI / 2, -PI / 4, PI / 2, PI / 4};
+
+    //////////////////////////
+    ssi5.location = "ssi5";
+    ssi5.gantry = {-7.2, -1.5, 0.};
+    ssi5.left_arm = zero_larm;
+    ssi5.right_arm = zero_rarm;
+
+    ssi6.location = "ssi6";
+    ssi6.gantry = {-7.2, 1.5, 0.};
+    ssi6.left_arm = zero_larm;
+    ssi6.right_arm = zero_rarm;
+
+    ssi3.location = "ssi3";
+    ssi3.gantry = {safe_x, 1.5, 0.};
+    ssi3.left_arm = zero_larm;
+    ssi3.right_arm = zero_rarm;
+
+    ssi4.location = "ssi4";
+    ssi4.gantry = {safe_x, 7, 0.};
+    ssi4.left_arm = zero_larm;
+    ssi4.right_arm = zero_rarm;
+
+    ssi2.location = "ssi2";
+    ssi2.gantry = {safe_x, -1.5, 0.};
+    ssi2.left_arm = zero_larm;
+    ssi2.right_arm = zero_rarm;
+
+    ssi1.location = "ssi1";
+    ssi1.gantry = {safe_x, -7, 0.};
+    ssi1.left_arm = zero_larm;
+    ssi1.right_arm = zero_rarm;
+
+    safe_spot_3_.location = "safe_spot_3_";
+    safe_spot_3_.gantry = {-7.2, 0, 0.};
+    safe_spot_3_.left_arm = zero_larm;
+    safe_spot_3_.right_arm = zero_rarm;
+
+
+    
+
+
+
 
     //--Raw pointers are frequently used to refer to the planning group for improved performance.
     //--To start, we will create a pointer that references the current robot’s state.
