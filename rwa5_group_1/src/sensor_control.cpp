@@ -227,46 +227,46 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
     read_all_sensors_ = true;
   }
 
-  //Check for flippe parts on agvs
-  ros::param::get("/check_flipped", check_flipped);
+  //Check for flipped parts on agvs
+  // ros::param::get("/check_flipped", check_flipped);
 
-  if (check_flipped && (sensor_n == 0 || sensor_n == 1))
-  {
-    int t_sum = 0;
-    for (int i = 0; i < 2; i++)
-    {
-      t_sum += logic_call_agv_[i];
-    }
-    if (t_sum == 2)
-    {
-      ros::param::set("/update_agv_parts", false);
-      logic_call_agv_[0] = 0;
-      logic_call_agv_[1] = 0;
-    }
-    if ((logic_call_agv_[sensor_n] == 0) && t_sum < 2)
-    {
-      ROS_WARN_STREAM("SENSOR: " << sensor_n);
-      logic_call_agv_[sensor_n] = 1;
-      for (int i = 0; i < msg->models.size(); i++)
-      {
-        pos_t = msg->models.at(i).type.find("_");
-        type = msg->models.at(i).type.substr(0, pos_t);
+  // if (check_flipped && (sensor_n == 0 || sensor_n == 1))
+  // {
+    // int t_sum = 0;
+    // for (int i = 0; i < 2; i++)
+    // {
+    //   t_sum += logic_call_agv_[i];
+    // }
+    // if (t_sum == 2)
+    // {
+    //   ros::param::set("/check_flipped", false);
+    //   logic_call_agv_[0] = 0;
+    //   logic_call_agv_[1] = 0;
+    // }
+    // if ((logic_call_agv_[sensor_n] == 0) && t_sum < 2)
+    // {
+  //     ROS_WARN_STREAM("SENSOR: " << sensor_n);
+  //     logic_call_agv_[sensor_n] = 1;
+  //     for (int i = 0; i < msg->models.size(); i++)
+  //     {
+  //       pos_t = msg->models.at(i).type.find("_");
+  //       type = msg->models.at(i).type.substr(0, pos_t);
 
-        Part.picked_status = false;
-        Part.type = msg->models.at(i).type;
-        Part.pose = frame_to_world(i, msg->models.at(i).pose, c_w_transforms_.at(sensor_n));
-        Part.save_pose = Part.pose;
-        Part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
-        Part.time_stamp = ros::Time::now();
+  //       Part.picked_status = false;
+  //       Part.type = msg->models.at(i).type;
+  //       Part.pose = frame_to_world(i, msg->models.at(i).pose, c_w_transforms_.at(sensor_n));
+  //       Part.save_pose = Part.pose;
+  //       Part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
+  //       Part.time_stamp = ros::Time::now();
 
-        if (type.compare("pulley") == 0) //flipped parts can only be pulleys
-        {
-          ROS_WARN_STREAM("TYPE: " << type);
-          partsToFlip.push_back(Part);
-        }
-      }
-    }
-  }
+  //       if (type.compare("pulley") == 0) //flipped parts can only be pulleys
+  //       {
+  //         ROS_WARN_STREAM("TYPE: " << type);
+  //         partsToFlip.push_back(Part);
+  //       }
+  //     }
+  //   }
+  // }
 
   //Check for new parts in conveyor
 
@@ -463,23 +463,40 @@ void SensorControl::quality_cntrl_sensor_callback(const nist_gear::LogicalCamera
 {
   bool activate_quality;
   ros::param::get("/activate_quality", activate_quality);
-  if (msg->models.size() != 0 && activate_quality)
+  ROS_WARN_STREAM("FAULTY PART LIST SIZE: " << faultyPartsList.size());
+  if (activate_quality)
   {
-
-    setFaultyPartDetectedFlag(true);
-
-    ROS_INFO_STREAM("Faulty part detected!" << faultyProducts.size());
-
-    if (faultyProducts.size() == 0)
+    int sum = 0;
+    ROS_WARN_STREAM("SENSOR: " << sensor_n);
+    for (int i = 0; i < 2; i++)
     {
-
+      sum += logic_call_quality_[i];
+      ROS_WARN_STREAM("SUM " << sum);
+    }
+    if (sum == 2)
+    {
+      ros::param::set("/activate_quality", false);
+      logic_call_quality_[0] = 0;
+      logic_call_quality_[1] = 0;
+      ROS_WARN_STREAM("SUM EQUALS 2");
+      if (faultyPartsList.size() > 0)
+      {
+        ROS_WARN_STREAM("FAULTY PART DETECTED");
+        ROS_WARN_STREAM("FAULTY PART LIST SIZE: " << faultyPartsList.size());
+        setFaultyPartDetectedFlag(true);
+      } else {
+        setFaultyPartDetectedFlag(false);
+      }
+      
+    }
+    if ((logic_call_quality_[sensor_n-1] == 0) && sum < 2)
+    {
+      logic_call_quality_[sensor_n-1] = 1;
       for (int i = 0; i < msg->models.size(); i++)
       {
-        Product faultyProduct;
         part faultyPart;
 
         faultyPart.picked_status = false;
-        faultyPart.type = msg->models.at(i).type;
         faultyPart.pose = frame_to_world(i, msg->models.at(i).pose, qualitySensorsTransforms.at(sensor_n - 1));
         faultyPart.save_pose = faultyPart.pose;
         faultyPart.frame = "quality_control_sensor_" + std::to_string(sensor_n) + "_frame";
@@ -494,29 +511,7 @@ void SensorControl::quality_cntrl_sensor_callback(const nist_gear::LogicalCamera
         {
           faultyPart.location = "agv_2";
         }
-
-        faultyProduct.p = faultyPart;
-        faultyProduct.type = faultyPart.type;
-        faultyProduct.pose = faultyPart.pose;
-        faultyProduct.actual_pose_frame = faultyPart.frame;
-        faultyProduct.agv_id = "agv" + (sensor_n == 1) ? std::to_string(2) : std::to_string(1);
-
-        if (faultyProduct.agv_id == "agv1")
-        {
-          faultyProduct.tray = "kit_tray_1";
-        }
-
-        if (faultyProduct.agv_id == "agv2")
-        {
-          faultyProduct.tray = "kit_tray_2";
-        }
-
-        if (faultyProduct.agv_id == "any")
-        {
-          faultyProduct.tray = "kit_tray_1";
-        }
-
-        faultyProducts.push_back(faultyProduct);
+        faultyPartsList.push_back(faultyPart);
       }
     }
   }

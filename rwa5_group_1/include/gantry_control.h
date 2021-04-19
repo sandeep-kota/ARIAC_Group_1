@@ -60,8 +60,8 @@ public:
   bool pickPartFromTrayRightArm(part part, std::string agv_id);
   bool correctPosePartRightArm(Part part, geometry_msgs::Pose target, std::string agv_id);
 
-  bool throwLastPartLeft(part part);
-  bool throwLastPartRight(part part);
+  bool throwPartLeft(part part);
+  bool throwPartRight(part part);
 
   /// Send command message to robot controller
   bool sendJointPosition(trajectory_msgs::JointTrajectory command_msg);
@@ -78,10 +78,13 @@ public:
   void FKGantry(std::vector<double> joints);
   void moveOverPart(part part, std::string arm);
   void getProduct(product product);
-  void getProductsToFlip(std::vector<Part> partsToFlip);
+  // void getProductsToFlip(std::vector<Part> partsToFlip);
   void flipProductsAGV();
   bool getPartConveyorLeftArm(product product);
   bool getPartConveyorRightArm(product product);
+  void getLeftArmRoll();
+  void getRightArmRoll();
+  void moveLeftArmRoll(double roll);
   std::string checkFreeGripper();
   std::string getGantryLocation()
   {
@@ -99,6 +102,16 @@ public:
   product getProductRightArm()
   {
     return product_right_arm_;
+  }
+
+  std::vector<Product> getProductsTray1()
+  {
+    return products_kit_tray_1_;
+  }
+
+  std::vector<Product> getProductsTray2()
+  {
+    return products_kit_tray_2_;
   }
 
   void set_product_left_arm_(const product &product)
@@ -144,11 +157,9 @@ public:
   tray2_right_negative tray2_right_negative_;
   product product_left_arm_;
   product product_right_arm_;
-
-
-  PresetLocation safe_spot_3_, ssi1, ssi2, ssi3, ssi4, ssi5, ssi6,
-
-
+  tf2::Quaternion q_left_ee_link_part;
+  tf2::Quaternion q_right_ee_link_part;
+  PresetLocation safe_spot_3_, ssi1, ssi2, ssi3, ssi4, ssi5, ssi6;
 
 private:
   std::vector<double> joint_group_positions_;
@@ -172,8 +183,9 @@ private:
   double left_ee_yaw_;
   std::array<float, 4> left_ee_quaternion_;
   std::string gantry_location_;
-  std::vector<Product> products_to_flip_;
-
+  std::vector<Product> products_to_flip_ {};
+  std::vector<Product> products_kit_tray_1_ {};
+  std::vector<Product> products_kit_tray_2_ {};
 
   sensor_msgs::JointState current_joint_states_;
 

@@ -60,14 +60,16 @@ public:
   bool read_all_sensors_ = false;
   bool faulty_parts_ = false;
 
-  std::vector<Product> getFaultyProducts()
+  std::vector<Part> getFaultyParts()
   {
-    return faultyProducts;
+    return faultyPartsList;
   }
 
   void clearFaultyProducts()
-  { // as of now there will only be one and that will be processed then and there.
-    faultyProducts.erase(faultyProducts.begin());
+  { 
+    if (faultyPartsList.empty() != 1){
+      faultyPartsList.clear();
+    }
   }
 
   bool isFaultyPartDetected()
@@ -137,6 +139,7 @@ public:
 
     std::array<int, 17> logic_call_{0};
     std::array<int, 2> logic_call_agv_{0};
+    std::array<int, 2> logic_call_quality_ {0};
 
     std::array<geometry_msgs::TransformStamped, 17> c_w_transforms_{};
     std::array<geometry_msgs::TransformStamped, NUM_QUALITY_SENSORS> qualitySensorsTransforms{};
@@ -147,7 +150,7 @@ public:
 
     // std::array <std::array <std::vector < part >, 3>, 5> current_parts_ {};
 
-    std::vector<Product> faultyProducts;
+    std::vector<Part> faultyPartsList;
     std::vector<Part> partsToFlip;
     std::vector<Part> partsConveyor;
     bool faultyPartDetected = false;
