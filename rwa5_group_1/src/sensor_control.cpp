@@ -107,6 +107,23 @@ void SensorControl::init()
     //Initialize attribute that stores the frame transforms to world of each camera
     qualitySensorsTransforms.at(i) = transformStamped;
   }
+
+  for (int i = 1; i < 17; i++)
+  {
+    ROS_WARN_STREAM("bin bumber: "<<i);
+    try
+    {
+      transformStamped = tfBuffer.lookupTransform("world", "bin" + std::to_string(i) + "_frame", ros::Time(0), timeout);
+    }
+    catch (tf2::TransformException &ex)
+    {
+      ROS_WARN("%s", ex.what());
+      ros::Duration(1.0).sleep();
+      continue;
+    }
+    //Initialize attribute that stores the frame transforms to world of each camera
+    binTransforms.at(i) = transformStamped;
+  }
 }
 
 /**
@@ -195,6 +212,43 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
       Part.id = Part.type + std::to_string(parts_.at(ktype).at(kcolor).size());
 
       Part.location = sensorLoc;
+
+      if (sensor_n > 2 && sensor_n < 7) {
+        if (Part.pose.position.x > c_w_transforms_.at(sensor_n).transform.translation.x && Part.pose.position.y > msg->pose.position.y){
+          if (binTransforms.at(binMap[sensor_n]["up_left"]).transform.translation.x + 0.1 < Part.pose.position.x){
+            Part.bin_location = "top";
+          } else if (binTransforms.at(binMap[sensor_n]["up_left"]).transform.translation.x - 0.1 > Part.pose.position.x){
+            Part.bin_location = "bottom";
+          } else {
+            Part.bin_location = "middle";
+          }
+          
+        } else if (Part.pose.position.x < c_w_transforms_.at(sensor_n).transform.translation.x && Part.pose.position.y > msg->pose.position.y){
+          if (binTransforms.at(binMap[sensor_n]["down_left"]).transform.translation.x + 0.1 < Part.pose.position.x){
+            Part.bin_location = "top";
+          } else if (binTransforms.at(binMap[sensor_n]["down_left"]).transform.translation.x - 0.1 > Part.pose.position.x){
+            Part.bin_location = "bottom";
+          } else {
+            Part.bin_location = "middle";
+          }
+        } else if (Part.pose.position.x > c_w_transforms_.at(sensor_n).transform.translation.x && Part.pose.position.y < msg->pose.position.y){
+          if (binTransforms.at(binMap[sensor_n]["up_right"]).transform.translation.x + 0.1 < Part.pose.position.x){
+            Part.bin_location = "top";
+          } else if (binTransforms.at(binMap[sensor_n]["up_right"]).transform.translation.x - 0.1 > Part.pose.position.x){
+            Part.bin_location = "bottom";
+          } else {
+            Part.bin_location = "middle";
+          }
+        } else {
+          if (binTransforms.at(binMap[sensor_n]["down_right"]).transform.translation.x + 0.1 < Part.pose.position.x){
+            Part.bin_location = "top";
+          } else if (binTransforms.at(binMap[sensor_n]["down_right"]).transform.translation.x - 0.1 > Part.pose.position.x){
+            Part.bin_location = "bottom";
+          } else {
+            Part.bin_location = "middle";
+          }
+        }
+      }
 
       int partsCount = parts_.at(ktype).at(kcolor).size();
       bool canPartBeAdded = true;
@@ -306,6 +360,55 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
     }
     ros::param::set("/ariac/new_part_conveyor", false);
   }
+
+  bool check_parts_to_flip_in_trays;
+  ros::param::get("/check_parts_to_flip", check_parts_to_flip_in_trays);
+  if (check_parts_to_flip_in_trays && (sensor_n == 0 || sensor_n == 1))
+  {
+    ROS_WARN_STREAM("CHECKING PARTS IN TRAY TO FLIP");
+    int t_sum = 0;
+    for (int i = 0; i < 2; i++)
+    {
+      t_sum += logic_call_agv_[i];
+    }
+    if (t_sum == 2)
+    {
+      ros::param::set("/check_parts_to_flip", false);
+      logic_call_agv_[0] = 0;
+      logic_call_agv_[1] = 0;
+    }
+    if ((logic_call_agv_[sensor_n] == 0) && t_sum < 2)
+    {
+      logic_call_agv_[sensor_n] = 1;
+      if (msg->models.size()>0){
+        for (int i = 0; i < msg->models.size(); i++)
+        {
+          pos_t = msg->models.at(i).type.find("_");
+          type = msg->models.at(i).type.substr(0, pos_t);
+          if (type == "pulley"){
+            ROS_WARN_STREAM("IT IS A: "<<type);
+            Part.picked_status = false;
+            Part.type = msg->models.at(i).type;
+            Part.pose = frame_to_world(i, msg->models.at(i).pose, c_w_transforms_.at(sensor_n));
+            Part.save_pose = Part.pose;
+            Part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
+            Part.time_stamp = ros::Time::now();
+
+            if (sensor_n == 0)
+            {
+              Part.location = "agv_1";
+            }
+            if (sensor_n == 1)
+            {
+              Part.location = "agv_2";
+            }
+            checkPartsToFlip.push_back(Part);
+          }   
+        }
+      }
+    }
+  }
+
 
   bool update_agv_parts;
   ros::param::get("/update_agv_parts", update_agv_parts);
@@ -463,11 +566,9 @@ void SensorControl::quality_cntrl_sensor_callback(const nist_gear::LogicalCamera
 {
   bool activate_quality;
   ros::param::get("/activate_quality", activate_quality);
-  ROS_WARN_STREAM("FAULTY PART LIST SIZE: " << faultyPartsList.size());
   if (activate_quality)
   {
     int sum = 0;
-    ROS_WARN_STREAM("SENSOR: " << sensor_n);
     for (int i = 0; i < 2; i++)
     {
       sum += logic_call_quality_[i];
@@ -481,8 +582,6 @@ void SensorControl::quality_cntrl_sensor_callback(const nist_gear::LogicalCamera
       ROS_WARN_STREAM("SUM EQUALS 2");
       if (faultyPartsList.size() > 0)
       {
-        ROS_WARN_STREAM("FAULTY PART DETECTED");
-        ROS_WARN_STREAM("FAULTY PART LIST SIZE: " << faultyPartsList.size());
         setFaultyPartDetectedFlag(true);
       } else {
         setFaultyPartDetectedFlag(false);

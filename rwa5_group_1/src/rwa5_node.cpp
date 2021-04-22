@@ -295,6 +295,7 @@ int main(int argc, char **argv)
     ros::param::set("/activate_quality", false);
     ros::param::set("/ariac/new_part_conveyor", false);
     ros::param::set("/update_agv_parts", false);
+    ros::param::set("/check_parts_to_flip", false);
 
     std::array<std::array<std::vector<part>, 3>, 5> p_agv1;
     std::array<std::array<std::vector<part>, 3>, 5> p_agv2;
@@ -472,7 +473,10 @@ int main(int argc, char **argv)
 
                 // gantry.getProductsToFlip(sensors.getPartsToFlip());
                 faultyPartsProcess(gantry, sensors);
-                gantry.flipProductsAGV();
+                ros::param::set("/check_parts_to_flip", true);
+                ros::Duration(1).sleep();
+                gantry.flipProductsAGV(sensors.getcheckPartsToFlip());
+                sensors.clearcheckPartsToFlip();
                 // sensors.clearPartsToFlip();
 
                 gantry.goToPresetLocation(gantry.start_); // go back to start position
@@ -565,7 +569,10 @@ int main(int argc, char **argv)
                 // {
                 //     // gantry.getProductsToFlip(sensors.getPartsToFlip());
                 faultyPartsProcess(gantry, sensors);
-                gantry.flipProductsAGV();
+                ros::param::set("/check_parts_to_flip", true);
+                ros::Duration(1).sleep();
+                gantry.flipProductsAGV(sensors.getcheckPartsToFlip());
+                sensors.clearcheckPartsToFlip();
                 //     sensors.clearPartsToFlip();
                 // }
                 gantry.goToPresetLocation(gantry.start_); // go back to start position

@@ -613,7 +613,9 @@ geometry_msgs::Pose GantryControl::getTargetWorldPose(geometry_msgs::Pose target
  */
 void GantryControl::reachPartBinLeftArm(part part)
 {
-
+    if (part.bin_location == "top"){
+        rotateTorso(-PI);
+    }
     geometry_msgs::Pose currentArmPose = left_arm_group_.getCurrentPose().pose;
 
     const double offset_y = part.pose.position.y - currentArmPose.position.y;
@@ -638,6 +640,10 @@ void GantryControl::reachPartBinLeftArm(part part)
  */
 void GantryControl::reachPartBinRightArm(part part)
 {
+
+    if (part.bin_location == "bottom"){
+        rotateTorso(-PI);
+    }
     geometry_msgs::Pose currentArmPose = right_arm_group_.getCurrentPose().pose;
 
     const double offset_y = part.pose.position.y - currentArmPose.position.y;
@@ -903,7 +909,7 @@ bool GantryControl::pickPartLeftArm(part part)
                             part.pose.orientation.w);
 
 
-    part.pose.position.z = part.pose.position.z + model_height.at(part.type) + GRIPPER_HEIGHT - EPSILON;
+    part.pose.position.z = part.pose.position.z + model_height.at(part.type) + GRIPPER_HEIGHT - EPSILON + 0.01;
     part.pose.orientation.x = currentPose.orientation.x;
     part.pose.orientation.y = currentPose.orientation.y;
     part.pose.orientation.z = currentPose.orientation.z;
@@ -994,7 +1000,7 @@ bool GantryControl::pickPartRightArm(part part)
                             part.pose.orientation.w);
 
 
-    part.pose.position.z = part.pose.position.z + model_height.at(part.type) + GRIPPER_HEIGHT - EPSILON;
+    part.pose.position.z = part.pose.position.z + model_height.at(part.type) + GRIPPER_HEIGHT - EPSILON + 0.01;
     part.pose.orientation.x = currentPose.orientation.x;
     part.pose.orientation.y = currentPose.orientation.y;
     part.pose.orientation.z = currentPose.orientation.z;
@@ -1518,6 +1524,20 @@ bool GantryControl::throwPartLeft(part part)
     pickPartLeftArm(part);
     ros::Duration(1).sleep();
 
+    // check if part is in products_to_flip_ an erase it from the vector
+
+    if (products_to_flip_.empty() != 1){
+        for (int i=0; i<products_to_flip_.size(); i++){
+            if (part.pose.position.x + 0.1 >= products_to_flip_.at(i).p.pose.position.x && 
+                    part.pose.position.x - 0.1 <= products_to_flip_.at(i).p.pose.position.x &&
+                    part.pose.position.y + 0.1 >= products_to_flip_.at(i).p.pose.position.y && 
+                    part.pose.position.y - 0.1 <= products_to_flip_.at(i).p.pose.position.y){
+
+                        products_to_flip_.erase(products_to_flip_.begin() + i);
+            }
+        }
+    }
+
     auto state = getGripperState("left_arm");
     if (state.attached)
     {
@@ -2036,15 +2056,38 @@ void GantryControl::rotateTorso(const double angle)
 //     }
 // }
 
-void GantryControl::flipProductsAGV()
+void GantryControl::flipProductsAGV(std::vector<Part> checkPartsToFlip)
 {
     ros::param::set("/flip_process", true);
+        
+    bool parts_to_flip_in_trays {};  // will equal false when there is sesor blackout so that we do not flip parts
 
-    if (products_to_flip_.empty() == 0)
+    if (checkPartsToFlip.empty() != 0 || products_to_flip_.empty() != 0){
+        parts_to_flip_in_trays = false;
+    } else {
+        ROS_WARN_STREAM("CHECK PARTS TO FLIP SIZE: "<< checkPartsToFlip.size() );
+        ROS_WARN_STREAM("PRODUCTS TO FLIP SIZE: " << products_to_flip_.size() );
+        for (int i=0; i<products_to_flip_.size(); i++){ // it can have pulleys that have already been flipped
+            parts_to_flip_in_trays = false;
+            for (int j=0; j<checkPartsToFlip.size(); j++){
+                if (checkPartsToFlip.at(j).pose.position.x + 0.1 >= products_to_flip_.at(i).p.pose.position.x && 
+                    checkPartsToFlip.at(j).pose.position.x - 0.1 <= products_to_flip_.at(i).p.pose.position.x &&
+                    checkPartsToFlip.at(j).pose.position.y + 0.1 >= products_to_flip_.at(i).p.pose.position.y && 
+                    checkPartsToFlip.at(j).pose.position.y - 0.1 <= products_to_flip_.at(i).p.pose.position.y){
+                        parts_to_flip_in_trays = true;
+                        break;
+                }
+            }
+            if (parts_to_flip_in_trays == false){
+                break;
+            }
+        }
+    }
+    if (products_to_flip_.empty() == 0 && parts_to_flip_in_trays)
     {
         for (int i = 0; i < products_to_flip_.size(); i++)
         {
-            products_to_flip_.at(i).p.pose.position.z += 0.015;
+            products_to_flip_.at(i).p.pose.position.z += 0.01;
             if (products_to_flip_.at(i).agv_id.compare("agv2") == 0 || products_to_flip_.at(i).agv_id.compare("any") == 0)
             {
                 goToPresetLocation(agv2_);

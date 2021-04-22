@@ -39,6 +39,13 @@ std::unordered_map<int, std::string> sensorLocationMap = {
         {16, SHELF_11}
 };
 
+std::unordered_map<int, std::unordered_map<std::string, int>> binMap = {
+        {3, {{"up_left", 8}, {"down_left", 7}, {"up_right", 4}, {"down_right", 3}}}, 
+        {4, {{"up_left", 6}, {"down_left", 5}, {"up_right", 2}, {"down_right", 1}}},
+        {5, {{"up_left", 12}, {"down_left", 11}, {"up_right", 16}, {"down_right", 15}}}, // CONV_BELT
+        {6, {{"up_left", 10}, {"down_left", 9}, {"up_right", 14}, {"down_right", 13}}}
+
+};
 
 std::unordered_map<std::string, std::string> oppositeAGV = {{AGV1_ID, AGV2_ID}, {AGV2_ID, AGV1_ID}, {ANY_AGV, AGV2_ID}}; // logic for "any" should be changed
 std::unordered_map<std::string, std::string> agvTrayMap = {{AGV1_ID, AGV1_TRAY}, {AGV2_ID, AGV2_TRAY}}; 
