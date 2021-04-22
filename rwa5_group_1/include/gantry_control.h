@@ -45,6 +45,7 @@ public:
   GantryControl(ros::NodeHandle &node);
 
   void init();
+  void initializeShelfConfiguration();
 
   //    bool moveGantry(std::string waypoints);
 
@@ -186,6 +187,8 @@ private:
   std::vector<Product> products_to_flip_ {};
   std::vector<Product> products_kit_tray_1_ {};
   std::vector<Product> products_kit_tray_2_ {};
+  std::array<geometry_msgs::TransformStamped, 9> shelf_w_transforms_{};
+  std::array<int, 3> shelf_configuration {0,0,0};
 
   sensor_msgs::JointState current_joint_states_;
 

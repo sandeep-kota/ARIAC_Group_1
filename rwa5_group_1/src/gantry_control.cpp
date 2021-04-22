@@ -207,6 +207,8 @@ void GantryControl::init()
     safe_spot_3_.left_arm = zero_larm;
     safe_spot_3_.right_arm = zero_rarm;
 
+    initializeShelfConfiguration(); // check the location of the free_spaces in the bottom shelfs
+
     //--Raw pointers are frequently used to refer to the planning group for improved performance.
     //--To start, we will create a pointer that references the current robot’s state.
     const moveit::core::JointModelGroup *joint_model_group =
@@ -261,8 +263,64 @@ void GantryControl::init()
         node_.serviceClient<nist_gear::VacuumGripperControl>("/ariac/gantry/right_arm/gripper/control");
     right_gripper_control_client.waitForExistence();
 
+    ROS_WARN_STREAM("SHELF 5 CONFIG: " << shelf_configuration.at(0));
+    ROS_WARN_STREAM("SHELF 8 CONFIG: " << shelf_configuration.at(1));
+    ROS_WARN_STREAM("SHELF 11 CONFIG: " << shelf_configuration.at(2));
+
     // Move robot to init position
     ROS_INFO("[GantryControl::init] Init position ready)...");
+}
+
+/**
+ * @brief initialize the current configuration of the bottom shelves
+ * 
+ */
+void GantryControl::initializeShelfConfiguration(){
+//Get transforms world to shelfs
+  tf2_ros::Buffer tfBuffer;
+  tf2_ros::TransformListener tfListener(tfBuffer);
+
+  ros::Duration timeout(5.0);
+
+  geometry_msgs::TransformStamped transformStamped;
+
+  for (int i = 3; i < 12; i++)
+  {
+    try
+    {
+      transformStamped = tfBuffer.lookupTransform("world", "shelf" + std::to_string(i) + "_frame",
+                                                  ros::Time(0), timeout);
+    }
+    catch (tf2::TransformException &ex)
+    {
+      ROS_WARN("%s", ex.what());
+      ros::Duration(1.0).sleep();
+      continue;
+    }
+    //Initialize attribute that stores the frame transforms to world of each camera
+    shelf_w_transforms_.at(i-3) = transformStamped;
+  }
+
+    double d3_4 = abs(shelf_w_transforms_.at(0).transform.translation.x - shelf_w_transforms_.at(1).transform.translation.x);
+    double d4_5 = abs(shelf_w_transforms_.at(1).transform.translation.x - shelf_w_transforms_.at(2).transform.translation.x);
+
+  if (d4_5 > d3_4){
+      shelf_configuration.at(0) += 1;
+  }
+
+    double d6_7 = abs(shelf_w_transforms_.at(3).transform.translation.x - shelf_w_transforms_.at(4).transform.translation.x);
+    double  d7_8 = abs(shelf_w_transforms_.at(4).transform.translation.x - shelf_w_transforms_.at(5).transform.translation.x);
+
+  if (d7_8 > d6_7){
+      shelf_configuration.at(1) += 1;
+  }
+
+    double d9_10 = abs(shelf_w_transforms_.at(6).transform.translation.x - shelf_w_transforms_.at(7).transform.translation.x);
+    double d10_11 = abs(shelf_w_transforms_.at(7).transform.translation.x - shelf_w_transforms_.at(8).transform.translation.x);
+
+  if (d10_11 > d9_10){
+      shelf_configuration.at(2) += 1;
+  }
 }
 /**
  * @brief check which of the grippers are free
