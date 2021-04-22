@@ -82,6 +82,8 @@ const std::string CONV_BELT = "conveyor_belt";
 extern std::string action_state_name[];
 extern std::unordered_map<std::string, double> model_height;
 extern std::unordered_map<int, std::string> sensorLocationMap;
+extern std::unordered_map<int, std::unordered_map<std::string, int>> binMap;
+
 
 extern std::unordered_map<std::string, std::string> oppositeAGV;// {{AGV1_ID, AGV2_ID}, {AGV2_ID, AGV1_ID}, {ANY_AGV, AGV2_ID}}; // logic for "any" should be changed
 extern std::unordered_map<std::string, std::string> agvTrayMap;// {{AGV1_ID, AGV1_TRAY}, {AGV2_ID, AGV2_TRAY}}; 
@@ -117,6 +119,7 @@ typedef struct Part {
   ros::Time time_stamp;
   std::string id;
   std::string location;
+  std::string bin_location;
   //   bool faulty;
   bool picked_status;
 } part;

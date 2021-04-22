@@ -65,6 +65,18 @@ public:
     return faultyPartsList;
   }
 
+  std::vector<Part> getcheckPartsToFlip()
+  {
+    return checkPartsToFlip;
+  }
+
+  void clearcheckPartsToFlip()
+  {
+    if (checkPartsToFlip.empty() != 1){
+      checkPartsToFlip.clear();
+    }
+  }
+
   void clearFaultyProducts()
   { 
     if (faultyPartsList.empty() != 1){
@@ -143,6 +155,7 @@ public:
 
     std::array<geometry_msgs::TransformStamped, 17> c_w_transforms_{};
     std::array<geometry_msgs::TransformStamped, NUM_QUALITY_SENSORS> qualitySensorsTransforms{};
+    std::array<geometry_msgs::TransformStamped, 17> binTransforms{};
 
     std::array<std::array<std::vector<part>, 3>, 5> parts_{};      //Datastructure to store the info from each part detected by the sensors
     std::array<std::array<std::vector<part>, 3>, 5> parts_agv1_{}; //Datastructure to store the info from each part detected by the sensors
@@ -153,6 +166,7 @@ public:
     std::vector<Part> faultyPartsList;
     std::vector<Part> partsToFlip;
     std::vector<Part> partsConveyor;
+    std::vector<Part> checkPartsToFlip;
     bool faultyPartDetected = false;
 
     std::unordered_set<std::string> emptyLocations;

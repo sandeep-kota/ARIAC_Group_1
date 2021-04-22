@@ -79,7 +79,7 @@ public:
   void moveOverPart(part part, std::string arm);
   void getProduct(product product);
   // void getProductsToFlip(std::vector<Part> partsToFlip);
-  void flipProductsAGV();
+  void flipProductsAGV(std::vector<Part> checkPartsToFlip);
   bool getPartConveyorLeftArm(product product);
   bool getPartConveyorRightArm(product product);
   void getLeftArmRoll();
