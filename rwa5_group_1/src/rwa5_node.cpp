@@ -124,8 +124,8 @@ void faultyPartsProcess(GantryControl &gantry, SensorControl &sensors)
                 gantry.throwPartLeft(faultyProducts.at(i + 1).p);
             }
 
-            gantry.goToPresetLocation(gantry.start_); // go to start location
-            gantry.setGantryLocation("start");
+            gantry.goToPresetLocation(gantry.start_90_); // go to start location
+            gantry.setGantryLocation("start_90");
 
             faultyProducts.at(i).p = sensors.findPart(faultyProducts.at(i).type); // find a new part in the env o replace
 
@@ -248,6 +248,7 @@ void faultyPartsProcess(GantryControl &gantry, SensorControl &sensors)
                 }
             }
 
+            // TODO Account for the new getProduct() @SANDEEP
             if (gantry.getGantryLocation().compare("aisle_1") == 0) // go to start location from current gantry location
             {
                 gantry.goToPresetLocation(gantry.aisle1_);
@@ -257,7 +258,7 @@ void faultyPartsProcess(GantryControl &gantry, SensorControl &sensors)
                 gantry.goToPresetLocation(gantry.aisle2_);
             }
 
-            gantry.goToPresetLocation(gantry.start_);
+            gantry.goToPresetLocation(gantry.start_90_);
 
             gantry.placePartLeftArm();
 
@@ -492,7 +493,7 @@ int main(int argc, char **argv)
                     sensors.clearcheckPartsToFlip();
                     // sensors.clearPartsToFlip();
 
-                    gantry.goToPresetLocation(gantry.start_); // go back to start position
+                    gantry.goToPresetLocation(gantry.start_90_); // go back to start position
 
                     // the last two products that were picked have been placed.
 
@@ -544,7 +545,7 @@ int main(int argc, char **argv)
                     sensors.clearcheckPartsToFlip();
                     // sensors.clearPartsToFlip();
 
-                    gantry.goToPresetLocation(gantry.start_); // go back to start position
+                    gantry.goToPresetLocation(gantry.start_90_); // go back to start position
 
                     // the last two products that were picked have been placed.
 
@@ -611,118 +612,120 @@ int main(int argc, char **argv)
                     ROS_WARN_STREAM("Picked from a bin or shelf");
                 }
             }
-        }
-        // Place in agv the two last retrieved products
-        // this piece of code has been brought inside the while loop
-        if (!comp.newOrderAlert())
-        {
-            if (gantry.checkFreeGripper().compare("none") == 0 || gantry.checkFreeGripper().compare("right") == 0) // if none of the grippers are free place both products in grippers
-            {
-                // if (gantry.getGantryLocation().compare("aisle_1") == 0) // go to start location from current gantry location
-                // {
-                //     gantry.goToPresetLocation(gantry.aisle1_);
-                // }
-                // else if (gantry.getGantryLocation().compare("aisle_2") == 0)
-                // {
-                //     gantry.goToPresetLocation(gantry.aisle2_);
-                // }
-
-                // gantry.goToPresetLocation(gantry.start_);
-
-                gantry.placePartLeftArm(); // Place product of left arm in agv
-
-                std::string free_gripper = gantry.checkFreeGripper();
-                if (free_gripper.compare("right") != 0)
-                {
-                    gantry.placePartRightArm(); // Place product of right arm in agv
-                }
-                else
-                {
-                    ros::param::set("/no_prod_right", true);
-                }
-
-                // ros::param::set("/check_flipped", true);
-                // ros::Duration(1).sleep();
-
-                // if (sensors.getPartsToFlip().empty() != 1)
-                // {
-                //     // gantry.getProductsToFlip(sensors.getPartsToFlip());
-                faultyPartsProcess(gantry, sensors);
-                ros::param::set("/check_parts_to_flip", true);
-                ros::Duration(1).sleep();
-                gantry.flipProductsAGV(sensors.getcheckPartsToFlip());
-                sensors.clearcheckPartsToFlip();
-                //     sensors.clearPartsToFlip();
-                // }
-                gantry.goToPresetLocation(gantry.start_); // go back to start position
-
-                // the last two products that were picked have been placed.
-                // take the last two from the list itself instead of using index p;
-                int totalProducts = list_of_products.size();
-                comp.updateAGVProductMap(list_of_products.at(totalProducts - 1).agv_id, list_of_products.at(totalProducts - 1));
-
-                // 2nd last also placed
-                if (totalProducts % 2 == 0)
-                {
-                    comp.updateAGVProductMap(list_of_products.at(totalProducts - 2).agv_id, list_of_products.at(totalProducts - 2));
-                }
-            }
-
+            // }
+            // Place in agv the two last retrieved products
+            // this piece of code has been brought inside the while loop
             if (!comp.newOrderAlert())
             {
-                // time to send the agv:
-
-                bool blackout;
-                ros::param::get("/ariac/sensor_blackout", blackout);
-                if (blackout)
+                if (gantry.checkFreeGripper().compare("none") == 0 || gantry.checkFreeGripper().compare("right") == 0) // if none of the grippers are free place both products in grippers
                 {
-                    ROS_WARN_STREAM("Sensor blackout is there. Waiting for it to get over..");
-                    // wait till blackout is over
-                    while (blackout)
+                    // if (gantry.getGantryLocation().compare("aisle_1") == 0) // go to start location from current gantry location
+                    // {
+                    //     gantry.goToPresetLocation(gantry.aisle1_);
+                    // }
+                    // else if (gantry.getGantryLocation().compare("aisle_2") == 0)
+                    // {
+                    //     gantry.goToPresetLocation(gantry.aisle2_);
+                    // }
+
+                    // gantry.goToPresetLocation(gantry.start_);
+
+                    gantry.placePartLeftArm(); // Place product of left arm in agv
+
+                    std::string free_gripper = gantry.checkFreeGripper();
+                    if (free_gripper.compare("right") != 0)
                     {
-                        ros::param::get("/ariac/sensor_blackout", blackout);
+                        gantry.placePartRightArm(); // Place product of right arm in agv
                     }
-                    ROS_WARN_STREAM("Sensor blackout over..");
-                    // check the faulty parts again and the parts that are to be flipped
+                    else
+                    {
+                        ros::param::set("/no_prod_right", true);
+                    }
+
+                    // ros::param::set("/check_flipped", true);
+                    // ros::Duration(1).sleep();
+
+                    // if (sensors.getPartsToFlip().empty() != 1)
+                    // {
+                    //     // gantry.getProductsToFlip(sensors.getPartsToFlip());
                     faultyPartsProcess(gantry, sensors);
                     ros::param::set("/check_parts_to_flip", true);
                     ros::Duration(1).sleep();
                     gantry.flipProductsAGV(sensors.getcheckPartsToFlip());
                     sensors.clearcheckPartsToFlip();
+                    //     sensors.clearPartsToFlip();
+                    // }
+                    gantry.goToPresetLocation(gantry.start_90_); // go back to start position
+
+                    // the last two products that were picked have been placed.
+                    // take the last two from the list itself instead of using index p;
+                    int totalProducts = list_of_products.size();
+                    comp.updateAGVProductMap(list_of_products.at(totalProducts - 1).agv_id, list_of_products.at(totalProducts - 1));
+
+                    // 2nd last also placed
+                    if (totalProducts % 2 == 0)
+                    {
+                        comp.updateAGVProductMap(list_of_products.at(totalProducts - 2).agv_id, list_of_products.at(totalProducts - 2));
+                    }
                 }
 
-                std::string shipmentAGV = current_shipment.agv_id;
-                std::string shipmentTray = agvTrayMap.at(shipmentAGV);
-                ROS_INFO_STREAM("Product Placed, NOW SEND AGV: " << shipmentAGV << "Tray: " << shipmentTray);
-
-                if (agvControl.isAGVReady(shipmentTray))
+                if (!comp.newOrderAlert())
                 {
-                    std::string shipmentType = current_shipment.shipment_type;
-                    agvControl.sendAGV(shipmentType, shipmentTray);
-                }
-                else
-                {
-                    ROS_INFO_STREAM("Tray not ready: " << shipmentTray);
-                }
+                    // time to send the agv:
 
-                ROS_INFO_STREAM("AGV SENT");
+                    bool blackout;
+                    ros::param::get("/ariac/sensor_blackout", blackout);
+                    if (blackout)
+                    {
+                        ROS_WARN_STREAM("Sensor blackout is there. Waiting for it to get over..");
+                        // wait till blackout is over
+                        while (blackout)
+                        {
+                            ros::param::get("/ariac/sensor_blackout", blackout);
+                        }
+                        ROS_WARN_STREAM("Sensor blackout over..");
+                        // check the faulty parts again and the parts that are to be flipped
+                        faultyPartsProcess(gantry, sensors);
+                        ros::param::set("/check_parts_to_flip", true);
+                        ros::Duration(1).sleep();
+                        gantry.flipProductsAGV(sensors.getcheckPartsToFlip());
+                        sensors.clearcheckPartsToFlip();
+                    }
+
+                    std::string shipmentAGV = current_shipment.agv_id;
+                    std::string shipmentTray = agvTrayMap.at(shipmentAGV);
+                    ROS_INFO_STREAM("Product Placed, NOW SEND AGV: " << shipmentAGV << "Tray: " << shipmentTray);
+
+                    if (agvControl.isAGVReady(shipmentTray))
+                    {
+                        std::string shipmentType = current_shipment.shipment_type;
+                        agvControl.sendAGV(shipmentType, shipmentTray);
+                    }
+                    else
+                    {
+                        ROS_INFO_STREAM("Tray not ready: " << shipmentTray);
+                    }
+
+                    ROS_INFO_STREAM("AGV SENT");
+                }
             }
-        }
-        if (comp.newOrderAlert() && !transitionDone)
-        {
-            ROS_WARN_STREAM("New Order Received. We need to stop current assembly.");
-            /** new high priority order received;
+
+            if (comp.newOrderAlert() && !transitionDone)
+            {
+                ROS_WARN_STREAM("New Order Received. We need to stop current assembly.");
+                /** new high priority order received;
                  *  need to stop the current process and process the new order
                  *  take care of the pending products
                  *  break the current iteration
                  *  
                  */
-            comp.orderTransition(list_of_shipments, sensors, gantry);
+                comp.orderTransition(list_of_shipments, sensors, gantry);
+            }
         }
     }
 
-// Not needed..
-/**
+    // Not needed..
+    /**
     // Place in agv the two last retrieved products
     if (gantry.checkFreeGripper().compare("none") == 0 || gantry.checkFreeGripper().compare("right") == 0) // if none of the grippers are free place both products in grippers
     {
@@ -780,7 +783,7 @@ int main(int argc, char **argv)
     ROS_WARN_STREAM("AGV SEND");
 
     */
-spinner.stop();
-ros::shutdown();
-return 0;
+    spinner.stop();
+    ros::shutdown();
+    return 0;
 }
