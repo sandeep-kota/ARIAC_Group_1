@@ -37,6 +37,18 @@
 
 #include <tf2/LinearMath/Quaternion.h>
 
+bool checkBlackout(int sensorNum, int numProductsToBeSent, SensorControl &sensors) {
+    ros::param::set(ACTIVATE_LOG_CAM, sensorNum);
+    ros::Duration(1).sleep();
+    ros::param::set(ACTIVATE_LOG_CAM, -1);
+    int numProductsDetected = sensors.getLogicalCameraNumProducts(sensorNum);
+    
+    if (numProductsDetected != numProductsToBeSent) {
+        return true;
+    }
+    return false;
+}
+
 /**
  * @brief function that processes the flow when a faulty part is detected
  * 
@@ -677,14 +689,18 @@ int main(int argc, char **argv)
                     // time to send the agv:
 
                     bool blackout;
-                    ros::param::get("/ariac/sensor_blackout", blackout);
+
+                    std::string shipmentAGV = current_shipment.agv_id;
+                    int sensorNum = sensorNumMap.at(shipmentAGV);
+                    
+                    blackout = checkBlackout(sensorNum, list_of_products.size(), sensors);
                     if (blackout)
                     {
                         ROS_WARN_STREAM("Sensor blackout is there. Waiting for it to get over..");
                         // wait till blackout is over
                         while (blackout)
                         {
-                            ros::param::get("/ariac/sensor_blackout", blackout);
+                            blackout = checkBlackout(sensorNum, list_of_products.size(), sensors);
                         }
                         ROS_WARN_STREAM("Sensor blackout over..");
                         // check the faulty parts again and the parts that are to be flipped
@@ -695,7 +711,7 @@ int main(int argc, char **argv)
                         sensors.clearcheckPartsToFlip();
                     }
 
-                    std::string shipmentAGV = current_shipment.agv_id;
+                    
                     std::string shipmentTray = agvTrayMap.at(shipmentAGV);
                     ROS_INFO_STREAM("Product Placed, NOW SEND AGV: " << shipmentAGV << "Tray: " << shipmentTray);
 

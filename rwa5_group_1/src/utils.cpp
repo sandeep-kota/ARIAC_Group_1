@@ -40,6 +40,13 @@ std::unordered_map<int, std::string> sensorLocationMap = {
         {16, SHELF_11}
 };
 
+// more things can be added
+std::unordered_map<std::string, int> sensorNumMap = {
+        {ANY_AGV, 0},
+        {AGV1_ID, 0},
+        {AGV2_ID, 1},
+};
+
 std::unordered_map<int, std::unordered_map<std::string, int>> binMap = {
         {3, {{"up_left", 8}, {"down_left", 7}, {"up_right", 4}, {"down_right", 3}}}, 
         {4, {{"up_left", 6}, {"down_left", 5}, {"up_right", 2}, {"down_right", 1}}},

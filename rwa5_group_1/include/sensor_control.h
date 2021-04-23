@@ -124,6 +124,8 @@ public:
 
   std::array<std::array<std::vector<part>, 3>, 5> getPartsAGV(std::string agv_id);
 
+  int getLogicalCameraNumProducts(int sensorNum);
+
   private:
     ros::NodeHandle node_;
 
@@ -170,6 +172,7 @@ public:
     bool faultyPartDetected = false;
 
     std::unordered_set<std::string> emptyLocations;
+    std::unordered_map<int, int> logicalCamNumProducts;
   };
 
 #endif

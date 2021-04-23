@@ -80,10 +80,13 @@ const std::string SHELF_8 = "shelf_8";
 const std::string SHELF_11 = "shelf_11";
 const std::string CONV_BELT = "conveyor_belt";
 
+const std::string ACTIVATE_LOG_CAM = "/ariac/activate_logical_camera";
+
 
 extern std::string action_state_name[];
 extern std::unordered_map<std::string, double> model_height;
 extern std::unordered_map<int, std::string> sensorLocationMap;
+extern std::unordered_map<std::string, int> sensorNumMap;
 extern std::unordered_map<int, std::unordered_map<std::string, int>> binMap;
 
 

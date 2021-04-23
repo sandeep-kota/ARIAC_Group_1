@@ -164,6 +164,22 @@ color_code SensorControl::hashit_color(std::string const &colorString)
 void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n)
 {
 
+  int explicit_activated_sensor = -1;
+  ros::param::get(ACTIVATE_LOG_CAM, explicit_activated_sensor);
+
+  if (explicit_activated_sensor == sensor_n) {
+    if (logicalCamNumProducts.find(sensor_n) == logicalCamNumProducts.end()) {
+      logicalCamNumProducts.insert({sensor_n, msg->models.size()});
+    }
+    else {
+      logicalCamNumProducts.find(sensor_n)->second = msg->models.size();
+    }
+    return;
+
+  }
+
+  
+  
   // ROS_INFO_STREAM("READING LOGICAL CAMERAS");
   int pos_t{};
   int pos_c{};
@@ -748,3 +764,11 @@ bool SensorControl::isPartPoseAGVCorrect(part target, std::string agv_id)
   }
   return ret_val;
 }
+
+int SensorControl::getLogicalCameraNumProducts(int sensorNum) {
+  if (logicalCamNumProducts.find(sensorNum) == logicalCamNumProducts.end()) {
+    return 0;
+  }
+  return logicalCamNumProducts.at(sensorNum);
+}
+
