@@ -3489,7 +3489,7 @@ void GantryControl::placePartLeftArm()
     if (product_left_arm_.agv_id.compare("agv2") == 0 || product_left_arm_.agv_id.compare("any") == 0)
     {
         goToPresetLocation(agv2_90_);
-        goToPresetLocation(agv2_);
+        // goToPresetLocation(agv2_);
         if (product_left_arm_.pose.position.x >= 0)
         {
             goToPresetLocation(tray2_left_positive_);
@@ -3502,7 +3502,7 @@ void GantryControl::placePartLeftArm()
     else
     {
         goToPresetLocation(agv1_90_);
-        goToPresetLocation(agv1_);
+        // goToPresetLocation(agv1_);
         if (product_left_arm_.pose.position.x >= 0)
         {
             goToPresetLocation(tray1_left_positive_);
@@ -3654,7 +3654,7 @@ void GantryControl::placePartRightArm()
     if (product_right_arm_.agv_id.compare("agv2") == 0 || product_right_arm_.agv_id.compare("any") == 0)
     {
         goToPresetLocation(agv2_90_);
-        goToPresetLocation(agv2_);
+        // goToPresetLocation(agv2_);
         if (product_right_arm_.pose.position.x >= 0)
         {
             goToPresetLocation(tray2_right_positive_);
@@ -3667,7 +3667,7 @@ void GantryControl::placePartRightArm()
     else
     {
         goToPresetLocation(agv1_90_);
-        goToPresetLocation(agv1_);
+        // goToPresetLocation(agv1_);
         if (product_right_arm_.pose.position.x >= 0)
         {
             goToPresetLocation(tray1_right_positive_);
