@@ -1,4 +1,4 @@
-# RWA4
+# RWA5
 #drop parts: no
 #new order: no
 #flipped part: yes
@@ -85,7 +85,7 @@ sensor_blackout:
   duration: 50
 
 faulty_products:
-  # - pulley_part_blue_3
+  - pulley_part_blue_3
   - piston_rod_part_red_2
   - piston_rod_part_red_6
   - gasket_part_green_4

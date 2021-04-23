@@ -2778,7 +2778,7 @@ bool GantryControl::pickPartLeftArm(part part)
                             part.pose.orientation.w);
 
 
-    part.pose.position.z = part.pose.position.z + model_height.at(part.type) + GRIPPER_HEIGHT - EPSILON + 0.01;
+    part.pose.position.z = part.pose.position.z + model_height.at(part.type) + GRIPPER_HEIGHT - EPSILON + 0.007;
     part.pose.orientation.x = currentPose.orientation.x;
     part.pose.orientation.y = currentPose.orientation.y;
     part.pose.orientation.z = currentPose.orientation.z;
@@ -2869,7 +2869,7 @@ bool GantryControl::pickPartRightArm(part part)
                             part.pose.orientation.w);
 
 
-    part.pose.position.z = part.pose.position.z + model_height.at(part.type) + GRIPPER_HEIGHT - EPSILON + 0.01;
+    part.pose.position.z = part.pose.position.z + model_height.at(part.type) + GRIPPER_HEIGHT - EPSILON + 0.007;
     part.pose.orientation.x = currentPose.orientation.x;
     part.pose.orientation.y = currentPose.orientation.y;
     part.pose.orientation.z = currentPose.orientation.z;

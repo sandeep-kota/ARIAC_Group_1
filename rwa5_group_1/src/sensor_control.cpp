@@ -566,6 +566,15 @@ void SensorControl::quality_cntrl_sensor_callback(const nist_gear::LogicalCamera
 {
   bool activate_quality;
   ros::param::get("/activate_quality", activate_quality);
+  ROS_WARN_STREAM("QUALITY CALL");
+  if (msg == nullptr) {
+    ROS_WARN_STREAM("MSG SIZE: EMPTY");
+  }
+  else {
+    ROS_WARN_STREAM("MSG SIZE: " << msg->models.size());
+  }
+  
+  
   if (activate_quality)
   {
     int sum = 0;

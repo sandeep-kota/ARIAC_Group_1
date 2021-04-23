@@ -249,16 +249,16 @@ void faultyPartsProcess(GantryControl &gantry, SensorControl &sensors)
             }
 
             // TODO Account for the new getProduct() @SANDEEP
-            if (gantry.getGantryLocation().compare("aisle_1") == 0) // go to start location from current gantry location
-            {
-                gantry.goToPresetLocation(gantry.aisle1_);
-            }
-            else if (gantry.getGantryLocation().compare("aisle_2") == 0)
-            {
-                gantry.goToPresetLocation(gantry.aisle2_);
-            }
+            // if (gantry.getGantryLocation().compare("aisle_1") == 0) // go to start location from current gantry location
+            // {
+            //     gantry.goToPresetLocation(gantry.aisle1_);
+            // }
+            // else if (gantry.getGantryLocation().compare("aisle_2") == 0)
+            // {
+            //     gantry.goToPresetLocation(gantry.aisle2_);
+            // }
 
-            gantry.goToPresetLocation(gantry.start_90_);
+            // gantry.goToPresetLocation(gantry.start_90_);
 
             gantry.placePartLeftArm();
 
@@ -446,8 +446,10 @@ int main(int argc, char **argv)
                     //         sensors.isPartPoseAGVCorrect(target_part, gantry.getProductLeftArm().agv_id);
                     //     }
                     // }
-                    gantry.placePartRightArm(); // Place product of right arm in agv
+                    gantry.placePartRightArm();
+            
 
+                     // Place product of right arm in agv
                     ////!------ Check part orientation Rgght with order -------!
                     // Get parts from AGV logical cameras sensors
                     // ros::Duration(1).sleep(); // Delay to update the parts list
@@ -633,8 +635,9 @@ int main(int argc, char **argv)
                     gantry.placePartLeftArm(); // Place product of left arm in agv
 
                     std::string free_gripper = gantry.checkFreeGripper();
-                    if (free_gripper.compare("right") != 0)
+                    if (list_of_products.size()%2 == 0)
                     {
+                        ROS_WARN_STREAM("LAST PART RIGHT ARM PLACING");
                         gantry.placePartRightArm(); // Place product of right arm in agv
                     }
                     else

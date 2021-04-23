@@ -22,7 +22,7 @@
   <param name="/use_sim_time" value="true"></param>
 
   <node name="ariac_sim" pkg="nist_gear" type="gear.py"
-        args="
+        args=" --development-mode
           $(arg verbose_args)
           $(arg state_logging_args)
           $(arg gui_args)

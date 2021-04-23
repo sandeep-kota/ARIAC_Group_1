@@ -29,7 +29,7 @@ DynamicObs::DynamicObs(ros::NodeHandle &node)
 void DynamicObs::blackout_subscriber_callback(const nist_gear::Proximity::ConstPtr &msg)
 {
 	latest_time = msg->header.stamp.toSec();
-	ROS_INFO_STREAM("Blackout latest time :"<<latest_time);
+	// ROS_INFO_STREAM("Blackout latest time :"<<latest_time);
 }
 
 void DynamicObs::break_beam_callback(const nist_gear::Proximity::ConstPtr &msg, int sensor) {
@@ -56,7 +56,7 @@ bool DynamicObs::isBlackout() {
 	// for(int i = 0; i< 2*NUM_OBSTACLES; ++i) {
 	// 	latest_time = latest_time>reading_time_[i]? latest_time:reading_time_[i];
 	// }
-	ROS_INFO_STREAM("Curr Time, Latest Time :"<<cur_time<<","<<latest_time);
+	// ROS_INFO_STREAM("Curr Time, Latest Time :"<<cur_time<<","<<latest_time);
 	if(cur_time - latest_time <= 2.0) return false;
 	else if (cur_time - latest_time > 2.0) return true;
 }
@@ -66,7 +66,7 @@ void DynamicObs::publish_data() {
 	bool blackout = isBlackout();
 	ros::param::set("/ariac/sensor_blackout", blackout);
 	if (blackout) {
-		ROS_WARN_STREAM("Sensor blackout detected");
+		// ROS_WARN_STREAM("Sensor blackout detected");
 	}
 
 	double cur_time = ros::Time::now().toSec();
