@@ -694,24 +694,21 @@ void GantryControl::pickPartFromShelf8Aisle2ObstaclesSafe1(product product)
         {
             tmp.location = "tmp_locs";
             tmp.right_arm = {3.14, -PI, 2.89, -1.57, 0, 0};
-            goToPresetLocation(tmp);
-            ROS_INFO_STREAM("Wait for Obstacle 2 :");
-            while (((obstacle_2_pos[0] <= ssi5_.gantry[0]) || (obstacle_2_pos[2] == -1)))
-            {
-            }
+
             ROS_INFO_STREAM("Wait for Obstacle 1");
             while (((obstacle_1_pos[0] <= ssi5_.gantry[0]) || (obstacle_1_pos[2] == -1)))
             {
+                goToPresetLocation(tmp);
             }
         }
         else if (obstacle_2_pos[3] == 2)
         {
             tmp.location = "tmp_locs";
             tmp.right_arm = {3.14, -PI, 2.89, -1.57, 0, 0};
-            goToPresetLocation(tmp);
             ROS_INFO_STREAM("Wait for Obstacle 2 :");
             while (((obstacle_2_pos[0] <= ssi5_.gantry[0]) || (obstacle_2_pos[2] == -1)))
             {
+                goToPresetLocation(tmp);
             }
         }
         // // !--------Faster implmentation of reachShelfLeft() -------!
@@ -782,7 +779,7 @@ void GantryControl::pickPartFromShelf8Aisle2ObstaclesSafe1(product product)
             ROS_INFO_STREAM("[Gripper] = object not attached");
             // Retreive to Safe Location
             goToPresetLocation(tmp3);
-            // goToPresetLocation(tmp2);
+            goToPresetLocation(tmp2);
             goToPresetLocation(tmp1);
             goToPresetLocation(tmp);
 
@@ -840,24 +837,20 @@ void GantryControl::pickPartFromShelf8Aisle2ObstaclesSafe1(product product)
         {
             tmp.location = "tmp_locs";
             tmp.left_arm = {0, -PI, 2.89, -1.57, 0, 0};
-            goToPresetLocation(tmp);
-            ROS_INFO_STREAM("Wait for Obstacle 2 :");
-            while (((obstacle_2_pos[0] <= ssi5_.gantry[0]) || (obstacle_2_pos[2] == -1)))
-            {
-            }
             ROS_INFO_STREAM("Wait for Obstacle 1");
             while (((obstacle_1_pos[0] <= ssi5_.gantry[0]) || (obstacle_1_pos[2] == -1)))
             {
+                goToPresetLocation(tmp);
             }
         }
         else if (obstacle_2_pos[3] == 2)
         {
             tmp.location = "tmp_locs";
             tmp.left_arm = {0, -PI, 2.89, -1.57, 0, 0};
-            goToPresetLocation(tmp);
             ROS_INFO_STREAM("Wait for Obstacle 2 :");
             while (((obstacle_2_pos[0] <= ssi5_.gantry[0]) || (obstacle_2_pos[2] == -1)))
             {
+                goToPresetLocation(tmp);
             }
         }
         // // !--------Faster implmentation of reachShelfRight() -------!
@@ -918,7 +911,7 @@ void GantryControl::pickPartFromShelf8Aisle2ObstaclesSafe1(product product)
         {
             ROS_INFO_STREAM("[Gripper] = object attached");
             goToPresetLocation(tmp3);
-            // goToPresetLocation(tmp2);
+            goToPresetLocation(tmp2);
             goToPresetLocation(tmp1);
             goToPresetLocation(tmp);
         }
@@ -928,7 +921,7 @@ void GantryControl::pickPartFromShelf8Aisle2ObstaclesSafe1(product product)
             ROS_INFO_STREAM("[Gripper] = object not attached");
             // Retreive to Safe Location
             goToPresetLocation(tmp3);
-            // goToPresetLocation(tmp2);
+            goToPresetLocation(tmp2);
             goToPresetLocation(tmp1);
             goToPresetLocation(tmp);
 
@@ -2041,15 +2034,15 @@ void GantryControl::getProduct(product product)
             {
                 goToPresetLocation(aisle1_);
                 pickPartFromShelf8Aisle2ObstaclesSafe1(product);
-                //add product to arm
-                if (free_arm.compare("any") == 0 || free_arm.compare("left") == 0)
-                {
-                    product_left_arm_ = product;
-                }
-                else
-                {
-                    product_right_arm_ = product;
-                }
+                    //add product to arm
+    if (free_arm.compare("any") == 0 || free_arm.compare("left") == 0)
+    {
+        product_left_arm_ = product;
+    }
+    else
+    {
+        product_right_arm_ = product;
+    }
                 return;
             }
         }
@@ -2158,15 +2151,15 @@ void GantryControl::getProduct(product product)
                 gantry_location_ = "bins";
             }
         }
-        //add product to arm
-        if (free_arm.compare("any") == 0 || free_arm.compare("left") == 0)
-        {
-            product_left_arm_ = product;
-        }
-        else
-        {
-            product_right_arm_ = product;
-        }
+    }
+    //add product to arm
+    if (free_arm.compare("any") == 0 || free_arm.compare("left") == 0)
+    {
+        product_left_arm_ = product;
+    }
+    else
+    {
+        product_right_arm_ = product;
     }
 }
 // /**
