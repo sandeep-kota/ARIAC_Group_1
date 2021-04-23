@@ -10,9 +10,13 @@ DynamicObs::DynamicObs(ros::NodeHandle &node)
 			boost::bind(&DynamicObs::break_beam_callback, this, _1, i+1));
 	}
 
-	for (int i =0; i< NUM_OBSTACLES ; ++i) {
+	// blackout_subscriber_ = node_.subscribe<nist_gear::Proximity>("/ariac/breakbeam_0", 1, &DynamicObs::blackout_subscriber_callback, this);
+	blackout_subscriber_ = node_.subscribe("/ariac/breakbeam_0", 1, &DynamicObs::blackout_subscriber_callback, this);
+
+	for (int i = 0; i < NUM_OBSTACLES; ++i)
+	{
 		dyn_obs_pos_pub_[i] = node_.advertise<geometry_msgs::Point32>
-			("obstacle_" + std::to_string(i+1) + "_pos", 2);	
+			("obstacle_" + std::to_string(i+1) + "_pos", 2);
 	}
 
 	for(int i=0; i< NUM_OBSTACLES; ++i)
@@ -20,6 +24,12 @@ DynamicObs::DynamicObs(ros::NodeHandle &node)
 
 	memset(reading_time_, 0, sizeof(reading_time_));
 
+}
+
+void DynamicObs::blackout_subscriber_callback(const nist_gear::Proximity::ConstPtr &msg)
+{
+	latest_time = msg->header.stamp.toSec();
+	ROS_INFO_STREAM("Blackout latest time :"<<latest_time);
 }
 
 void DynamicObs::break_beam_callback(const nist_gear::Proximity::ConstPtr &msg, int sensor) {
@@ -42,12 +52,13 @@ void DynamicObs::break_beam_callback(const nist_gear::Proximity::ConstPtr &msg, 
 bool DynamicObs::isBlackout() {
 
 	double cur_time = ros::Time::now().toSec();
-	int latest_time = -1;
-	for(int i = 0; i< 2*NUM_OBSTACLES; ++i) {
-		latest_time = latest_time>reading_time_[i]? latest_time:reading_time_[i];
-	}
-	if(cur_time - latest_time <= 8) return false;
-	else return true;
+	// int latest_time = -1;
+	// for(int i = 0; i< 2*NUM_OBSTACLES; ++i) {
+	// 	latest_time = latest_time>reading_time_[i]? latest_time:reading_time_[i];
+	// }
+	ROS_INFO_STREAM("Curr Time, Latest Time :"<<cur_time<<","<<latest_time);
+	if(cur_time - latest_time <= 2.0) return false;
+	else if (cur_time - latest_time > 2.0) return true;
 }
 
 void DynamicObs::publish_data() {
@@ -67,8 +78,10 @@ void DynamicObs::publish_data() {
 			
 			if(cur_reading_[sensor1]) {
 				obs_[i].x = -1.6;
+				obs_[i].z = -1;
 			} else if(cur_reading_[sensor2]) {
 				obs_[i].x = -16.6;
+				obs_[i].z = 1;
 			} else {
 				if(reading_time_[sensor1]>reading_time_[sensor2]) {
 					obs_[i].z =  -1;
@@ -96,22 +109,26 @@ void DynamicObs::publish_data() {
 				double time_diff = std::fmod(cur_time - reading_time_[sensor1],2*(MOVE_TIME+WAIT_TIME));
 				if( time_diff< MOVE_TIME+WAIT_TIME) {
 					obs_[i].x = -1.6 - (15.0/MOVE_TIME)*std::max(0.0, time_diff - WAIT_TIME);
-					obs_[i].z = time_diff>WAIT_TIME? -1:1;
+					// obs_[i].z = time_diff>WAIT_TIME? -1:1;
+					obs_[i].z = -1;
 				}
 				else {
 					obs_[i].x = -16.6 + (15.0/MOVE_TIME)*std::max(0.0,time_diff-2*WAIT_TIME-MOVE_TIME);
-					obs_[i].z = time_diff>2*WAIT_TIME+MOVE_TIME? 1:-1;
+					// obs_[i].z = time_diff>2*WAIT_TIME+MOVE_TIME? 1:-1;
+					obs_[i].z = 1;
 				}
 
 			} else if(cur_reading_[sensor2]) {
 				double time_diff = std::fmod(cur_time - reading_time_[sensor2],2*(MOVE_TIME+WAIT_TIME));
 				if( time_diff< MOVE_TIME+WAIT_TIME) {
 					obs_[i].x = -16.6 + (15.0/MOVE_TIME)*std::max(0.0, time_diff - WAIT_TIME);
-					obs_[i].z = time_diff>WAIT_TIME? 1:-1;
+					// obs_[i].z = time_diff>WAIT_TIME? 1:-1;
+					obs_[i].z = 1;
 				}
 				else {
 					obs_[i].x = -1.6 - (15.0/MOVE_TIME)*std::max(0.0, time_diff-2*WAIT_TIME-MOVE_TIME);
-					obs_[i].z = time_diff>2*WAIT_TIME+MOVE_TIME? -1:1;
+					// obs_[i].z = time_diff>2*WAIT_TIME+MOVE_TIME? -1:1;
+					obs_[i].z = -1;
 				}
 			} else {
 				obs_[i].z = reading_time_[sensor1]>reading_time_[sensor2]? -1:1;
@@ -120,14 +137,18 @@ void DynamicObs::publish_data() {
 				
 				if(time_diff<MOVE_TIME+WAIT_TIME && obs_[i].z == -1){
 					obs_[i].x = std::max(-16.6, -1.6 - (15.0/MOVE_TIME)*time_diff);
+					obs_[i].z = time_diff > MOVE_TIME ? 1 : -1;
 				} else if (time_diff<MOVE_TIME+WAIT_TIME && obs_[i].z == 1) {
 					obs_[i].x = std::min(-1.6, -16.6 + (15.0/MOVE_TIME)*time_diff);
+					obs_[i].z = time_diff > MOVE_TIME ? -1 : 1;
 				} else if(time_diff>MOVE_TIME+WAIT_TIME && obs_[i].z == -1) {
 					obs_[i].x = std::min(-1.6, -16.6 + (15.0/MOVE_TIME)*(time_diff-MOVE_TIME-WAIT_TIME));
-					obs_[i].z = 1;
+					// obs_[i].z = 1;
+					obs_[i].z = time_diff > 2 * MOVE_TIME + WAIT_TIME ? -1 : 1;
 				} else if(time_diff>MOVE_TIME+WAIT_TIME && obs_[i].z == 1) {
 					obs_[i].x = std::max(-16.6, -1.6 - (15.0/MOVE_TIME)*(time_diff-MOVE_TIME-WAIT_TIME));
-					obs_[i].z = -1;
+					// obs_[i].z = -1;
+					obs_[i].z = time_diff > 2 * MOVE_TIME + WAIT_TIME ? 1 : -1;
 				}
 			}
 		}	
@@ -148,6 +169,7 @@ int main(int argc, char **argv) {
     DynamicObs dynamic_obs(node);
 
     while(ros::ok()) {
+
     	dynamic_obs.publish_data();
     	ros::spinOnce();
     	loop_rate.sleep();

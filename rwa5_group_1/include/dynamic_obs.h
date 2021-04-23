@@ -31,16 +31,20 @@ class DynamicObs {
  public:
  	explicit DynamicObs(ros::NodeHandle &node);
  	void break_beam_callback(const nist_gear::Proximity::ConstPtr &msg, int sensor);
- 	bool isBlackout();
- 	void publish_data();
+	void blackout_subscriber_callback(const nist_gear::Proximity::ConstPtr &msg);
+
+	bool isBlackout();
+	void publish_data();
  private:
 
  	ros::NodeHandle node_;
  	ros::Subscriber break_beam_subscriber_[8];
+ 	ros::Subscriber blackout_subscriber_;
  	ros::Publisher dyn_obs_pos_pub_[NUM_OBSTACLES];
 
  	bool cur_reading_[2*NUM_OBSTACLES] = {false};
  	int reading_time_[2*NUM_OBSTACLES];
+	float latest_time = -1.0;
 
  	geometry_msgs::Point32 obs_[NUM_OBSTACLES];
  	int num_obstacles_ = 0;
