@@ -354,88 +354,133 @@ int main(int argc, char **argv)
 
                 ROS_WARN_STREAM(current_product.p.location);
 
-                if (current_product.p.type.empty()) // no parts of desired product found
-                {
-                    get_product_from_conveyor = true;
-                } else {
-                    get_product_from_conveyor = false;
-                }
+            if (gantry.checkFreeGripper().compare("none") == 0 && !comp.newOrderAlert()) // if none of the grippers are free place both products in trays
+            {
+                // if (gantry.getGantryLocation().compare("aisle_1") == 0) // go to start location from current gantry location
+                // {
+                //     gantry.goToPresetLocation(gantry.aisle1_);
+                // }
+                // else if (gantry.getGantryLocation().compare("aisle_2") == 0)
+                // {
+                //     gantry.goToPresetLocation(gantry.aisle2_);
+                // }
 
-                if (gantry.checkFreeGripper().compare("none") == 0 && !comp.newOrderAlert()) // if none of the grippers are free place both products in trays
-                {
-                    if (gantry.getGantryLocation().compare("aisle_1") == 0) // go to start location from current gantry location
-                    {
-                        gantry.goToPresetLocation(gantry.aisle1_);
-                    }
-                    else if (gantry.getGantryLocation().compare("aisle_2") == 0)
-                    {
-                        gantry.goToPresetLocation(gantry.aisle2_);
-                    }
+                // gantry.goToPresetLocation(gantry.start_);
 
-                    gantry.goToPresetLocation(gantry.start_);
+                gantry.placePartLeftArm(); // Place product of left arm in agv
 
-                    gantry.placePartLeftArm(); // Place product of left arm in agv
+                // TODO: @Sandeep, check the part oriention for the left arm
+                ////!------ Check part orientation Left with order -------!
+                // Get parts from AGV logical cameras sensors
 
-                    // TODO: @Sandeep, check the part oriention for the left arm
-                    ////!------ Check part orientation Left with order -------!
-                    // Get parts from AGV logical cameras sensors
+                // ros::Duration(1).sleep(); // Delay to update the parts list
+                // ros::param::set("/update_agv_parts", true);
+                // ros::Duration(1).sleep(); // Delay to update the parts list
+                // ros::param::set("/update_agv_parts", false);
+                // ros::Duration(1).sleep(); // Delay to update the parts list
 
-                    // ros::Duration(1).sleep(); // Delay to update the parts list
-                    // ros::param::set("/update_agv_parts", true);
-                    // ros::Duration(1).sleep(); // Delay to update the parts list
-                    // ros::param::set("/update_agv_parts", false);
-                    // ros::Duration(1).sleep(); // Delay to update the parts list
+                // Part target_part;
+                // target_part.type = gantry.getProductLeftArm().type;
+                // target_part.pose = gantry.getProductLeftArm().pose;
 
-                    // Part target_part;
-                    // target_part.type = gantry.getProductLeftArm().type;
-                    // target_part.pose = gantry.getProductLeftArm().pose;
+                // tf2_ros::Buffer tfBuffer;
+                // tf2_ros::TransformListener tfListener(tfBuffer);
+                // ros::Duration timeout(1.0);
 
-                    // tf2_ros::Buffer tfBuffer;
-                    // tf2_ros::TransformListener tfListener(tfBuffer);
-                    // ros::Duration timeout(1.0);
+                // if (gantry.getProductLeftArm().agv_id == "agv1")
+                // {
+                //     geometry_msgs::TransformStamped transformStamped = tfBuffer.lookupTransform("world", "kit_tray_1", ros::Time(0), timeout);
+                //     tf2::doTransform(target_part.pose, target_part.pose, transformStamped);
+                // }
 
-                    // if (gantry.getProductLeftArm().agv_id == "agv1")
-                    // {
-                    //     geometry_msgs::TransformStamped transformStamped = tfBuffer.lookupTransform("world", "kit_tray_1", ros::Time(0), timeout);
-                    //     tf2::doTransform(target_part.pose, target_part.pose, transformStamped);
-                    // }
+                // else if (gantry.getProductLeftArm().agv_id == "agv2")
+                // {
+                //     geometry_msgs::TransformStamped transformStamped = tfBuffer.lookupTransform("world", "kit_tray_2", ros::Time(0), timeout);
+                //     tf2::doTransform(target_part.pose, target_part.pose, transformStamped);
+                // }
 
-                    // else if (gantry.getProductLeftArm().agv_id == "agv2")
-                    // {
-                    //     geometry_msgs::TransformStamped transformStamped = tfBuffer.lookupTransform("world", "kit_tray_2", ros::Time(0), timeout);
-                    //     tf2::doTransform(target_part.pose, target_part.pose, transformStamped);
-                    // }
+                // ROS_WARN_STREAM("PRINT TARGET PART: " << target_part.type);
 
-                    // ROS_WARN_STREAM("PRINT TARGET PART: " << target_part.type);
+                // if (sensors.isPartPoseAGVCorrect(target_part, gantry.getProductLeftArm().agv_id) == false)
+                // {
+                //     if (gantry.getProductLeftArm().agv_id == "agv1")
+                //     {
+                //         gantry.pickPartFromTrayLeftArm(sensors.incorrect_part_agv1, gantry.getProductLeftArm().agv_id);
+                //         ROS_WARN_STREAM("PICK PART TRAY INCORRECT");
+                //         gantry.correctPosePartLeftArm(sensors.incorrect_part_agv1, target_part.pose, gantry.getProductLeftArm().agv_id);
+                //         gantry.goToPresetLocation(gantry.agv1_);
+                //         ros::Duration(0.5).sleep(); // Delay to update the parts list
+                //         ros::param::set("/update_agv_parts", true);
+                //         ros::Duration(0.5).sleep(); // Delay to update the parts list
+                //         ros::param::set("/update_agv_parts", false);
+                //         ros::Duration(0.5).sleep(); // Delay to update the parts list
+                //         sensors.isPartPoseAGVCorrect(target_part, gantry.getProductLeftArm().agv_id);
+                //         ROS_WARN_STREAM("FINISH REPOSSITION");
+                //     }
+                //     else if (gantry.getProductLeftArm().agv_id == "agv2")
+                //     {
+                //         gantry.pickPartFromTrayLeftArm(sensors.incorrect_part_agv2, gantry.getProductLeftArm().agv_id);
+                //         gantry.correctPosePartLeftArm(sensors.incorrect_part_agv2, target_part.pose, gantry.getProductLeftArm().agv_id);
+                //         gantry.goToPresetLocation(gantry.agv2_);
+                //         ros::param::set("/update_agv_parts", true);
+                //         ros::Duration(0.1).sleep(); // Delay to update the parts list
+                //         ros::param::set("/update_agv_parts", false);
+                //         sensors.isPartPoseAGVCorrect(target_part, gantry.getProductLeftArm().agv_id);
+                //     }
+                // }
+                gantry.placePartRightArm(); // Place product of right arm in agv
 
-                    // if (sensors.isPartPoseAGVCorrect(target_part, gantry.getProductLeftArm().agv_id) == false)
-                    // {
-                    //     if (gantry.getProductLeftArm().agv_id == "agv1")
-                    //     {
-                    //         gantry.pickPartFromTrayLeftArm(sensors.incorrect_part_agv1, gantry.getProductLeftArm().agv_id);
-                    //         ROS_WARN_STREAM("PICK PART TRAY INCORRECT");
-                    //         gantry.correctPosePartLeftArm(sensors.incorrect_part_agv1, target_part.pose, gantry.getProductLeftArm().agv_id);
-                    //         gantry.goToPresetLocation(gantry.agv1_);
-                    //         ros::Duration(0.5).sleep(); // Delay to update the parts list
-                    //         ros::param::set("/update_agv_parts", true);
-                    //         ros::Duration(0.5).sleep(); // Delay to update the parts list
-                    //         ros::param::set("/update_agv_parts", false);
-                    //         ros::Duration(0.5).sleep(); // Delay to update the parts list
-                    //         sensors.isPartPoseAGVCorrect(target_part, gantry.getProductLeftArm().agv_id);
-                    //         ROS_WARN_STREAM("FINISH REPOSSITION");
-                    //     }
-                    //     else if (gantry.getProductLeftArm().agv_id == "agv2")
-                    //     {
-                    //         gantry.pickPartFromTrayLeftArm(sensors.incorrect_part_agv2, gantry.getProductLeftArm().agv_id);
-                    //         gantry.correctPosePartLeftArm(sensors.incorrect_part_agv2, target_part.pose, gantry.getProductLeftArm().agv_id);
-                    //         gantry.goToPresetLocation(gantry.agv2_);
-                    //         ros::param::set("/update_agv_parts", true);
-                    //         ros::Duration(0.1).sleep(); // Delay to update the parts list
-                    //         ros::param::set("/update_agv_parts", false);
-                    //         sensors.isPartPoseAGVCorrect(target_part, gantry.getProductLeftArm().agv_id);
-                    //     }
-                    // }
-                    gantry.placePartRightArm(); // Place product of right arm in agv
+                ////!------ Check part orientation Rgght with order -------!
+                // Get parts from AGV logical cameras sensors
+                // ros::Duration(1).sleep(); // Delay to update the parts list
+                // ros::param::set("/update_agv_parts", true);
+                // ros::Duration(1).sleep(); // Delay to update the parts list
+                // ros::param::set("/update_agv_parts", false);
+                // ros::Duration(1).sleep(); // Delay to update the parts list
+
+                // if (sensors.isPartPoseAGVCorrect(target_part, gantry.getProductRightArm().agv_id) == false)
+                // {
+                //     if (gantry.getProductRightArm().agv_id == "agv1")
+                //     {
+                //         gantry.pickPartFromTrayRightArm(sensors.incorrect_part_agv1, gantry.getProductRightArm().agv_id);
+                //         gantry.correctPosePartRightArm(sensors.incorrect_part_agv1, target_part.pose, gantry.getProductRightArm().agv_id);
+                //         gantry.goToPresetLocation(gantry.agv1_);
+                //         ros::Duration(0.5).sleep(); // Delay to update the parts list
+                //         ros::param::set("/update_agv_parts", true);
+                //         ros::Duration(0.5).sleep(); // Delay to update the parts list
+                //         ros::param::set("/update_agv_parts", false);
+                //         ros::Duration(0.5).sleep(); // Delay to update the parts list
+                //         sensors.isPartPoseAGVCorrect(target_part, gantry.getProductRightArm().agv_id);
+                //     }
+                //     else if (gantry.getProductRightArm().agv_id == "agv2")
+                //     {
+                //         gantry.pickPartFromTrayRightArm(sensors.incorrect_part_agv2, gantry.getProductRightArm().agv_id);
+                //         gantry.correctPosePartRightArm(sensors.incorrect_part_agv2, target_part.pose, gantry.getProductRightArm().agv_id);
+                //         gantry.goToPresetLocation(gantry.agv2_);
+                //         ros::param::set("/update_agv_parts", true);
+                //         ros::Duration(0.1).sleep(); // Delay to update the parts list
+                //         ros::param::set("/update_agv_parts", false);
+                //         sensors.isPartPoseAGVCorrect(target_part, gantry.getProductRightArm().agv_id);
+                //     }
+                // }
+
+                // ros::param::set("/check_flipped", true);
+                // ros::Duration(2).sleep();
+
+                // gantry.getProductsToFlip(sensors.getPartsToFlip());
+                faultyPartsProcess(gantry, sensors);
+                ros::param::set("/check_parts_to_flip", true);
+                ros::Duration(1).sleep();
+                gantry.flipProductsAGV(sensors.getcheckPartsToFlip());
+                sensors.clearcheckPartsToFlip();
+                // sensors.clearPartsToFlip();
+
+                gantry.goToPresetLocation(gantry.start_); // go back to start position
+                
+                // the last two products that were picked have been placed.
+                
+                comp.updateAGVProductMap(list_of_products.at(p-1).agv_id, list_of_products.at(p-1));
+                comp.updateAGVProductMap(list_of_products.at(p-2).agv_id, list_of_products.at(p-2));
 
                     ////!------ Check part orientation Rgght with order -------!
                     // Get parts from AGV logical cameras sensors
@@ -536,23 +581,28 @@ int main(int argc, char **argv)
                         gantry.getProduct(current_product); // get product after placing in agv
                         ROS_WARN_STREAM("Picked from a bin or shelf");
                     }
-                }        
-            }
-            // Place in agv the two last retrieved products
-            // this piece of code has been brought inside the while loop
-            if (!comp.newOrderAlert()) {
-                if (gantry.checkFreeGripper().compare("none") == 0 || gantry.checkFreeGripper().compare("right") == 0) // if none of the grippers are free place both products in grippers
-                {
-                    if (gantry.getGantryLocation().compare("aisle_1") == 0) // go to start location from current gantry location
-                    {
-                        gantry.goToPresetLocation(gantry.aisle1_);
-                    }
-                    else if (gantry.getGantryLocation().compare("aisle_2") == 0)
-                    {
-                        gantry.goToPresetLocation(gantry.aisle2_);
-                    }
+                    ROS_WARN_STREAM("Picked from conveyor belt");
+                } else {
+                    gantry.getProduct(current_product); // get product after placing in agv
+                    ROS_WARN_STREAM("Picked from a bin or shelf");
+                }
+            }        
+        }
+        // Place in agv the two last retrieved products
+        // this piece of code has been brought inside the while loop
+        if (!comp.newOrderAlert()) {
+            if (gantry.checkFreeGripper().compare("none") == 0 || gantry.checkFreeGripper().compare("right") == 0) // if none of the grippers are free place both products in grippers
+            {
+                // if (gantry.getGantryLocation().compare("aisle_1") == 0) // go to start location from current gantry location
+                // {
+                //     gantry.goToPresetLocation(gantry.aisle1_);
+                // }
+                // else if (gantry.getGantryLocation().compare("aisle_2") == 0)
+                // {
+                //     gantry.goToPresetLocation(gantry.aisle2_);
+                // }
 
-                    gantry.goToPresetLocation(gantry.start_);
+                // gantry.goToPresetLocation(gantry.start_);
 
                     gantry.placePartLeftArm(); // Place product of left arm in agv
 

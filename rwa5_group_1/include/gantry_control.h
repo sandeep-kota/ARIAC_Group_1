@@ -134,9 +134,23 @@ public:
   void deactivateGripper(std::string gripper_id);
   nist_gear::VacuumGripperState getGripperState(std::string arm_name);
   geometry_msgs::Pose getTargetWorldPose(geometry_msgs::Pose target, std::string agv);
+
+  void pickPartFromShelf5Aisle1(product product);
+
+  void pickPartFromShelfAisle2(product product);
+  void pickPartFromShelfAisle3(product product);
+
+  void pickPartFromShelf11Aisle4(product product);
+
+  void pickPartFromShelf8Aisle2(product product);
+  void pickPartFromShelf8Aisle3(product product);
+
+  void pickPartFromShelf8Aisle2Obstacles(product product);
+  void pickPartFromShelf8Aisle3Obstacles(product product);
+  void pickPartFromShelf8Aisle2ObstaclesSafe1(product product);
+
   //--preset locations;
   start start_;
-  PresetLocation safe_spot_1_, safe_spot_2_;
   aisle1 aisle1_;
   aisle2 aisle2_;
   shelf1 shelf1_;
@@ -144,10 +158,6 @@ public:
   bins bins_;
   agv1 agv1_;
   agv2 agv2_;
-  agv1_left agv1_left_;
-  agv1_right agv1_right_;
-  agv2_left agv2_left_;
-  agv2_right agv2_right_;
   tray1_left_positive tray1_left_positive_;
   tray1_left_negative tray1_left_negative_;
   tray1_right_positive tray1_right_positive_;
@@ -160,9 +170,15 @@ public:
   product product_right_arm_;
   tf2::Quaternion q_left_ee_link_part;
   tf2::Quaternion q_right_ee_link_part;
-  PresetLocation safe_spot_3_, ssi1, ssi2, ssi3, ssi4, ssi5, ssi6;
+
+  PresetLocation rail_1_, rail_2_, agv1_90_, agv2_90_, start_90_, aisle1_90_, aisle2_90_;
+  PresetLocation safe_spot_1_, safe_spot_2_, safe_spot_3_, ssi1_, ssi2_, ssi3_, ssi4_, ssi5_, ssi6_;
+
+  std::array<float, 4> obstacle_1_pos; // {X,Y,Direction,Aisle}
+  std::array<float, 4> obstacle_2_pos; // {X,Y,Direction,Aisle}
 
 private:
+
   std::vector<double> joint_group_positions_;
   ros::NodeHandle node_;
   std::string planning_group_;
@@ -212,6 +228,9 @@ private:
   ros::Subscriber left_arm_controller_state_subscriber_;
   ros::Subscriber right_arm_controller_state_subscriber_;
 
+  ros::Subscriber dynamic_obstacle_1_subscriber_;
+  ros::Subscriber dynamic_obstacle_2_subscriber_;
+
   ros::ServiceClient left_gripper_control_client;
   ros::ServiceClient right_gripper_control_client;
 
@@ -222,6 +241,7 @@ private:
   void gantry_controller_state_callback(const control_msgs::JointTrajectoryControllerState::ConstPtr &msg);
   void left_arm_controller_state_callback(const control_msgs::JointTrajectoryControllerState::ConstPtr &msg);
   void right_arm_controller_state_callback(const control_msgs::JointTrajectoryControllerState::ConstPtr &msg);
+  void dynamic_obstacle_callback(const geometry_msgs::Point32::ConstPtr &msg, int obstacle_n);
 };
 
 #endif

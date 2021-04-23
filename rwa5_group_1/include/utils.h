@@ -3,6 +3,8 @@
 
 #include <geometry_msgs/Pose.h>
 #include <geometry_msgs/Point.h>
+#include <geometry_msgs/Point32.h>
+
 #include <unordered_map>
 #include <string>
 
@@ -102,10 +104,9 @@ typedef struct PresetLocation {
     std::vector<double> gantry;
     std::vector<double> left_arm;
     std::vector<double> right_arm;
-} start, bins, shelf1, shelf2, aisle1 , aisle2, agv1, agv1_left, agv1_right, agv2, agv2_left, agv2_right, tray1_left_positive, 
-tray1_left_negative, tray1_right_positive, tray1_right_negative, tray2_left_positive, 
-tray2_left_negative, tray2_right_positive, tray2_right_negative;
-
+} start, bins, shelf1, shelf2, aisle1, aisle2, agv1, agv2, tray1_left_positive,
+    tray1_left_negative, tray1_right_positive, tray1_right_negative, tray2_left_positive,
+    tray2_left_negative, tray2_right_positive, tray2_right_negative;
 
 /**
  * @brief Struct to store part information

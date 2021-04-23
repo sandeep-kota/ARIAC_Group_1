@@ -17,17 +17,17 @@ shelf_layout:
   row_2: ['pipe',0,'base','base']   #shelves: 6, 7, 8
   row_3: ['base','pipe',0,'collar'] #shelves: 9, 10, 11
 
-# aisle_layout:
-#   person_1:
-#     location: -1.57
-#     start_time: 0.
-#     move_time: 9.
-#     wait_time: 7.
-#   person_2:
-#     location: 1.57
-#     start_time: 16.
-#     move_time: 9.
-#     wait_time: 7.
+aisle_layout:
+  person_1:
+    location: -1.57
+    start_time: 0.
+    move_time: 9.
+    wait_time: 7.
+  person_2:
+    location: 1.57
+    start_time: 16.
+    move_time: 9.
+    wait_time: 7.
 
 orders:
   order_0:
@@ -47,7 +47,7 @@ orders:
           xyz: [-0.1, -0.2, 0]
           rpy: [0, 0, '-pi/4']
       product_2:
-        type: pulley_part_blue
+        type: piston_rod_part_red
         pose:
           xyz: [0.15, -0.2, 0]
           rpy: [0, 0, 'pi/4']

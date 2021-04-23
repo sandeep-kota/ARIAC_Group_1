@@ -40,5 +40,5 @@
  </group>  -->
   
   <!-- <node name="rwa3_node" pkg="rwa3_group_1" type="rwa3_node" output="screen"/> -->
-  <!-- <node name="dyn_obs_node" pkg="rwa5_group_1" type="dyn_obs_node" output="screen"/> -->
+  <node name="dyn_obs_node" pkg="rwa5_group_1" type="dyn_obs_node" output="screen"/>
 </launch>

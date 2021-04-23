@@ -32,6 +32,8 @@ void GantryControl::init()
 {
     ROS_INFO_STREAM("[GantryControl::init] init... ");
     double time_called = ros::Time::now().toSec();
+    dynamic_obstacle_1_subscriber_ = node_.subscribe<geometry_msgs::Point32>("/obstacle_1_pos", 1, boost::bind(&GantryControl::dynamic_obstacle_callback, this, _1, 1));
+    dynamic_obstacle_2_subscriber_ = node_.subscribe<geometry_msgs::Point32>("/obstacle_2_pos", 1, boost::bind(&GantryControl::dynamic_obstacle_callback, this, _1, 2));
 
     ROS_INFO_NAMED("init", "Planning frame: %s", left_arm_group_.getPlanningFrame().c_str());
     ROS_INFO_NAMED("init", "Planning frame: %s", right_arm_group_.getPlanningFrame().c_str());
@@ -48,17 +50,29 @@ void GantryControl::init()
 
     std::vector<double> aisle_left_arm = {0.0, -PI, 3 * PI / 4, -3 * PI / 4, -PI / 2, 0.};
     std::vector<double> aisle_right_arm = {PI, -PI, 3 * PI / 4, -3 * PI / 4, -PI / 2, 0.};
-    std::vector<double> zero_rarm = {0., -PI, 0., 0., 0., 0.};
-    std::vector<double> zero_larm = {0., 0., 0., 0., 0., 0.};
-    double safe_x = -11.3;
+
 
     initializeShelfConfiguration(); // check the location of the free_spaces in the bottom shelfs
-
+    // std::vector<int> shelf_configuration{1,1,1};
+    // double safe_1 = -11.3;
+    std::array<double,3> safe{0,0,0};
+    for(int i=0; i<3; i++)
+    {
+        if(shelf_configuration[i]==1) safe[i]=-11.3;
+        else if(shelf_configuration[i]==0) safe[i]=-7.2;
+    }
     // joint positions to go to start location
     start_.location = "start";
     start_.gantry = {0, 0, 0};
     start_.left_arm = {0.0, -PI / 4, PI / 2, -PI / 4, PI / 2, 0};
     start_.right_arm = {PI, -PI / 4, PI / 2, -PI / 4, PI / 2, 0};
+
+    // joint positions to go to start_2 location
+    start_90_.location = "start_90";
+    start_90_.gantry = {0, 0, PI / 2};
+    start_90_.left_arm = {0.0, -PI / 4, PI / 2, -PI / 4, PI / 2, 0};
+    start_90_.right_arm = {PI, -PI / 4, PI / 2, -PI / 4, PI / 2, 0};
+
     // // joint positions to go to middle of bins
     bins_.location = "bins";
     bins_.gantry = {4, 0, 0};
@@ -78,58 +92,28 @@ void GantryControl::init()
     shelf2_.right_arm = aisle_right_arm;
 
     // joint positions to go to aisle1 (between shelf 5 and 8)
-    aisle1_.location = "aisle_1";
+    aisle1_.location = "aisle1";
     aisle1_.gantry = {0, -1.5, 0.};
     aisle1_.left_arm = aisle_left_arm;
     aisle1_.right_arm = aisle_right_arm;
 
+    // joint positions to go to aisle1 rotated 90(between shelf 5 and 8)
+    aisle1_90_.location = "aisle1_90";
+    aisle1_90_.gantry = {0, -1.5, PI / 2};
+    aisle1_90_.left_arm = start_.left_arm;
+    aisle1_90_.right_arm = start_.right_arm;
+
     // joint positions to go to aisle2 (between shelf 8 and 11)
-    aisle2_.location = "aisle_2";
+    aisle2_.location = "aisle2";
     aisle2_.gantry = {0, 1.5, 0.};
     aisle2_.left_arm = aisle_left_arm;
     aisle2_.right_arm = aisle_right_arm;
+    // joint positions to go to aisle2 rotated 90 (between shelf 8 and 11)
+    aisle2_90_.location = "aisle2_90";
+    aisle2_90_.gantry = {0, 1.5, PI / 2};
+    aisle2_90_.left_arm = start_.left_arm;
+    aisle2_90_.right_arm = start_.right_arm;
 
-    // Safe spot near Aisle 1
-    safe_spot_1_.location = "safe_spot_1_";
-    safe_spot_1_.gantry = {safe_x, -3, 0.};
-    safe_spot_1_.left_arm = zero_larm;
-    safe_spot_1_.right_arm = zero_rarm;
-
-    // Safe spot near Aisle 2
-    safe_spot_2_.location = "safe_spot_2_";
-    safe_spot_2_.gantry = {safe_x, 3, 0.};
-    safe_spot_2_.left_arm = zero_larm;
-    safe_spot_2_.right_arm = zero_rarm;
-
-    // joint positions to go to agv2  // joint positions to go to agv2
-    agv2_.location = "agv2";
-    agv2_.gantry = {0, 5.5, 0};
-    agv2_.left_arm = start_.left_arm;
-    agv2_.right_arm = start_.right_arm;
-
-    agv2_left_.location = "agv2";
-    agv2_left_.gantry = {0, 5.5, -PI / 2};
-    agv2_left_.left_arm = start_.left_arm;
-    agv2_left_.right_arm = start_.right_arm;
-    agv2_right_.location = "agv2";
-    agv2_right_.gantry = {0, 5.5, PI / 2};
-    agv2_right_.left_arm = start_.left_arm;
-    agv2_right_.right_arm = start_.right_arm;
-
-    // joint positions to go to agv1
-    agv1_.location = "agv1";
-    agv1_.gantry = {0, -5.5, 0};
-    agv1_.left_arm = start_.left_arm;
-    agv1_.right_arm = start_.right_arm;
-
-    agv1_left_.location = "agv1";
-    agv1_left_.gantry = {0, -5.5, PI / 2};
-    agv1_left_.left_arm = start_.left_arm;
-    agv1_left_.right_arm = start_.right_arm;
-    agv1_right_.location = "agv1";
-    agv1_right_.gantry = {0, -5.5, -PI / 2};
-    agv1_right_.left_arm = start_.left_arm;
-    agv1_right_.right_arm = start_.right_arm;
 
     // joint positions to go to tray1
     tray1_left_negative_.location = "tray1";
@@ -173,41 +157,95 @@ void GantryControl::init()
     tray2_right_negative_.left_arm = {0.0, -PI / 4, PI / 2, -PI / 4, PI / 2, PI / 4};
     tray2_right_negative_.right_arm = {PI, -PI / 4, PI / 2, -PI / 4, PI / 2, PI / 4};
 
-    //////////////////////////
-    ssi5.location = "ssi5";
-    ssi5.gantry = {-7.2, -1.5, 0.};
-    ssi5.left_arm = zero_larm;
-    ssi5.right_arm = zero_rarm;
+    // Reach Rail 1 from start
+    rail_1_.location = "rail_1";
+    rail_1_.gantry = {0., -6.8, 0.};
+    rail_1_.left_arm = aisle_left_arm;
+    rail_1_.right_arm = aisle_right_arm;
 
-    ssi6.location = "ssi6";
-    ssi6.gantry = {-7.2, 1.5, 0.};
-    ssi6.left_arm = zero_larm;
-    ssi6.right_arm = zero_rarm;
+    // joint positions to go to agv1
+    agv1_.location = "agv1";
+    agv1_.gantry = {0, -5.5, 0};
+    agv1_.left_arm = start_.left_arm;
+    agv1_.right_arm = start_.right_arm;
 
-    ssi3.location = "ssi3";
-    ssi3.gantry = {safe_x, 1.5, 0.};
-    ssi3.left_arm = zero_larm;
-    ssi3.right_arm = zero_rarm;
+    // Reach Rail 1 from start with torso rotated 90
+    agv1_90_.location = "agv1_90";
+    agv1_90_.gantry = {0., -5.5, PI / 2};
+    agv1_90_.left_arm = start_.left_arm;
+    agv1_90_.right_arm = start_.right_arm;
 
-    ssi4.location = "ssi4";
-    ssi4.gantry = {safe_x, 7, 0.};
-    ssi4.left_arm = zero_larm;
-    ssi4.right_arm = zero_rarm;
+    // Reach Rail 2 from start
+    rail_2_.location = "rail_2";
+    rail_2_.gantry = {0., 6.8, 0.};
+    rail_2_.left_arm = aisle_left_arm;
+    rail_2_.right_arm = aisle_right_arm;
 
-    ssi2.location = "ssi2";
-    ssi2.gantry = {safe_x, -1.5, 0.};
-    ssi2.left_arm = zero_larm;
-    ssi2.right_arm = zero_rarm;
+    // joint positions to go to agv2  // joint positions to go to agv2
+    agv2_.location = "agv2";
+    agv2_.gantry = {0, 5.5, 0};
+    agv2_.left_arm = start_.left_arm;
+    agv2_.right_arm = start_.right_arm;
 
-    ssi1.location = "ssi1";
-    ssi1.gantry = {safe_x, -7, 0.};
-    ssi1.left_arm = zero_larm;
-    ssi1.right_arm = zero_rarm;
+    // Reach Rail 2 from start with torso rotated 90
+    agv2_90_.location = "agv2_90";
+    agv2_90_.gantry = {0., 5.5, PI / 2};
+    agv2_90_.left_arm = start_.left_arm;
+    agv2_90_.right_arm = start_.right_arm;
 
-    safe_spot_3_.location = "safe_spot_3_";
-    safe_spot_3_.gantry = {-7.2, 0, 0.};
-    safe_spot_3_.left_arm = zero_larm;
-    safe_spot_3_.right_arm = zero_rarm;
+    // Safe spot on Self Row 1
+    safe_spot_1_.location = "safe_spot_1";
+    safe_spot_1_.gantry = {safe[0], -3, -PI / 2};
+    safe_spot_1_.left_arm = aisle_left_arm;
+    safe_spot_1_.right_arm = aisle_right_arm;
+
+    // Left approach to Safe spot 1
+    ssi1_.location = "ssi1";
+    ssi1_.gantry = {safe_spot_1_.gantry[0], -6.8, 0};
+    ssi1_.left_arm = aisle_left_arm;
+    ssi1_.right_arm = aisle_right_arm;
+
+    // Right approach to Safe spot 1
+    ssi2_.location = "ssi2";
+    ssi2_.gantry = {safe_spot_1_.gantry[0], -1.5, 0};
+    ssi2_.left_arm = aisle_left_arm;
+    ssi2_.right_arm = aisle_right_arm;
+
+    // Safe spot on shelf row 3
+    safe_spot_3_.location = "safe_spot_3";
+    safe_spot_3_.gantry = {safe[2], 3, PI / 2};
+    safe_spot_3_.left_arm = aisle_left_arm;
+    safe_spot_3_.right_arm = aisle_right_arm;
+
+    // Left approach to Safe spot 3
+    ssi3_.location = "ssi3";
+    ssi3_.gantry = {safe_spot_3_.gantry[0], 1.5, 0.};
+    ssi3_.left_arm = aisle_left_arm;
+    ssi3_.right_arm = aisle_right_arm;
+
+    // Right approach to Safe spot 3
+    ssi4_.location = "ssi4";
+    ssi4_.gantry = {safe_spot_3_.gantry[0], 6.8, 0.};
+    ssi4_.left_arm = aisle_left_arm;
+    ssi4_.right_arm = aisle_right_arm;
+
+    // Safe spot on shelf row 2
+    safe_spot_2_.location = "safe_spot_2";
+    safe_spot_2_.gantry = {safe[1], 0, PI / 2};
+    safe_spot_2_.left_arm = aisle_left_arm;
+    safe_spot_2_.right_arm = aisle_right_arm;
+
+    // Left approach to Safe spot 2
+    ssi5_.location = "ssi5";
+    ssi5_.gantry = {safe_spot_2_.gantry[0], -1.5, 0.};
+    ssi5_.left_arm = aisle_left_arm;
+    ssi5_.right_arm = aisle_right_arm;
+
+    // Right approach to Safe spot 2
+    ssi6_.location = "ssi6";
+    ssi6_.gantry = {safe_spot_2_.gantry[0], 1.5, 0.};
+    ssi6_.left_arm = aisle_left_arm;
+    ssi6_.right_arm = aisle_right_arm;
 
     //--Raw pointers are frequently used to refer to the planning group for improved performance.
     //--To start, we will create a pointer that references the current robot’s state.
@@ -322,6 +360,62 @@ void GantryControl::initializeShelfConfiguration(){
       shelf_configuration.at(2) += 1;
   }
 }
+
+/**
+ * @brief Dynamic obstacle callback
+ * 
+ * @param msg Subscribed message
+ * @param obstacle_n Obstacle ID
+ */
+void GantryControl::dynamic_obstacle_callback(const geometry_msgs::Point32::ConstPtr &msg, int obstacle_n)
+{
+
+    if (obstacle_n == 1)
+    {
+        obstacle_1_pos.at(0) = msg->x;
+        obstacle_1_pos.at(1) = msg->y;
+        obstacle_1_pos.at(2) = msg->z;
+        if ((obstacle_1_pos.at(1) + 5.0) < 0.00001)
+        {
+            obstacle_1_pos.at(3) = 1;
+        }
+        else if ((obstacle_1_pos.at(1) + 1.57) < 0.00001)
+        {
+            obstacle_1_pos.at(3) = 2;
+        }
+        else if ((obstacle_1_pos.at(1) - 1.57) < 0.00001)
+        {
+            obstacle_1_pos.at(3) = 3;
+        }
+        else if ((obstacle_1_pos.at(1) - 5.00) < 0.00001)
+        {
+            obstacle_1_pos.at(3) = 4;
+        }
+    }
+    else if (obstacle_n == 2)
+    {
+        obstacle_2_pos.at(0) = msg->x;
+        obstacle_2_pos.at(1) = msg->y;
+        obstacle_2_pos.at(2) = msg->z;
+        if ((obstacle_2_pos.at(1) + 5.0) < 0.00001)
+        {
+            obstacle_2_pos.at(3) = 1;
+        }
+        else if ((obstacle_2_pos.at(1) + 1.57) < 0.00001)
+        {
+            obstacle_2_pos.at(3) = 2;
+        }
+        else if ((obstacle_2_pos.at(1) - 1.57) < 0.00001)
+        {
+            obstacle_2_pos.at(3) = 3;
+        }
+        else if ((obstacle_2_pos.at(1) - 5.00) < 0.00001)
+        {
+            obstacle_2_pos.at(3) = 4;
+        }
+    }
+}
+
 /**
  * @brief check which of the grippers are free
  * 
@@ -350,209 +444,1628 @@ std::string GantryControl::checkFreeGripper()
     return val;
 }
 
-/**
- * @brief retrieve a specific product detected from the sensors from wherever in the environment
- * 
- * @param product product of product list to be found and retrieved
- */
+void GantryControl::pickPartFromShelf5Aisle1(product product)
+{
+
+    std::string free_arm = checkFreeGripper();
+    PresetLocation offset;
+    offset.location = "part_offset";
+    offset.gantry = {product.p.pose.position.x, rail_1_.gantry[1], rail_1_.gantry[2]};
+    offset.left_arm = rail_1_.left_arm;
+    offset.right_arm = rail_1_.right_arm;
+    goToPresetLocation(offset);
+
+    goToBottomShelfs();
+    if (free_arm == "any" || free_arm == "left")
+    {
+        FKLeftArm({0, -2.13, 1.49, -2.48, -1.57, 0});
+    }
+    else if (free_arm == "right")
+    {
+        FKRightArm({PI, -2.13, 1.49, -2.48, -1.57, 0});
+    }
+
+    if (obstacle_1_pos[3] != 1 && obstacle_2_pos[3] != 1)
+    {
+        if (free_arm == "any" || free_arm == "left")
+        {
+            reachPartShelfLeftArm(product.p);
+            pickPartLeftArm(product.p);
+        }
+        else
+        {
+            reachPartShelfRightArm(product.p);
+            pickPartRightArm(product.p);
+        }
+        goToPresetLocation(offset);
+        goToPresetLocation(ssi1_);
+    }
+    else if (obstacle_1_pos[3] == 1 || obstacle_2_pos[3] == 1)
+    {
+        if (obstacle_1_pos[3] == 1)
+        {
+            while (((obstacle_1_pos[0] <= product.p.pose.position.x) || (obstacle_1_pos[2] == -1)))
+            {
+                ROS_INFO_STREAM("Wait for Obstacle 1");
+            }
+            if (free_arm == "any" || free_arm == "left")
+            {
+                reachPartShelfLeftArm(product.p);
+                pickPartLeftArm(product.p);
+            }
+            else
+            {
+                reachPartShelfRightArm(product.p);
+                pickPartRightArm(product.p);
+            }
+            goToPresetLocation(offset);
+            goToPresetLocation(ssi1_);
+        }
+        else if (obstacle_2_pos[3] == 1)
+        {
+            while (((obstacle_2_pos[0] <= product.p.pose.position.x) || (obstacle_2_pos[2] == -1)))
+            {
+                ROS_INFO_STREAM("Wait for Obstacle 2");
+            }
+            if (free_arm == "any" || free_arm == "left")
+            {
+                reachPartShelfLeftArm(product.p);
+                pickPartLeftArm(product.p);
+            }
+            else
+            {
+                reachPartShelfRightArm(product.p);
+                pickPartRightArm(product.p);
+            }
+            goToPresetLocation(offset);
+            goToPresetLocation(ssi1_);
+        }
+    }
+}
+
+void GantryControl::pickPartFromShelfAisle2(product product)
+{
+    goToPresetLocation(aisle1_);
+    std::string free_arm = checkFreeGripper();
+    PresetLocation offset;
+    offset.location = "part_offset";
+    offset.gantry = {product.p.pose.position.x, aisle1_.gantry[1], aisle1_.gantry[2]};
+    offset.left_arm = aisle1_.left_arm;
+    offset.right_arm = aisle1_.right_arm;
+    goToPresetLocation(offset);
+    goToBottomShelfs();
+    if (free_arm == "any" || free_arm == "left")
+    {
+        FKLeftArm({0, -2.13, 1.49, -2.48, -1.57, 0});
+        reachPartShelfLeftArm(product.p);
+        pickPartLeftArm(product.p);
+        retriveFromBottomShelf();
+        goToPresetLocation(offset);
+    }
+    else
+    {
+        FKRightArm({PI, -2.13, 1.49, -2.48, -1.57, 0});
+        reachPartShelfRightArm(product.p);
+        pickPartRightArm(product.p);
+        retriveFromBottomShelf();
+        goToPresetLocation(offset);
+    }
+    goToPresetLocation(aisle1_);
+    goToPresetLocation(aisle1_90_);
+}
+
+void GantryControl::pickPartFromShelfAisle3(product product)
+{
+    goToPresetLocation(aisle2_);
+    std::string free_arm = checkFreeGripper();
+    PresetLocation offset;
+    offset.location = "part_offset";
+    offset.gantry = {product.p.pose.position.x, aisle2_.gantry[1], aisle2_.gantry[2]};
+    offset.left_arm = aisle2_.left_arm;
+    offset.right_arm = aisle2_.right_arm;
+    goToPresetLocation(offset);
+
+    goToBottomShelfs();
+
+    if (free_arm == "any" || free_arm == "left")
+    {
+        FKLeftArm({0, -2.13, 1.49, -2.48, -1.57, 0});
+        reachPartShelfLeftArm(product.p);
+        pickPartLeftArm(product.p);
+        retriveFromBottomShelf();
+        goToPresetLocation(offset);
+    }
+    else
+    {
+        FKRightArm({PI, -2.13, 1.49, -2.48, -1.57, 0});
+        reachPartShelfRightArm(product.p);
+        pickPartRightArm(product.p);
+        retriveFromBottomShelf();
+        goToPresetLocation(offset);
+    }
+    goToPresetLocation(aisle2_);
+    goToPresetLocation(aisle2_90_);
+}
+
+void GantryControl::pickPartFromShelf11Aisle4(product product)
+{
+    std::string free_arm = checkFreeGripper();
+    PresetLocation offset;
+    offset.location = "part_offset";
+    offset.gantry = {product.p.pose.position.x, rail_2_.gantry[1], rail_2_.gantry[2]};
+    offset.left_arm = rail_2_.left_arm;
+    offset.right_arm = rail_2_.right_arm;
+    goToPresetLocation(offset);
+    goToBottomShelfs();
+    if (free_arm == "any" || free_arm == "left")
+    {
+        FKLeftArm({0, -2.13, 1.49, -2.48, -1.57, 0});
+    }
+    else if (free_arm == "right")
+    {
+        FKRightArm({PI, -2.13, 1.49, -2.48, -1.57, 0});
+    }
+
+    if (obstacle_1_pos[3] != 4 && obstacle_2_pos[3] != 4)
+    {
+        if (free_arm == "any" || free_arm == "left")
+        {
+            reachPartShelfLeftArm(product.p);
+            pickPartLeftArm(product.p);
+        }
+        else
+        {
+            reachPartShelfRightArm(product.p);
+            pickPartRightArm(product.p);
+        }
+        goToPresetLocation(offset);
+        goToPresetLocation(ssi4_);
+    }
+    else if (obstacle_1_pos[3] == 4 || obstacle_2_pos[3] == 4)
+    {
+        if (obstacle_1_pos[3] == 4)
+        {
+            while (((obstacle_1_pos[0] <= product.p.pose.position.x) || (obstacle_1_pos[2] == -1)))
+            // while(true)
+            {
+                ROS_INFO_STREAM("Wait for Obstacle 1");
+            }
+            if (free_arm == "any" || free_arm == "left")
+            {
+                reachPartShelfLeftArm(product.p);
+                pickPartLeftArm(product.p);
+            }
+            else
+            {
+                reachPartShelfRightArm(product.p);
+                pickPartRightArm(product.p);
+            }
+            goToPresetLocation(offset);
+            goToPresetLocation(ssi4_);
+        }
+        else if (obstacle_2_pos[3] == 4)
+        {
+            while (((obstacle_2_pos[0] <= product.p.pose.position.x) || (obstacle_2_pos[2] == -1)))
+            {
+                ROS_INFO_STREAM("Wait for Obstacle 2");
+            }
+            if (free_arm == "any" || free_arm == "left")
+            {
+                reachPartShelfLeftArm(product.p);
+                pickPartLeftArm(product.p);
+            }
+            else
+            {
+                reachPartShelfRightArm(product.p);
+                pickPartRightArm(product.p);
+            }
+            goToPresetLocation(offset);
+            goToPresetLocation(ssi4_);
+        }
+    }
+}
+
+void GantryControl::pickPartFromShelf8Aisle2ObstaclesSafe1(product product)
+{
+    // Wait for Obstace in Aisle 2
+    if (obstacle_1_pos[3] == 2)
+    {
+        ROS_INFO_STREAM("Wait for Obstacle 1");
+        while (((obstacle_1_pos[0] >= ssi5_.gantry[0]) || (obstacle_1_pos[2] == 1)))
+        {
+        }
+    }
+    else if (obstacle_2_pos[3] == 2)
+    {
+        ROS_INFO_STREAM("Wait for Obstacle 2 :");
+        while (((obstacle_2_pos[0] >= ssi5_.gantry[0]) || (obstacle_2_pos[2] == 1)))
+        {
+        }
+    }
+
+    goToPresetLocation(ssi5_);
+    goToPresetLocation(safe_spot_2_);
+
+    std::string free_arm = checkFreeGripper();
+    if (free_arm == "any" || free_arm == "left")
+    {
+        PresetLocation tmp = safe_spot_2_;
+        if (obstacle_1_pos[3] == 2)
+        {
+            tmp.location = "tmp_locs";
+            tmp.right_arm = {3.14, -PI, 2.89, -1.57, 0, 0};
+            goToPresetLocation(tmp);
+            ROS_INFO_STREAM("Wait for Obstacle 2 :");
+            while (((obstacle_2_pos[0] <= ssi5_.gantry[0]) || (obstacle_2_pos[2] == -1)))
+            {
+            }
+            ROS_INFO_STREAM("Wait for Obstacle 1");
+            while (((obstacle_1_pos[0] <= ssi5_.gantry[0]) || (obstacle_1_pos[2] == -1)))
+            {
+            }
+        }
+        else if (obstacle_2_pos[3] == 2)
+        {
+            tmp.location = "tmp_locs";
+            tmp.right_arm = {3.14, -PI, 2.89, -1.57, 0, 0};
+            goToPresetLocation(tmp);
+            ROS_INFO_STREAM("Wait for Obstacle 2 :");
+            while (((obstacle_2_pos[0] <= ssi5_.gantry[0]) || (obstacle_2_pos[2] == -1)))
+            {
+            }
+        }
+        // // !--------Faster implmentation of reachShelfLeft() -------!
+        PresetLocation tmp1 = ssi5_;
+        tmp1.location = "tmp_locs";
+        tmp1.gantry[2] = PI;
+        tmp1.right_arm = {3.14, -PI, 2.89, -1.57, 0, 0};
+        goToPresetLocation(tmp1);
+
+        PresetLocation tmp2 = tmp1;
+        tmp2.gantry = {product.p.pose.position.x, tmp2.gantry[1], tmp2.gantry[2] + PI / 2};
+        tmp2.left_arm = {0, -2.13, 1.49, -2.48, -1.57, 0};
+        goToPresetLocation(tmp2);
+
+        geometry_msgs::Pose currentArmPose = left_arm_group_.getCurrentPose().pose;
+        const double dx = product.p.pose.position.x - currentArmPose.position.x;
+        const double dy = product.p.pose.position.y - currentArmPose.position.y;
+        ROS_INFO_STREAM("Offset X,Y: " << dx << "," << dy);
+
+        PresetLocation tmp3 = tmp2;
+        tmp3.gantry = {tmp2.gantry[0] + dx, tmp2.gantry[1] - dy, tmp2.gantry[2]};
+        goToPresetLocation(tmp3);
+
+        // !--------Faster implmentation of pickPartLeftArm() -------!
+        activateGripper("left_arm");
+        geometry_msgs::Pose currentPose = left_arm_group_.getCurrentPose().pose;
+
+        tf2::Quaternion q_arm(currentPose.orientation.x,
+                              currentPose.orientation.y,
+                              currentPose.orientation.z,
+                              currentPose.orientation.w);
+
+        tf2::Quaternion q_world_part(product.p.pose.orientation.x,
+                                     product.p.pose.orientation.y,
+                                     product.p.pose.orientation.z,
+                                     product.p.pose.orientation.w);
+
+        product.p.pose.position.z = product.p.pose.position.z + model_height.at(product.p.type) + GRIPPER_HEIGHT - EPSILON;
+        product.p.pose.orientation.x = currentPose.orientation.x;
+        product.p.pose.orientation.y = currentPose.orientation.y;
+        product.p.pose.orientation.z = currentPose.orientation.z;
+        product.p.pose.orientation.w = currentPose.orientation.w;
+
+        tf2::Quaternion q_world_left_ee_link(currentPose.orientation.x,
+                                             currentPose.orientation.y,
+                                             currentPose.orientation.z,
+                                             currentPose.orientation.w);
+
+        q_left_ee_link_part = q_world_left_ee_link.inverse() * q_world_part;
+        q_left_ee_link_part.normalize();
+
+        ROS_INFO_STREAM("[Gripper] = enabled");
+        //--Move arm to part
+        left_arm_group_.setPoseTarget(product.p.pose);
+        left_arm_group_.move();
+        auto state = getGripperState("left_arm");
+        if (state.attached)
+        {
+            ROS_INFO_STREAM("[Gripper] = object attached");
+            goToPresetLocation(tmp3);
+            // goToPresetLocation(tmp2);
+            goToPresetLocation(tmp1);
+            goToPresetLocation(tmp);
+        }
+
+        else if (!state.attached)
+        {
+            ROS_INFO_STREAM("[Gripper] = object not attached");
+            // Retreive to Safe Location
+            goToPresetLocation(tmp3);
+            // goToPresetLocation(tmp2);
+            goToPresetLocation(tmp1);
+            goToPresetLocation(tmp);
+
+            int max_attempts{5};
+            int current_attempt{0};
+            //--try to pick up the part 5 times
+            while (current_attempt < max_attempts)
+            {
+                // Wait for Obstacles in Aisle 2
+                if (obstacle_1_pos[3] == 2)
+                {
+                    ROS_INFO_STREAM("Wait for Obstacle 1");
+                    while (((obstacle_1_pos[0] <= ssi5_.gantry[0]) || (obstacle_1_pos[2] == -1)))
+                    {
+                    }
+                }
+                else if (obstacle_2_pos[3] == 2)
+                {
+                    ROS_INFO_STREAM("Wait for Obstacle 2 :");
+                    while (((obstacle_2_pos[0] <= ssi5_.gantry[0]) || (obstacle_2_pos[2] == -1)))
+                    {
+                    }
+                }
+
+                // Go to pick The Part again
+                goToPresetLocation(tmp1);
+                goToPresetLocation(tmp2);
+                goToPresetLocation(tmp3);
+                activateGripper("left_arm");
+                left_arm_group_.setPoseTarget(product.p.pose);
+                left_arm_group_.move();
+
+                // Retreive to Safe Location
+                goToPresetLocation(tmp3);
+                // goToPresetLocation(tmp2);
+                goToPresetLocation(tmp1);
+                goToPresetLocation(tmp);
+
+                auto state = getGripperState("left_arm");
+                if (state.attached)
+                {
+                    ROS_INFO_STREAM("[Gripper] = object attached");
+                    break;
+                }
+                current_attempt++;
+            }
+            product.p.picked_status = true;
+        }
+    }
+
+    else if (free_arm == "right")
+    {
+        PresetLocation tmp = safe_spot_2_;
+        if (obstacle_1_pos[3] == 2)
+        {
+            tmp.location = "tmp_locs";
+            tmp.left_arm = {0, -PI, 2.89, -1.57, 0, 0};
+            goToPresetLocation(tmp);
+            ROS_INFO_STREAM("Wait for Obstacle 2 :");
+            while (((obstacle_2_pos[0] <= ssi5_.gantry[0]) || (obstacle_2_pos[2] == -1)))
+            {
+            }
+            ROS_INFO_STREAM("Wait for Obstacle 1");
+            while (((obstacle_1_pos[0] <= ssi5_.gantry[0]) || (obstacle_1_pos[2] == -1)))
+            {
+            }
+        }
+        else if (obstacle_2_pos[3] == 2)
+        {
+            tmp.location = "tmp_locs";
+            tmp.left_arm = {0, -PI, 2.89, -1.57, 0, 0};
+            goToPresetLocation(tmp);
+            ROS_INFO_STREAM("Wait for Obstacle 2 :");
+            while (((obstacle_2_pos[0] <= ssi5_.gantry[0]) || (obstacle_2_pos[2] == -1)))
+            {
+            }
+        }
+        // // !--------Faster implmentation of reachShelfRight() -------!
+        PresetLocation tmp1 = ssi5_;
+        tmp1.location = "tmp_locs";
+        tmp1.gantry[2] = 0;
+        tmp1.left_arm = {0, -PI, 2.89, -1.57, 0, 0};
+        goToPresetLocation(tmp1);
+
+        PresetLocation tmp2 = tmp1;
+        tmp2.gantry = {product.p.pose.position.x, tmp2.gantry[1], tmp2.gantry[2] + PI / 2};
+        tmp2.right_arm = {PI, -2.13, 1.49, -2.48, -1.57, 0};
+        goToPresetLocation(tmp2);
+
+        geometry_msgs::Pose currentArmPose = right_arm_group_.getCurrentPose().pose;
+        const double dx = product.p.pose.position.x - currentArmPose.position.x;
+        const double dy = product.p.pose.position.y - currentArmPose.position.y;
+        ROS_INFO_STREAM("Offset X,Y: " << dx << "," << dy);
+
+        PresetLocation tmp3 = tmp2;
+        tmp3.gantry = {tmp2.gantry[0] + dx, tmp2.gantry[1] - dy, tmp2.gantry[2]};
+        goToPresetLocation(tmp3);
+
+        // !--------Faster implmentation of pickPartLeftArm() -------!
+        activateGripper("right_arm");
+        geometry_msgs::Pose currentPose = right_arm_group_.getCurrentPose().pose;
+
+        tf2::Quaternion q_arm(currentPose.orientation.x,
+                              currentPose.orientation.y,
+                              currentPose.orientation.z,
+                              currentPose.orientation.w);
+
+        tf2::Quaternion q_world_part(product.p.pose.orientation.x,
+                                     product.p.pose.orientation.y,
+                                     product.p.pose.orientation.z,
+                                     product.p.pose.orientation.w);
+
+        product.p.pose.position.z = product.p.pose.position.z + model_height.at(product.p.type) + GRIPPER_HEIGHT - EPSILON;
+        product.p.pose.orientation.x = currentPose.orientation.x;
+        product.p.pose.orientation.y = currentPose.orientation.y;
+        product.p.pose.orientation.z = currentPose.orientation.z;
+        product.p.pose.orientation.w = currentPose.orientation.w;
+
+        tf2::Quaternion q_world_right_ee_link(currentPose.orientation.x,
+                                              currentPose.orientation.y,
+                                              currentPose.orientation.z,
+                                              currentPose.orientation.w);
+
+        q_right_ee_link_part = q_world_right_ee_link.inverse() * q_world_part;
+        q_right_ee_link_part.normalize();
+
+        ROS_INFO_STREAM("[Gripper] = enabled");
+        //--Move arm to part
+        right_arm_group_.setPoseTarget(product.p.pose);
+        right_arm_group_.move();
+        auto state = getGripperState("right_arm");
+        if (state.attached)
+        {
+            ROS_INFO_STREAM("[Gripper] = object attached");
+            goToPresetLocation(tmp3);
+            // goToPresetLocation(tmp2);
+            goToPresetLocation(tmp1);
+            goToPresetLocation(tmp);
+        }
+
+        else if (!state.attached)
+        {
+            ROS_INFO_STREAM("[Gripper] = object not attached");
+            // Retreive to Safe Location
+            goToPresetLocation(tmp3);
+            // goToPresetLocation(tmp2);
+            goToPresetLocation(tmp1);
+            goToPresetLocation(tmp);
+
+            int max_attempts{5};
+            int current_attempt{0};
+            //--try to pick up the part 5 times
+            while (current_attempt < max_attempts)
+            {
+                // Wait for Obstacles in Aisle 2
+                if (obstacle_1_pos[3] == 2)
+                {
+                    ROS_INFO_STREAM("Wait for Obstacle 1");
+                    while (((obstacle_1_pos[0] <= ssi5_.gantry[0]) || (obstacle_1_pos[2] == -1)))
+                    {
+                    }
+                }
+                else if (obstacle_2_pos[3] == 2)
+                {
+                    ROS_INFO_STREAM("Wait for Obstacle 2 :");
+                    while (((obstacle_2_pos[0] <= ssi5_.gantry[0]) || (obstacle_2_pos[2] == -1)))
+                    {
+                    }
+                }
+
+                // Go to pick The Part again
+                goToPresetLocation(tmp1);
+                goToPresetLocation(tmp2);
+                goToPresetLocation(tmp3);
+                activateGripper("right_arm");
+                right_arm_group_.setPoseTarget(product.p.pose);
+                right_arm_group_.move();
+
+                // Retreive to Safe Location
+                goToPresetLocation(tmp3);
+                // goToPresetLocation(tmp2);
+                goToPresetLocation(tmp1);
+                goToPresetLocation(tmp);
+
+                auto state = getGripperState("right_arm");
+                if (state.attached)
+                {
+                    ROS_INFO_STREAM("[Gripper] = object attached");
+                    break;
+                }
+                current_attempt++;
+            }
+            product.p.picked_status = true;
+        }
+    }
+
+    // Wait for Obstacles in Aisle 2
+    if (obstacle_1_pos[3] == 2)
+    {
+        ROS_INFO_STREAM("Wait for Obstacle 1");
+        while (((obstacle_1_pos[0] >= ssi5_.gantry[0]) || (obstacle_1_pos[2] == 1)))
+        {
+        }
+    }
+    else if (obstacle_2_pos[3] == 2)
+    {
+        ROS_INFO_STREAM("Wait for Obstacle 2 :");
+        while (((obstacle_2_pos[0] >= ssi5_.gantry[0]) || (obstacle_2_pos[2] == 1)))
+        {
+        }
+    }
+    goToPresetLocation(ssi5_);
+    goToPresetLocation(aisle1_);
+}
+
+void GantryControl::pickPartFromShelf8Aisle2Obstacles(product product)
+{
+    // Wait for Obstace in Aisle 2
+    if (obstacle_1_pos[3] == 2)
+    {
+        ROS_INFO_STREAM("Wait for Obstacle 1");
+        while (((obstacle_1_pos[0] >= ssi2_.gantry[0]) || (obstacle_1_pos[2] == 1)))
+        {
+        }
+    }
+    else if (obstacle_2_pos[3] == 2)
+    {
+        ROS_INFO_STREAM("Wait for Obstacle 2 :");
+        while (((obstacle_2_pos[0] >= ssi2_.gantry[0]) || (obstacle_2_pos[2] == 1)))
+        {
+        }
+    }
+
+    goToPresetLocation(ssi2_);
+    goToPresetLocation(safe_spot_1_);
+
+    std::string free_arm = checkFreeGripper();
+    if (free_arm == "any" || free_arm == "left")
+    {
+        PresetLocation tmp = safe_spot_1_;
+        if (obstacle_1_pos[3] == 2)
+        {
+            tmp.location = "tmp_locs";
+            tmp.right_arm = {3.14, -PI, 2.89, -1.57, 0, 0};
+            goToPresetLocation(tmp);
+            ROS_INFO_STREAM("Wait for Obstacle 2 :");
+            while (((obstacle_2_pos[0] <= ssi2_.gantry[0]) || (obstacle_2_pos[2] == -1)))
+            {
+            }
+            ROS_INFO_STREAM("Wait for Obstacle 1");
+            while (((obstacle_1_pos[0] <= ssi2_.gantry[0]) || (obstacle_1_pos[2] == -1)))
+            {
+            }
+        }
+        else if (obstacle_2_pos[3] == 2)
+        {
+            tmp.location = "tmp_locs";
+            tmp.right_arm = {3.14, -PI, 2.89, -1.57, 0, 0};
+            goToPresetLocation(tmp);
+            ROS_INFO_STREAM("Wait for Obstacle 2 :");
+            while (((obstacle_2_pos[0] <= ssi2_.gantry[0]) || (obstacle_2_pos[2] == -1)))
+            {
+            }
+        }
+        // // !--------Faster implmentation of reachShelfLeft() -------!
+        PresetLocation tmp1 = ssi2_;
+        tmp1.location = "tmp_locs";
+        tmp1.gantry[2] = -PI;
+        tmp1.right_arm = {3.14, -PI, 2.89, -1.57, 0, 0};
+        goToPresetLocation(tmp1);
+
+        PresetLocation tmp2 = tmp1;
+        tmp2.gantry = {product.p.pose.position.x, tmp2.gantry[1], tmp2.gantry[2] + PI / 2};
+        tmp2.left_arm = {0, -2.13, 1.49, -2.48, -1.57, 0};
+        goToPresetLocation(tmp2);
+
+        geometry_msgs::Pose currentArmPose = left_arm_group_.getCurrentPose().pose;
+        const double dx = product.p.pose.position.x - currentArmPose.position.x;
+        const double dy = product.p.pose.position.y - currentArmPose.position.y;
+        ROS_INFO_STREAM("Offset X,Y: " << dx << "," << dy);
+
+        PresetLocation tmp3 = tmp2;
+        tmp3.gantry = {tmp2.gantry[0] + dx, tmp2.gantry[1] - dy, tmp2.gantry[2]};
+        goToPresetLocation(tmp3);
+
+        // !--------Faster implmentation of pickPartLeftArm() -------!
+        activateGripper("left_arm");
+        geometry_msgs::Pose currentPose = left_arm_group_.getCurrentPose().pose;
+
+        tf2::Quaternion q_arm(currentPose.orientation.x,
+                              currentPose.orientation.y,
+                              currentPose.orientation.z,
+                              currentPose.orientation.w);
+
+        tf2::Quaternion q_world_part(product.p.pose.orientation.x,
+                                     product.p.pose.orientation.y,
+                                     product.p.pose.orientation.z,
+                                     product.p.pose.orientation.w);
+
+        product.p.pose.position.z = product.p.pose.position.z + model_height.at(product.p.type) + GRIPPER_HEIGHT - EPSILON;
+        product.p.pose.orientation.x = currentPose.orientation.x;
+        product.p.pose.orientation.y = currentPose.orientation.y;
+        product.p.pose.orientation.z = currentPose.orientation.z;
+        product.p.pose.orientation.w = currentPose.orientation.w;
+
+        tf2::Quaternion q_world_left_ee_link(currentPose.orientation.x,
+                                             currentPose.orientation.y,
+                                             currentPose.orientation.z,
+                                             currentPose.orientation.w);
+
+        q_left_ee_link_part = q_world_left_ee_link.inverse() * q_world_part;
+        q_left_ee_link_part.normalize();
+
+        ROS_INFO_STREAM("[Gripper] = enabled");
+        //--Move arm to part
+        left_arm_group_.setPoseTarget(product.p.pose);
+        left_arm_group_.move();
+        auto state = getGripperState("left_arm");
+        if (state.attached)
+        {
+            ROS_INFO_STREAM("[Gripper] = object attached");
+            goToPresetLocation(tmp3);
+            // goToPresetLocation(tmp2);
+            goToPresetLocation(tmp1);
+            goToPresetLocation(tmp);
+        }
+
+        else if (!state.attached)
+        {
+            ROS_INFO_STREAM("[Gripper] = object not attached");
+            // Retreive to Safe Location
+            goToPresetLocation(tmp3);
+            // goToPresetLocation(tmp2);
+            goToPresetLocation(tmp1);
+            goToPresetLocation(tmp);
+
+            int max_attempts{5};
+            int current_attempt{0};
+            //--try to pick up the part 5 times
+            while (current_attempt < max_attempts)
+            {
+                // Wait for Obstacles in Aisle 2
+                if (obstacle_1_pos[3] == 2)
+                {
+                    ROS_INFO_STREAM("Wait for Obstacle 1");
+                    while (((obstacle_1_pos[0] <= ssi2_.gantry[0]) || (obstacle_1_pos[2] == -1)))
+                    {
+                    }
+                }
+                else if (obstacle_2_pos[3] == 2)
+                {
+                    ROS_INFO_STREAM("Wait for Obstacle 2 :");
+                    while (((obstacle_2_pos[0] <= ssi2_.gantry[0]) || (obstacle_2_pos[2] == -1)))
+                    {
+                    }
+                }
+
+                // Go to pick The Part again
+                goToPresetLocation(tmp1);
+                goToPresetLocation(tmp2);
+                goToPresetLocation(tmp3);
+                activateGripper("left_arm");
+                left_arm_group_.setPoseTarget(product.p.pose);
+                left_arm_group_.move();
+
+                // Retreive to Safe Location
+                goToPresetLocation(tmp3);
+                // goToPresetLocation(tmp2);
+                goToPresetLocation(tmp1);
+                goToPresetLocation(tmp);
+
+                auto state = getGripperState("left_arm");
+                if (state.attached)
+                {
+                    ROS_INFO_STREAM("[Gripper] = object attached");
+                    break;
+                }
+                current_attempt++;
+            }
+            product.p.picked_status = true;
+        }
+    }
+
+    else if (free_arm == "right")
+    {
+        PresetLocation tmp = safe_spot_1_;
+        if (obstacle_1_pos[3] == 2)
+        {
+            tmp.location = "tmp_locs";
+            tmp.left_arm = {0, -PI, 2.89, -1.57, 0, 0};
+            goToPresetLocation(tmp);
+            ROS_INFO_STREAM("Wait for Obstacle 2 :");
+            while (((obstacle_2_pos[0] <= ssi2_.gantry[0]) || (obstacle_2_pos[2] == -1)))
+            {
+            }
+            ROS_INFO_STREAM("Wait for Obstacle 1");
+            while (((obstacle_1_pos[0] <= ssi2_.gantry[0]) || (obstacle_1_pos[2] == -1)))
+            {
+            }
+        }
+        else if (obstacle_2_pos[3] == 2)
+        {
+            tmp.location = "tmp_locs";
+            tmp.left_arm = {0, -PI, 2.89, -1.57, 0, 0};
+            goToPresetLocation(tmp);
+            ROS_INFO_STREAM("Wait for Obstacle 2 :");
+            while (((obstacle_2_pos[0] <= ssi2_.gantry[0]) || (obstacle_2_pos[2] == -1)))
+            {
+            }
+        }
+        // // !--------Faster implmentation of reachShelfRight() -------!
+        PresetLocation tmp1 = ssi2_;
+        tmp1.location = "tmp_locs";
+        tmp1.gantry[2] = 0;
+        tmp1.left_arm = {0, -PI, 2.89, -1.57, 0, 0};
+        goToPresetLocation(tmp1);
+
+        PresetLocation tmp2 = tmp1;
+        tmp2.gantry = {product.p.pose.position.x, tmp2.gantry[1], tmp2.gantry[2] + PI / 2};
+        tmp2.right_arm = {PI, -2.13, 1.49, -2.48, -1.57, 0};
+        goToPresetLocation(tmp2);
+
+        geometry_msgs::Pose currentArmPose = right_arm_group_.getCurrentPose().pose;
+        const double dx = product.p.pose.position.x - currentArmPose.position.x;
+        const double dy = product.p.pose.position.y - currentArmPose.position.y;
+        ROS_INFO_STREAM("Offset X,Y: " << dx << "," << dy);
+
+        PresetLocation tmp3 = tmp2;
+        tmp3.gantry = {tmp2.gantry[0] + dx, tmp2.gantry[1] - dy, tmp2.gantry[2]};
+        goToPresetLocation(tmp3);
+
+        // !--------Faster implmentation of pickPartLeftArm() -------!
+        activateGripper("right_arm");
+        geometry_msgs::Pose currentPose = right_arm_group_.getCurrentPose().pose;
+
+        tf2::Quaternion q_arm(currentPose.orientation.x,
+                              currentPose.orientation.y,
+                              currentPose.orientation.z,
+                              currentPose.orientation.w);
+
+        tf2::Quaternion q_world_part(product.p.pose.orientation.x,
+                                     product.p.pose.orientation.y,
+                                     product.p.pose.orientation.z,
+                                     product.p.pose.orientation.w);
+
+        product.p.pose.position.z = product.p.pose.position.z + model_height.at(product.p.type) + GRIPPER_HEIGHT - EPSILON;
+        product.p.pose.orientation.x = currentPose.orientation.x;
+        product.p.pose.orientation.y = currentPose.orientation.y;
+        product.p.pose.orientation.z = currentPose.orientation.z;
+        product.p.pose.orientation.w = currentPose.orientation.w;
+
+        tf2::Quaternion q_world_right_ee_link(currentPose.orientation.x,
+                                              currentPose.orientation.y,
+                                              currentPose.orientation.z,
+                                              currentPose.orientation.w);
+
+        q_right_ee_link_part = q_world_right_ee_link.inverse() * q_world_part;
+        q_right_ee_link_part.normalize();
+
+        ROS_INFO_STREAM("[Gripper] = enabled");
+        //--Move arm to part
+        right_arm_group_.setPoseTarget(product.p.pose);
+        right_arm_group_.move();
+        auto state = getGripperState("right_arm");
+        if (state.attached)
+        {
+            ROS_INFO_STREAM("[Gripper] = object attached");
+            goToPresetLocation(tmp3);
+            // goToPresetLocation(tmp2);
+            goToPresetLocation(tmp1);
+            goToPresetLocation(tmp);
+        }
+
+        else if (!state.attached)
+        {
+            ROS_INFO_STREAM("[Gripper] = object not attached");
+            // Retreive to Safe Location
+            goToPresetLocation(tmp3);
+            // goToPresetLocation(tmp2);
+            goToPresetLocation(tmp1);
+            goToPresetLocation(tmp);
+
+            int max_attempts{5};
+            int current_attempt{0};
+            //--try to pick up the part 5 times
+            while (current_attempt < max_attempts)
+            {
+                // Wait for Obstacles in Aisle 2
+                if (obstacle_1_pos[3] == 2)
+                {
+                    ROS_INFO_STREAM("Wait for Obstacle 1");
+                    while (((obstacle_1_pos[0] <= ssi2_.gantry[0]) || (obstacle_1_pos[2] == -1)))
+                    {
+                    }
+                }
+                else if (obstacle_2_pos[3] == 2)
+                {
+                    ROS_INFO_STREAM("Wait for Obstacle 2 :");
+                    while (((obstacle_2_pos[0] <= ssi2_.gantry[0]) || (obstacle_2_pos[2] == -1)))
+                    {
+                    }
+                }
+
+                // Go to pick The Part again
+                goToPresetLocation(tmp1);
+                goToPresetLocation(tmp2);
+                goToPresetLocation(tmp3);
+                activateGripper("right_arm");
+                right_arm_group_.setPoseTarget(product.p.pose);
+                right_arm_group_.move();
+
+                // Retreive to Safe Location
+                goToPresetLocation(tmp3);
+                // goToPresetLocation(tmp2);
+                goToPresetLocation(tmp1);
+                goToPresetLocation(tmp);
+
+                auto state = getGripperState("right_arm");
+                if (state.attached)
+                {
+                    ROS_INFO_STREAM("[Gripper] = object attached");
+                    break;
+                }
+                current_attempt++;
+            }
+            product.p.picked_status = true;
+        }
+    }
+
+    // Wait for Obstacles in Aisle 2
+    if (obstacle_1_pos[3] == 2)
+    {
+        ROS_INFO_STREAM("Wait for Obstacle 1");
+        while (((obstacle_1_pos[0] >= ssi2_.gantry[0]) || (obstacle_1_pos[2] == 1)))
+        {
+        }
+    }
+    else if (obstacle_2_pos[3] == 2)
+    {
+        ROS_INFO_STREAM("Wait for Obstacle 2 :");
+        while (((obstacle_2_pos[0] >= ssi2_.gantry[0]) || (obstacle_2_pos[2] == 1)))
+        {
+        }
+    }
+    goToPresetLocation(ssi2_);
+    goToPresetLocation(aisle1_);
+}
+
+void GantryControl::pickPartFromShelf8Aisle3Obstacles(product product)
+{
+    if (obstacle_1_pos[3] == 3)
+    {
+        ROS_INFO_STREAM("Wait for Obstacle 1");
+        while (((obstacle_1_pos[0] >= ssi3_.gantry[0]) || (obstacle_1_pos[2] == 1)))
+        {
+        }
+    }
+    else if (obstacle_2_pos[3] == 3)
+    {
+        // while (true)
+        ROS_INFO_STREAM("Wait for Obstacle 2 :");
+        while (((obstacle_2_pos[0] >= ssi3_.gantry[0]) || (obstacle_2_pos[2] == 1)))
+        {
+        }
+    }
+
+    goToPresetLocation(ssi3_);
+    goToPresetLocation(safe_spot_3_);
+
+    std::string free_arm = checkFreeGripper();
+    if (free_arm == "any" || free_arm == "left")
+    // if (free_arm == "left")
+    {
+        PresetLocation tmp = safe_spot_3_;
+        if (obstacle_1_pos[3] == 3)
+        {
+            tmp.location = "tmp_locs";
+            tmp.right_arm = {3.14, -PI, 2.89, -1.57, 0, 0};
+            goToPresetLocation(tmp);
+            ROS_INFO_STREAM("Wait for Obstacle 2 :");
+            while (((obstacle_2_pos[0] <= ssi3_.gantry[0]) || (obstacle_2_pos[2] == -1)))
+            {
+            }
+            ROS_INFO_STREAM("Wait for Obstacle 1");
+            while (((obstacle_1_pos[0] <= ssi3_.gantry[0]) || (obstacle_1_pos[2] == -1)))
+            {
+            }
+        }
+        else if (obstacle_2_pos[3] == 3)
+        {
+            tmp.location = "tmp_locs";
+            tmp.right_arm = {3.14, -PI, 2.89, -1.57, 0, 0};
+            goToPresetLocation(tmp);
+            ROS_INFO_STREAM("Wait for Obstacle 2 :");
+            while (((obstacle_2_pos[0] <= ssi3_.gantry[0]) || (obstacle_2_pos[2] == -1)))
+            {
+            }
+        }
+        // // !--------Faster implmentation of reachShelfLeft() -------!
+        PresetLocation tmp1 = ssi3_;
+        tmp1.location = "tmp_locs";
+        tmp1.gantry[2] = PI;
+        tmp1.right_arm = {3.14, -PI, 2.89, -1.57, 0, 0};
+        goToPresetLocation(tmp1);
+
+        PresetLocation tmp2 = tmp1;
+        tmp2.gantry = {product.p.pose.position.x, tmp2.gantry[1], tmp2.gantry[2] - PI / 2};
+        tmp2.left_arm = {0, -2.13, 1.49, -2.48, -1.57, 0};
+        goToPresetLocation(tmp2);
+
+        geometry_msgs::Pose currentArmPose = left_arm_group_.getCurrentPose().pose;
+        const double dx = product.p.pose.position.x - currentArmPose.position.x;
+        const double dy = product.p.pose.position.y - currentArmPose.position.y;
+        ROS_INFO_STREAM("Offset X,Y: " << dx << "," << dy);
+
+        PresetLocation tmp3 = tmp2;
+        tmp3.gantry = {tmp2.gantry[0] + dx, tmp2.gantry[1] - dy, tmp2.gantry[2]};
+        goToPresetLocation(tmp3);
+
+        // !--------Faster implmentation of pickPartLeftArm() -------!
+        activateGripper("left_arm");
+        geometry_msgs::Pose currentPose = left_arm_group_.getCurrentPose().pose;
+
+        tf2::Quaternion q_arm(currentPose.orientation.x,
+                              currentPose.orientation.y,
+                              currentPose.orientation.z,
+                              currentPose.orientation.w);
+
+        tf2::Quaternion q_world_part(product.p.pose.orientation.x,
+                                     product.p.pose.orientation.y,
+                                     product.p.pose.orientation.z,
+                                     product.p.pose.orientation.w);
+
+        product.p.pose.position.z = product.p.pose.position.z + model_height.at(product.p.type) + GRIPPER_HEIGHT - EPSILON;
+        product.p.pose.orientation.x = currentPose.orientation.x;
+        product.p.pose.orientation.y = currentPose.orientation.y;
+        product.p.pose.orientation.z = currentPose.orientation.z;
+        product.p.pose.orientation.w = currentPose.orientation.w;
+
+        tf2::Quaternion q_world_left_ee_link(currentPose.orientation.x,
+                                             currentPose.orientation.y,
+                                             currentPose.orientation.z,
+                                             currentPose.orientation.w);
+
+        q_left_ee_link_part = q_world_left_ee_link.inverse() * q_world_part;
+        q_left_ee_link_part.normalize();
+
+        ROS_INFO_STREAM("[Gripper] = enabled");
+        //--Move arm to part
+        left_arm_group_.setPoseTarget(product.p.pose);
+        left_arm_group_.move();
+        auto state = getGripperState("left_arm");
+        if (state.attached)
+        {
+            ROS_INFO_STREAM("[Gripper] = object attached");
+            goToPresetLocation(tmp3);
+            // goToPresetLocation(tmp2);
+            goToPresetLocation(tmp1);
+            goToPresetLocation(tmp);
+        }
+
+        else if (!state.attached)
+        {
+            ROS_INFO_STREAM("[Gripper] = object not attached");
+            // Retreive to Safe Location
+            goToPresetLocation(tmp3);
+            // goToPresetLocation(tmp2);
+            goToPresetLocation(tmp1);
+            goToPresetLocation(tmp);
+
+            int max_attempts{5};
+            int current_attempt{0};
+            //--try to pick up the part 5 times
+            while (current_attempt < max_attempts)
+            {
+                // Wait for Obstacles in Aisle 2
+                if (obstacle_1_pos[3] == 2)
+                {
+                    ROS_INFO_STREAM("Wait for Obstacle 1");
+                    while (((obstacle_1_pos[0] <= ssi3_.gantry[0]) || (obstacle_1_pos[2] == -1)))
+                    {
+                    }
+                }
+                else if (obstacle_2_pos[3] == 2)
+                {
+                    ROS_INFO_STREAM("Wait for Obstacle 2 :");
+                    while (((obstacle_2_pos[0] <= ssi3_.gantry[0]) || (obstacle_2_pos[2] == -1)))
+                    {
+                    }
+                }
+
+                // Go to pick The Part again
+                goToPresetLocation(tmp1);
+                goToPresetLocation(tmp2);
+                goToPresetLocation(tmp3);
+                activateGripper("left_arm");
+                left_arm_group_.setPoseTarget(product.p.pose);
+                left_arm_group_.move();
+
+                // Retreive to Safe Location
+                goToPresetLocation(tmp3);
+                // goToPresetLocation(tmp2);
+                goToPresetLocation(tmp1);
+                goToPresetLocation(tmp);
+
+                auto state = getGripperState("left_arm");
+                if (state.attached)
+                {
+                    ROS_INFO_STREAM("[Gripper] = object attached");
+                    break;
+                }
+                current_attempt++;
+            }
+            product.p.picked_status = true;
+        }
+    }
+
+    else if (free_arm == "right")
+    {
+        PresetLocation tmp = safe_spot_3_;
+        if (obstacle_1_pos[3] == 3)
+        {
+            tmp.location = "tmp_locs";
+            tmp.left_arm = {0, -PI, 2.89, -1.57, 0, 0};
+            goToPresetLocation(tmp);
+            ROS_INFO_STREAM("Wait for Obstacle 2 :");
+            while (((obstacle_2_pos[0] <= ssi3_.gantry[0]) || (obstacle_2_pos[2] == -1)))
+            {
+            }
+            ROS_INFO_STREAM("Wait for Obstacle 1");
+            while (((obstacle_1_pos[0] <= ssi3_.gantry[0]) || (obstacle_1_pos[2] == -1)))
+            {
+            }
+        }
+        else if (obstacle_2_pos[3] == 3)
+        {
+            tmp.location = "tmp_locs";
+            tmp.left_arm = {0, -PI, 2.89, -1.57, 0, 0};
+            goToPresetLocation(tmp);
+            ROS_INFO_STREAM("Wait for Obstacle 2 :");
+            while (((obstacle_2_pos[0] <= ssi3_.gantry[0]) || (obstacle_2_pos[2] == -1)))
+            {
+            }
+        }
+        // // !--------Faster implmentation of reachShelfRight() -------!
+        PresetLocation tmp1 = ssi3_;
+        tmp1.location = "tmp_locs";
+        tmp1.gantry[2] = 0;
+        tmp1.left_arm = {0, -PI, 2.89, -1.57, 0, 0};
+        goToPresetLocation(tmp1);
+
+        PresetLocation tmp2 = tmp1;
+        tmp2.gantry = {product.p.pose.position.x, tmp2.gantry[1], tmp2.gantry[2] - PI / 2};
+        tmp2.right_arm = {PI, -2.13, 1.49, -2.48, -1.57, 0};
+        goToPresetLocation(tmp2);
+
+        geometry_msgs::Pose currentArmPose = right_arm_group_.getCurrentPose().pose;
+        const double dx = product.p.pose.position.x - currentArmPose.position.x;
+        const double dy = product.p.pose.position.y - currentArmPose.position.y;
+        ROS_INFO_STREAM("Offset X,Y: " << dx << "," << dy);
+
+        PresetLocation tmp3 = tmp2;
+        tmp3.gantry = {tmp2.gantry[0] + dx, tmp2.gantry[1] - dy, tmp2.gantry[2]};
+        goToPresetLocation(tmp3);
+
+        // !--------Faster implmentation of pickPartLeftArm() -------!
+        activateGripper("right_arm");
+        geometry_msgs::Pose currentPose = right_arm_group_.getCurrentPose().pose;
+
+        tf2::Quaternion q_arm(currentPose.orientation.x,
+                              currentPose.orientation.y,
+                              currentPose.orientation.z,
+                              currentPose.orientation.w);
+
+        tf2::Quaternion q_world_part(product.p.pose.orientation.x,
+                                     product.p.pose.orientation.y,
+                                     product.p.pose.orientation.z,
+                                     product.p.pose.orientation.w);
+
+        product.p.pose.position.z = product.p.pose.position.z + model_height.at(product.p.type) + GRIPPER_HEIGHT - EPSILON;
+        product.p.pose.orientation.x = currentPose.orientation.x;
+        product.p.pose.orientation.y = currentPose.orientation.y;
+        product.p.pose.orientation.z = currentPose.orientation.z;
+        product.p.pose.orientation.w = currentPose.orientation.w;
+
+        tf2::Quaternion q_world_right_ee_link(currentPose.orientation.x,
+                                              currentPose.orientation.y,
+                                              currentPose.orientation.z,
+                                              currentPose.orientation.w);
+
+        q_right_ee_link_part = q_world_right_ee_link.inverse() * q_world_part;
+        q_right_ee_link_part.normalize();
+
+        ROS_INFO_STREAM("[Gripper] = enabled");
+        //--Move arm to part
+        right_arm_group_.setPoseTarget(product.p.pose);
+        right_arm_group_.move();
+        auto state = getGripperState("right_arm");
+        if (state.attached)
+        {
+            ROS_INFO_STREAM("[Gripper] = object attached");
+            goToPresetLocation(tmp3);
+            // goToPresetLocation(tmp2);
+            goToPresetLocation(tmp1);
+            goToPresetLocation(tmp);
+        }
+
+        else if (!state.attached)
+        {
+            ROS_INFO_STREAM("[Gripper] = object not attached");
+            // Retreive to Safe Location
+            goToPresetLocation(tmp3);
+            // goToPresetLocation(tmp2);
+            goToPresetLocation(tmp1);
+            goToPresetLocation(tmp);
+
+            int max_attempts{5};
+            int current_attempt{0};
+            //--try to pick up the part 5 times
+            while (current_attempt < max_attempts)
+            {
+                // Wait for Obstacles in Aisle 2
+                if (obstacle_1_pos[3] == 2)
+                {
+                    ROS_INFO_STREAM("Wait for Obstacle 1");
+                    while (((obstacle_1_pos[0] <= ssi3_.gantry[0]) || (obstacle_1_pos[2] == -1)))
+                    {
+                    }
+                }
+                else if (obstacle_2_pos[3] == 2)
+                {
+                    ROS_INFO_STREAM("Wait for Obstacle 2 :");
+                    while (((obstacle_2_pos[0] <= ssi3_.gantry[0]) || (obstacle_2_pos[2] == -1)))
+                    {
+                    }
+                }
+
+                // Go to pick The Part again
+                goToPresetLocation(tmp1);
+                goToPresetLocation(tmp2);
+                goToPresetLocation(tmp3);
+                activateGripper("right_arm");
+                right_arm_group_.setPoseTarget(product.p.pose);
+                right_arm_group_.move();
+
+                // Retreive to Safe Location
+                goToPresetLocation(tmp3);
+                // goToPresetLocation(tmp2);
+                goToPresetLocation(tmp1);
+                goToPresetLocation(tmp);
+
+                auto state = getGripperState("right_arm");
+                if (state.attached)
+                {
+                    ROS_INFO_STREAM("[Gripper] = object attached");
+                    break;
+                }
+                current_attempt++;
+            }
+            product.p.picked_status = true;
+        }
+    }
+
+    // Wait for Obstacles in Aisle 3
+    if (obstacle_1_pos[3] == 3)
+    {
+        ROS_INFO_STREAM("Wait for Obstacle 1");
+        while (((obstacle_1_pos[0] >= ssi3_.gantry[0]) || (obstacle_1_pos[2] == 1)))
+        {
+        }
+    }
+    else if (obstacle_2_pos[3] == 3)
+    {
+        ROS_INFO_STREAM("Wait for Obstacle 2 :");
+        while (((obstacle_2_pos[0] >= ssi3_.gantry[0]) || (obstacle_2_pos[2] == 1)))
+        {
+        }
+    }
+    goToPresetLocation(ssi3_);
+    goToPresetLocation(aisle2_);
+}
+
 void GantryControl::getProduct(product product)
 {
     std::string location = product.p.location;
     std::string free_arm = checkFreeGripper();
 
-    //If part is located in the two top shelfs 1 and 2
-    if (location == "shelf_1" || location == "shelf_2")
+    if (location == "shelf_5")
     {
-        if (gantry_location_ == "aisle_1")
+        if (gantry_location_ == "safe_spot_3")
         {
-            goToPresetLocation(aisle1_);
-            FKGantry(start_.gantry);
-        }
-        else if (gantry_location_ == "aisle_2")
-        {
-            goToPresetLocation(aisle2_);
-            FKGantry(start_.gantry);
-        }
-
-        if (location == "shelf_1")
-        {
-            goToPresetLocation(shelf1_);
-        }
-        else
-        {
-            goToPresetLocation(shelf2_);
-        }
-
-        if (free_arm == "any" || free_arm == "left")
-        {
-            reachPartShelfLeftArm(product.p);
-            moveOverPart(product.p, free_arm);
-            pickPartLeftArm(product.p);
-            FKLeftArm(shelf1_.left_arm);
-        }
-        else
-        {
-            reachPartShelfRightArm(product.p);
-            moveOverPart(product.p, free_arm);
-            pickPartRightArm(product.p);
-            FKRightArm(shelf1_.right_arm);
-        }
-
-        FKGantry(shelf1_.gantry);
-        ros::Duration(0.5).sleep();
-        rotateTorso(0.);
-
-        // If part is located in any of the bins
-    }
-    else if (location == "bins")
-    {
-        if (gantry_location_ == "aisle_1")
-        {
-            goToPresetLocation(aisle1_);
-            goToPresetLocation(start_);
-        }
-        else if (gantry_location_ == "aisle_2")
-        {
-            goToPresetLocation(aisle2_);
-            goToPresetLocation(start_);
-        }
-        else if (gantry_location_ == "shelf_1" || gantry_location_ == "shelf_2")
-        {
-            FKRightArm(bins_.right_arm);
-            FKLeftArm(bins_.left_arm);
-        }
-
-        if (free_arm == "any" || free_arm == "left")
-        {
-            goToPresetLocation(bins_);
-            reachPartBinLeftArm(product.p);
-            gantry_location_ = "bins";
-            ros::Duration(0.5).sleep();
-            pickPartLeftArm(product.p);
-            ros::Duration(1).sleep();
-        }
-        else
-        {
-            goToPresetLocation(bins_);
-            gantry_location_ = "bins";
-            reachPartBinRightArm(product.p);
-            ros::Duration(0.5).sleep();
-            pickPartRightArm(product.p);
-            ros::Duration(1).sleep();
-        }
-        goToPresetLocation(bins_);
-        gantry_location_ = "bins";
-
-        //If part is located in bottom shelf 5
-    }
-    else if (location == "shelf_5")
-    {
-        if (gantry_location_ == "shelf_1" || gantry_location_ == "shelf_2" || gantry_location_ == "bins" || gantry_location_ == "start")
-        {
-            FKGantry(start_.gantry);
-            goToPresetLocation(aisle1_);
-            gantry_location_ = "aisle_1";
-        }
-        else if (gantry_location_ == "aisle_2")
-        {
-            goToPresetLocation(aisle2_);
-            goToPresetLocation(aisle1_);
-            gantry_location_ = "aisle_1";
-        }
-
-        goToBottomShelfs();
-        if (free_arm == "any" || free_arm == "left")
-        {
-            reachPartShelfLeftArm(product.p);
-            ros::Duration(1).sleep();
-            pickPartLeftArm(product.p);
-            ros::Duration(1).sleep();
-            retriveFromBottomShelf();
-        }
-        else
-        {
-            reachPartShelfRightArm(product.p);
-            ros::Duration(1).sleep();
-            pickPartRightArm(product.p);
-            ros::Duration(1).sleep();
-            retriveFromBottomShelf();
-        }
-
-        gantry_location_ = "aisle_1";
-
-        //If part is located in bottom shelf 11
-    }
-    else if (location == "shelf_11")
-    {
-        if (gantry_location_ == "shelf_1" || gantry_location_ == "shelf_2" || gantry_location_ == "bins" || gantry_location_ == "start")
-        {
-            FKGantry(start_.gantry);
-            goToPresetLocation(aisle2_);
-        }
-        else if (gantry_location_ == "aisle_1")
-        {
-            goToPresetLocation(aisle1_);
-            goToPresetLocation(aisle2_);
-            gantry_location_ = "aisle_2";
-        }
-
-        goToBottomShelfs();
-        if (free_arm == "any" || free_arm == "left")
-        {
-            reachPartShelfLeftArm(product.p);
-            ros::Duration(1).sleep();
-            pickPartLeftArm(product.p);
-            retriveFromBottomShelf();
-        }
-        else
-        {
-            reachPartShelfRightArm(product.p);
-            ros::Duration(1).sleep();
-            pickPartRightArm(product.p);
-            ros::Duration(1).sleep();
-            retriveFromBottomShelf();
-        }
-
-        gantry_location_ = "aisle_2";
-
-        //If part is located in bottom shelf 8
-    }
-    else if (location == "shelf_8")
-    {
-        if (gantry_location_ == "shelf_1" || gantry_location_ == "shelf_2" || gantry_location_ == "bins" || gantry_location_ == "start")
-        {
-            FKGantry(start_.gantry);
-            if (product.p.pose.position.y > 0)
+            if (obstacle_1_pos[3] != 4 && obstacle_2_pos[3] != 4)
             {
-                goToPresetLocation(aisle1_);
-                gantry_location_ = "aisle_1";
+                goToPresetLocation(ssi4_);
+            }
+            else if (obstacle_1_pos[3] == 4 || obstacle_2_pos[3] == 4)
+            {
+                if (obstacle_1_pos[3] == 4)
+                {
+                    while (((obstacle_1_pos[0] <= ssi4_.gantry[0]) || (obstacle_1_pos[2] == -1)))
+                    {
+                        ROS_INFO_STREAM("Wait for Obstacle 1");
+                    }
+                    goToPresetLocation(ssi4_);
+                }
+                else if (obstacle_2_pos[3] == 4)
+                {
+                    while (((obstacle_2_pos[0] <= ssi4_.gantry[0]) || (obstacle_2_pos[2] == -1)))
+                    {
+                        ROS_INFO_STREAM("Wait for Obstacle 2");
+                    }
+                    goToPresetLocation(ssi4_);
+                }
+            }
+        }
+        if (gantry_location_ == "ssi4")
+        {
+            goToPresetLocation(rail_2_);
+        }
+        if (gantry_location_ == "rail_2")
+        {
+            goToPresetLocation(agv2_90_);
+        }
+        if (gantry_location_ == "agv2" || gantry_location_ == "agv2_90")
+        {
+            goToPresetLocation(agv2_90_);
+            goToPresetLocation(aisle2_90_);
+        }
+        if (gantry_location_ == "aisle2" || gantry_location_ == "aisle2_90")
+        {
+            goToPresetLocation(aisle2_90_);
+            goToPresetLocation(start_90_);
+        }
+        if (gantry_location_ == "bins" || gantry_location_ == "shelf_1" || gantry_location_ == "shelf_2" || gantry_location_ == "start" || gantry_location_ == "start_90")
+        {
+            goToPresetLocation(start_90_);
+            goToPresetLocation(aisle1_90_);
+        }
+        if (gantry_location_ == "aisle1" || gantry_location_ == "aisle1_90")
+        {
+            if (obstacle_1_pos[3] != 2 && obstacle_2_pos[3] != 2)
+            {
+                pickPartFromShelfAisle2(product);
+                return;
             }
             else
             {
-                goToPresetLocation(aisle2_);
-                gantry_location_ = "aisle_2";
+                goToPresetLocation(agv1_90_);
             }
         }
-
-        goToBottomShelfs();
-        if (free_arm == "any" || free_arm == "left")
+        if (gantry_location_ == "agv1" || gantry_location_ == "agv1_90")
         {
-            reachPartShelfLeftArm(product.p);
-            ros::Duration(1).sleep();
-            pickPartLeftArm(product.p);
-            ros::Duration(1).sleep();
-            retriveFromBottomShelf();
+            goToPresetLocation(agv1_90_);
+            goToPresetLocation(rail_1_);
+            pickPartFromShelf5Aisle1(product);
+            return;
         }
-        else
+        if (gantry_location_ == "safe_spot_1")
         {
-            reachPartShelfRightArm(product.p);
-            ros::Duration(1).sleep();
-            pickPartRightArm(product.p);
-            ros::Duration(1).sleep();
-            retriveFromBottomShelf();
+            if (obstacle_1_pos[3] != 1 && obstacle_2_pos[3] != 1)
+            {
+                goToPresetLocation(ssi1_);
+            }
+            else if (obstacle_1_pos[3] == 1 || obstacle_2_pos[3] == 1)
+            {
+                if (obstacle_1_pos[3] == 1)
+                {
+                    while (((obstacle_1_pos[0] <= ssi1_.gantry[0]) || (obstacle_1_pos[2] == -1)))
+                    {
+                        ROS_INFO_STREAM("Wait for Obstacle 1");
+                    }
+                    goToPresetLocation(ssi1_);
+                }
+                else if (obstacle_2_pos[3] == 1)
+                {
+                    while (((obstacle_2_pos[0] <= ssi1_.gantry[0]) || (obstacle_2_pos[2] == -1)))
+                    {
+                        ROS_INFO_STREAM("Wait for Obstacle 2");
+                    }
+                    goToPresetLocation(ssi1_);
+                }
+            }
+        }
+        if (gantry_location_ == "ssi1")
+        {
+            pickPartFromShelf5Aisle1(product);
+            return;
         }
     }
 
+    else if (location == "shelf_11")
+    {
+        if (gantry_location_ == "safe_spot_1")
+        {
+            if (obstacle_1_pos[3] != 1 && obstacle_2_pos[3] != 1)
+            {
+                goToPresetLocation(ssi1_);
+            }
+            else if (obstacle_1_pos[3] == 1 || obstacle_2_pos[3] == 1)
+            {
+                if (obstacle_1_pos[3] == 1)
+                {
+                    while (((obstacle_1_pos[0] <= ssi1_.gantry[0]) || (obstacle_1_pos[2] == -1)))
+                    {
+                        ROS_INFO_STREAM("Wait for Obstacle 1");
+                    }
+                    goToPresetLocation(ssi1_);
+                }
+                else if (obstacle_2_pos[3] == 4)
+                {
+                    while (((obstacle_2_pos[0] <= ssi1_.gantry[0]) || (obstacle_2_pos[2] == -1)))
+                    {
+                        ROS_INFO_STREAM("Wait for Obstacle 2");
+                    }
+                    goToPresetLocation(ssi1_);
+                }
+            }
+        }
+        if (gantry_location_ == "ssi1")
+        {
+            goToPresetLocation(rail_1_);
+        }
+        if (gantry_location_ == "rail_1")
+        {
+            goToPresetLocation(agv1_90_);
+        }
+        if (gantry_location_ == "agv1" || gantry_location_ == "agv1_90")
+        {
+            goToPresetLocation(agv1_90_);
+            goToPresetLocation(aisle1_90_);
+        }
+        if (gantry_location_ == "aisle1" || gantry_location_ == "aisle1_90")
+        {
+            goToPresetLocation(aisle1_90_);
+            goToPresetLocation(start_90_);
+        }
+        if (gantry_location_ == "bins" || gantry_location_ == "shelf_1" || gantry_location_ == "shelf_2" || gantry_location_ == "start" || gantry_location_ == "start_90")
+        {
+            goToPresetLocation(start_90_);
+            goToPresetLocation(aisle2_90_);
+        }
+        if (gantry_location_ == "aisle2" || gantry_location_ == "aisle2_90")
+        {
+            if (obstacle_1_pos[3] != 3 && obstacle_2_pos[3] != 3)
+            {
+                pickPartFromShelfAisle3(product);
+                return;
+            }
+            else
+            {
+                goToPresetLocation(agv2_90_);
+            }
+        }
+        if (gantry_location_ == "agv2" || gantry_location_ == "agv2_90")
+        {
+            goToPresetLocation(agv2_90_);
+            goToPresetLocation(rail_2_);
+            pickPartFromShelf11Aisle4(product);
+            return;
+        }
+        if (gantry_location_ == "safe_spot_3")
+        {
+            if (obstacle_1_pos[3] != 4 && obstacle_2_pos[3] != 4)
+            {
+                goToPresetLocation(ssi4_);
+            }
+            else if (obstacle_1_pos[3] == 4 || obstacle_2_pos[3] == 4)
+            {
+                if (obstacle_1_pos[3] == 4)
+                {
+                    while (((obstacle_1_pos[0] <= ssi4_.gantry[0]) || (obstacle_1_pos[2] == -1)))
+                    {
+                        ROS_INFO_STREAM("Wait for Obstacle 1");
+                    }
+                    goToPresetLocation(ssi4_);
+                }
+                else if (obstacle_2_pos[3] == 4)
+                {
+                    while (((obstacle_2_pos[0] <= ssi4_.gantry[0]) || (obstacle_2_pos[2] == -1)))
+                    {
+                        ROS_INFO_STREAM("Wait for Obstacle 2");
+                    }
+                    goToPresetLocation(ssi4_);
+                }
+            }
+        }
+        if (gantry_location_ == "ssi4")
+        {
+            pickPartFromShelf11Aisle4(product);
+            return;
+        }
+    }
+
+    else if (location == "shelf_8")
+    {
+        if (gantry_location_ == "ssi1")
+        {
+            goToPresetLocation(rail_1_);
+        }
+        if (gantry_location_ == "rail_1")
+        {
+            goToPresetLocation(agv1_90_);
+        }
+        if (gantry_location_ == "agv1_90" || gantry_location_ == "agv1")
+        {
+            goToPresetLocation(aisle1_90_);
+        }
+        if (gantry_location_ == "aisle1_90" || gantry_location_ == "aisle1")
+        {
+            if (obstacle_1_pos[3] != 2 && obstacle_2_pos[3] != 2)
+            {
+                goToPresetLocation(aisle1_);
+                pickPartFromShelfAisle2(product);
+                return;
+            }
+            else
+            {
+                goToPresetLocation(start_90_);
+            }
+        }
+        if (gantry_location_ == "ssi4")
+        {
+            goToPresetLocation(rail_2_);
+        }
+        if (gantry_location_ == "rail_2")
+        {
+            goToPresetLocation(agv2_90_);
+        }
+        if (gantry_location_ == "agv2_90" || gantry_location_ == "agv2")
+        {
+            goToPresetLocation(aisle2_90_);
+        }
+        if (gantry_location_ == "aisle2_90" || gantry_location_ == "aisle2")
+        {
+            if (obstacle_1_pos[3] != 3 && obstacle_2_pos[3] != 3)
+            {
+                goToPresetLocation(aisle2_);
+                pickPartFromShelfAisle3(product);
+                return;
+            }
+            else
+            {
+                goToPresetLocation(start_90_);
+            }
+        }
+        if (gantry_location_ == "bins" || gantry_location_ == "shelf_1" || gantry_location_ == "shelf_2" || gantry_location_ == "start" || gantry_location_ == "start_90")
+        {
+            if (obstacle_1_pos[3] != 2 && obstacle_2_pos[3] != 2)
+            {
+                goToPresetLocation(aisle1_);
+                pickPartFromShelfAisle2(product);
+                return;
+            }
+            else if (obstacle_1_pos[3] != 3 && obstacle_2_pos[3] != 3)
+            {
+                goToPresetLocation(aisle2_);
+                pickPartFromShelfAisle3(product);
+                return;
+            }
+            else if (shelf_configuration[0] == 1)
+            {
+                goToPresetLocation(aisle1_);
+                pickPartFromShelf8Aisle2Obstacles(product);
+                return;
+            }
+            else if (shelf_configuration[2] == 1)
+            {
+                goToPresetLocation(aisle2_);
+                pickPartFromShelf8Aisle3Obstacles(product);
+                return;
+            }
+            else if (shelf_configuration[1] == 1)
+            {
+                goToPresetLocation(aisle1_);
+                pickPartFromShelf8Aisle2ObstaclesSafe1(product);
+                return;
+            }
+        }
+    }
+    else if (location == "shelf_1" || location == "shelf_2" || location == "bins")
+    {
+        if (gantry_location_ == "ssi1")
+        {
+            goToPresetLocation(rail_1_);
+        }
+        if (gantry_location_ == "rail_1")
+        {
+            goToPresetLocation(agv1_90_);
+        }
+        if (gantry_location_ == "agv1_90" || gantry_location_ == "agv1")
+        {
+            goToPresetLocation(aisle1_90_);
+        }
+        if (gantry_location_ == "aisle1_90" || gantry_location_ == "aisle1")
+        {
+            goToPresetLocation(start_90_);
+        }
+        if (gantry_location_ == "ssi4")
+        {
+            goToPresetLocation(rail_2_);
+        }
+        if (gantry_location_ == "rail_2")
+        {
+            goToPresetLocation(agv2_90_);
+        }
+        if (gantry_location_ == "agv2_90" || gantry_location_ == "agv2")
+        {
+            goToPresetLocation(aisle2_90_);
+        }
+        if (gantry_location_ == "aisle2_90" || gantry_location_ == "aisle2")
+        {
+            goToPresetLocation(start_90_);
+        }
+        if (gantry_location_ == "bins" || gantry_location_ == "shelf_1" || gantry_location_ == "shelf_2" || gantry_location_ == "start" || gantry_location_ == "start_90")
+        {
+            if (location == "shelf_1")
+            {
+                goToPresetLocation(shelf1_);
+                if (free_arm == "any" || free_arm == "left")
+                {
+                    reachPartShelfLeftArm(product.p);
+                    moveOverPart(product.p, free_arm);
+                    pickPartLeftArm(product.p);
+                    FKLeftArm(shelf1_.left_arm);
+                }
+                else
+                {
+                    reachPartShelfRightArm(product.p);
+                    moveOverPart(product.p, free_arm);
+                    pickPartRightArm(product.p);
+                    FKRightArm(shelf1_.right_arm);
+                }
+                FKGantry(shelf1_.gantry);
+                ros::Duration(0.5).sleep();
+                rotateTorso(0.);
+            }
+            else if (location == "shelf_2")
+            {
+                goToPresetLocation(shelf2_);
+                if (free_arm == "any" || free_arm == "left")
+                {
+                    reachPartShelfLeftArm(product.p);
+                    moveOverPart(product.p, free_arm);
+                    pickPartLeftArm(product.p);
+                    FKLeftArm(shelf2_.left_arm);
+                }
+                else
+                {
+                    reachPartShelfRightArm(product.p);
+                    moveOverPart(product.p, free_arm);
+                    pickPartRightArm(product.p);
+                    FKRightArm(shelf2_.right_arm);
+                }
+                FKGantry(shelf2_.gantry);
+                ros::Duration(0.5).sleep();
+                rotateTorso(0.);
+            }
+            else if (location == "bins")
+            {
+                goToPresetLocation(bins_);
+                if (free_arm == "any" || free_arm == "left")
+                {
+                    goToPresetLocation(bins_);
+                    reachPartBinLeftArm(product.p);
+                    gantry_location_ = "bins";
+                    ros::Duration(0.5).sleep();
+                    pickPartLeftArm(product.p);
+                    ros::Duration(1).sleep();
+                }
+                else
+                {
+                    goToPresetLocation(bins_);
+                    gantry_location_ = "bins";
+                    reachPartBinRightArm(product.p);
+                    ros::Duration(0.5).sleep();
+                    pickPartRightArm(product.p);
+                    ros::Duration(1).sleep();
+                }
+                goToPresetLocation(bins_);
+                gantry_location_ = "bins";
+            }
+        }
+    }
     //add product to arm
     if (free_arm.compare("any") == 0 || free_arm.compare("left") == 0)
     {
@@ -563,6 +2076,219 @@ void GantryControl::getProduct(product product)
         product_right_arm_ = product;
     }
 }
+// /**
+//  * @brief retrieve a specific product detected from the sensors from wherever in the environment
+//  * 
+//  * @param product product of product list to be found and retrieved
+//  */
+// void GantryControl::getProduct(product product)
+// {
+//     std::string location = product.p.location;
+//     std::string free_arm = checkFreeGripper();
+
+//     //If part is located in the two top shelfs 1 and 2
+//     if (location == "shelf_1" || location == "shelf_2")
+//     {
+//         if (gantry_location_ == "aisle_1")
+//         {
+//             goToPresetLocation(aisle1_);
+//             FKGantry(start_.gantry);
+//         }
+//         else if (gantry_location_ == "aisle_2")
+//         {
+//             goToPresetLocation(aisle2_);
+//             FKGantry(start_.gantry);
+//         }
+
+//         if (location == "shelf_1")
+//         {
+//             goToPresetLocation(shelf1_);
+//         }
+//         else
+//         {
+//             goToPresetLocation(shelf2_);
+//         }
+
+//         if (free_arm == "any" || free_arm == "left")
+//         {
+//             reachPartShelfLeftArm(product.p);
+//             moveOverPart(product.p, free_arm);
+//             pickPartLeftArm(product.p);
+//             FKLeftArm(shelf1_.left_arm);
+//         }
+//         else
+//         {
+//             reachPartShelfRightArm(product.p);
+//             moveOverPart(product.p, free_arm);
+//             pickPartRightArm(product.p);
+//             FKRightArm(shelf1_.right_arm);
+//         }
+
+//         FKGantry(shelf1_.gantry);
+//         ros::Duration(0.5).sleep();
+//         rotateTorso(0.);
+
+//         // If part is located in any of the bins
+//     }
+//     else if (location == "bins")
+//     {
+//         if (gantry_location_ == "aisle_1")
+//         {
+//             goToPresetLocation(aisle1_);
+//             goToPresetLocation(start_);
+//         }
+//         else if (gantry_location_ == "aisle_2")
+//         {
+//             goToPresetLocation(aisle2_);
+//             goToPresetLocation(start_);
+//         }
+//         else if (gantry_location_ == "shelf_1" || gantry_location_ == "shelf_2")
+//         {
+//             FKRightArm(bins_.right_arm);
+//             FKLeftArm(bins_.left_arm);
+//         }
+
+//         if (free_arm == "any" || free_arm == "left")
+//         {
+//             goToPresetLocation(bins_);
+//             reachPartBinLeftArm(product.p);
+//             gantry_location_ = "bins";
+//             ros::Duration(0.5).sleep();
+//             pickPartLeftArm(product.p);
+//             ros::Duration(1).sleep();
+//         }
+//         else
+//         {
+//             goToPresetLocation(bins_);
+//             gantry_location_ = "bins";
+//             reachPartBinRightArm(product.p);
+//             ros::Duration(0.5).sleep();
+//             pickPartRightArm(product.p);
+//             ros::Duration(1).sleep();
+//         }
+//         goToPresetLocation(bins_);
+//         gantry_location_ = "bins";
+
+//         //If part is located in bottom shelf 5
+//     }
+//     else if (location == "shelf_5")
+//     {
+//         if (gantry_location_ == "shelf_1" || gantry_location_ == "shelf_2" || gantry_location_ == "bins" || gantry_location_ == "start")
+//         {
+//             FKGantry(start_.gantry);
+//             goToPresetLocation(aisle1_);
+//             gantry_location_ = "aisle_1";
+//         }
+//         else if (gantry_location_ == "aisle_2")
+//         {
+//             goToPresetLocation(aisle2_);
+//             goToPresetLocation(aisle1_);
+//             gantry_location_ = "aisle_1";
+//         }
+
+//         goToBottomShelfs();
+//         if (free_arm == "any" || free_arm == "left")
+//         {
+//             reachPartShelfLeftArm(product.p);
+//             ros::Duration(1).sleep();
+//             pickPartLeftArm(product.p);
+//             ros::Duration(1).sleep();
+//             retriveFromBottomShelf();
+//         }
+//         else
+//         {
+//             reachPartShelfRightArm(product.p);
+//             ros::Duration(1).sleep();
+//             pickPartRightArm(product.p);
+//             ros::Duration(1).sleep();
+//             retriveFromBottomShelf();
+//         }
+
+//         gantry_location_ = "aisle_1";
+
+//         //If part is located in bottom shelf 11
+//     }
+//     else if (location == "shelf_11")
+//     {
+//         if (gantry_location_ == "shelf_1" || gantry_location_ == "shelf_2" || gantry_location_ == "bins" || gantry_location_ == "start")
+//         {
+//             FKGantry(start_.gantry);
+//             goToPresetLocation(aisle2_);
+//         }
+//         else if (gantry_location_ == "aisle_1")
+//         {
+//             goToPresetLocation(aisle1_);
+//             goToPresetLocation(aisle2_);
+//             gantry_location_ = "aisle_2";
+//         }
+
+//         goToBottomShelfs();
+//         if (free_arm == "any" || free_arm == "left")
+//         {
+//             reachPartShelfLeftArm(product.p);
+//             ros::Duration(1).sleep();
+//             pickPartLeftArm(product.p);
+//             retriveFromBottomShelf();
+//         }
+//         else
+//         {
+//             reachPartShelfRightArm(product.p);
+//             ros::Duration(1).sleep();
+//             pickPartRightArm(product.p);
+//             ros::Duration(1).sleep();
+//             retriveFromBottomShelf();
+//         }
+
+//         gantry_location_ = "aisle_2";
+
+//         //If part is located in bottom shelf 8
+//     }
+//     else if (location == "shelf_8")
+//     {
+//         if (gantry_location_ == "shelf_1" || gantry_location_ == "shelf_2" || gantry_location_ == "bins" || gantry_location_ == "start")
+//         {
+//             FKGantry(start_.gantry);
+//             if (product.p.pose.position.y > 0)
+//             {
+//                 goToPresetLocation(aisle1_);
+//                 gantry_location_ = "aisle_1";
+//             }
+//             else
+//             {
+//                 goToPresetLocation(aisle2_);
+//                 gantry_location_ = "aisle_2";
+//             }
+//         }
+
+//         goToBottomShelfs();
+//         if (free_arm == "any" || free_arm == "left")
+//         {
+//             reachPartShelfLeftArm(product.p);
+//             ros::Duration(1).sleep();
+//             pickPartLeftArm(product.p);
+//             ros::Duration(1).sleep();
+//             retriveFromBottomShelf();
+//         }
+//         else
+//         {
+//             reachPartShelfRightArm(product.p);
+//             ros::Duration(1).sleep();
+//             pickPartRightArm(product.p);
+//             ros::Duration(1).sleep();
+//             retriveFromBottomShelf();
+//         }
+//     }
+
+//     //add product to arm
+//     if (free_arm.compare("any") == 0 || free_arm.compare("left") == 0)
+//     {
+//         product_left_arm_ = product;
+//     }
+//     else
+//     {
+//         product_right_arm_ = product;
+//     }
+// }
 
 /**
  * @brief Gets the pose in pose of part in world frame
@@ -743,25 +2469,25 @@ void GantryControl::reachPartShelfLeftArm(part part)
         offset_y = -1.55 - dy;
         rotateTorso(R_LEFT_ARM);
     }
-    FKLeftArm({0, -2.13, 1.49, -2.48, -1.57, 0});
+    // FKLeftArm({0, -2.13, 1.49, -2.48, -1.57, 0});
     geometry_msgs::Pose currentArmPose = left_arm_group_.getCurrentPose().pose;
 
     const double offset_x = part.pose.position.x - currentArmPose.position.x;
 
     joint_group_positions_.at(0) += offset_x;
 
-    full_robot_group_.setJointValueTarget(joint_group_positions_);
+    // full_robot_group_.setJointValueTarget(joint_group_positions_);
 
-    moveit::planning_interface::MoveGroupInterface::Plan move_x;
-    bool success = (full_robot_group_.plan(move_x) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-    if (success)
-        full_robot_group_.move();
+    // moveit::planning_interface::MoveGroupInterface::Plan move_x;
+    // bool success = (full_robot_group_.plan(move_x) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+    // if (success)
+    //     full_robot_group_.move();
 
     joint_group_positions_.at(1) += offset_y;
     full_robot_group_.setJointValueTarget(joint_group_positions_);
 
     moveit::planning_interface::MoveGroupInterface::Plan move_y;
-    success = (full_robot_group_.plan(move_y) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+    bool success = (full_robot_group_.plan(move_y) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
     if (success)
         full_robot_group_.move();
 }
@@ -792,9 +2518,8 @@ void GantryControl::reachPartShelfRightArm(part part)
         rotateTorso(R_RIGHT_ARM);
         //--left arm
     }
-    FKRightArm({PI, -2.13, 1.49, -2.48, -1.57, 0});
+    // FKRightArm({PI, -2.13, 1.49, -2.48, -1.57, 0});
     geometry_msgs::Pose currentArmPose = right_arm_group_.getCurrentPose().pose;
-
 
     tf2::Quaternion q (currentArmPose.orientation.x,
                         currentArmPose.orientation.y,
@@ -809,18 +2534,18 @@ void GantryControl::reachPartShelfRightArm(part part)
 
     joint_group_positions_.at(0) += offset_x;
 
-    full_robot_group_.setJointValueTarget(joint_group_positions_);
+    // full_robot_group_.setJointValueTarget(joint_group_positions_);
 
-    moveit::planning_interface::MoveGroupInterface::Plan move_x;
-    bool success = (full_robot_group_.plan(move_x) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-    if (success)
-        full_robot_group_.move();
+    // moveit::planning_interface::MoveGroupInterface::Plan move_x;
+    // bool success = (full_robot_group_.plan(move_x) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+    // if (success)
+    //     full_robot_group_.move();
 
     joint_group_positions_.at(1) += offset_y;
     full_robot_group_.setJointValueTarget(joint_group_positions_);
 
     moveit::planning_interface::MoveGroupInterface::Plan move_y;
-    success = (full_robot_group_.plan(move_y) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+    bool success = (full_robot_group_.plan(move_y) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
     if (success)
         full_robot_group_.move();
 }
@@ -1011,12 +2736,12 @@ bool GantryControl::pickPartLeftArm(part part)
             {
                 left_arm_group_.setPoseTarget(currentPose);
                 left_arm_group_.move();
-                ros::Duration(0.5).sleep();
+                // ros::Duration(0.5).sleep();
                 left_arm_group_.setPoseTarget(part.pose);
                 left_arm_group_.move();
 
                 activateGripper("left_arm");
-                ros::Duration(0.5).sleep();
+                // ros::Duration(0.5).sleep();
                 current_attempt++;
             }
             part.picked_status = true;
@@ -1102,12 +2827,12 @@ bool GantryControl::pickPartRightArm(part part)
             {
                 right_arm_group_.setPoseTarget(currentPose);
                 right_arm_group_.move();
-                ros::Duration(0.5).sleep();
+                // ros::Duration(0.5).sleep();
                 right_arm_group_.setPoseTarget(part.pose);
                 right_arm_group_.move();
 
                 activateGripper("right_arm");
-                ros::Duration(0.5).sleep();
+                // ros::Duration(0.5).sleep();
                 current_attempt++;
             }
             part.picked_status = true;
@@ -1729,8 +3454,41 @@ bool GantryControl::throwPartRight(part part)
 void GantryControl::placePartLeftArm()
 {
 
+    if (gantry_location_ == "ssi1")
+    {
+        goToPresetLocation(rail_1_);
+    }
+    if (gantry_location_ == "rail_1")
+    {
+        goToPresetLocation(agv1_90_);
+    }
+    if (gantry_location_ == "agv1_90" || gantry_location_ == "agv1")
+    {
+        goToPresetLocation(aisle1_90_);
+    }
+    if (gantry_location_ == "aisle1_90" || gantry_location_ == "aisle1")
+    {
+        goToPresetLocation(start_90_);
+    }
+    if (gantry_location_ == "ssi4")
+    {
+        goToPresetLocation(rail_2_);
+    }
+    if (gantry_location_ == "rail_2")
+    {
+        goToPresetLocation(agv2_90_);
+    }
+    if (gantry_location_ == "agv2_90" || gantry_location_ == "agv2")
+    {
+        goToPresetLocation(aisle2_90_);
+    }
+    if (gantry_location_ == "aisle2_90" || gantry_location_ == "aisle2" || gantry_location_ == "bins" || gantry_location_ == "shelf_1" || gantry_location_ == "shelf_2" || gantry_location_ == "start" || gantry_location_ == "start_90")
+    {
+        goToPresetLocation(start_90_);
+    }
     if (product_left_arm_.agv_id.compare("agv2") == 0 || product_left_arm_.agv_id.compare("any") == 0)
     {
+        goToPresetLocation(agv2_90_);
         goToPresetLocation(agv2_);
         if (product_left_arm_.pose.position.x >= 0)
         {
@@ -1743,6 +3501,7 @@ void GantryControl::placePartLeftArm()
     }
     else
     {
+        goToPresetLocation(agv1_90_);
         goToPresetLocation(agv1_);
         if (product_left_arm_.pose.position.x >= 0)
         {
@@ -1754,6 +3513,7 @@ void GantryControl::placePartLeftArm()
         }
     }
 
+    ROS_INFO_STREAM("Product left arm "<< product_left_arm_.type<<std::endl);
     auto target_pose_in_tray = getTargetWorldPose(product_left_arm_.pose, product_left_arm_.agv_id);
 
     tf2::Quaternion q_world_tray_pose (target_pose_in_tray.orientation.x,
@@ -1859,9 +3619,41 @@ void GantryControl::placePartLeftArm()
  */
 void GantryControl::placePartRightArm()
 {
-
+    if (gantry_location_ == "ssi1")
+    {
+        goToPresetLocation(rail_1_);
+    }
+    if (gantry_location_ == "rail_1")
+    {
+        goToPresetLocation(agv1_90_);
+    }
+    if (gantry_location_ == "agv1_90" || gantry_location_ == "agv1")
+    {
+        goToPresetLocation(aisle1_90_);
+    }
+    if (gantry_location_ == "aisle1_90" || gantry_location_ == "aisle1")
+    {
+        goToPresetLocation(start_90_);
+    }
+    if (gantry_location_ == "ssi4")
+    {
+        goToPresetLocation(rail_2_);
+    }
+    if (gantry_location_ == "rail_2")
+    {
+        goToPresetLocation(agv2_90_);
+    }
+    if (gantry_location_ == "agv2_90" || gantry_location_ == "agv2")
+    {
+        goToPresetLocation(aisle2_90_);
+    }
+    if (gantry_location_ == "aisle2_90" || gantry_location_ == "aisle2" || gantry_location_ == "bins" || gantry_location_ == "shelf_1" || gantry_location_ == "shelf_2" || gantry_location_ == "start" || gantry_location_ == "start_90")
+    {
+        goToPresetLocation(start_90_);
+    }
     if (product_right_arm_.agv_id.compare("agv2") == 0 || product_right_arm_.agv_id.compare("any") == 0)
     {
+        goToPresetLocation(agv2_90_);
         goToPresetLocation(agv2_);
         if (product_right_arm_.pose.position.x >= 0)
         {
@@ -1874,6 +3666,7 @@ void GantryControl::placePartRightArm()
     }
     else
     {
+        goToPresetLocation(agv1_90_);
         goToPresetLocation(agv1_);
         if (product_right_arm_.pose.position.x >= 0)
         {
@@ -2702,5 +4495,3 @@ bool GantryControl::sendJointPosition(trajectory_msgs::JointTrajectory command_m
         return false;
     }
 }
-
-
