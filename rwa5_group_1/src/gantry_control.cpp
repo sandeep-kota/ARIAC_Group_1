@@ -52,6 +52,8 @@ void GantryControl::init()
     std::vector<double> zero_larm = {0., 0., 0., 0., 0., 0.};
     double safe_x = -11.3;
 
+    initializeShelfConfiguration(); // check the location of the free_spaces in the bottom shelfs
+
     // joint positions to go to start location
     start_.location = "start";
     start_.gantry = {0, 0, 0};
@@ -206,8 +208,6 @@ void GantryControl::init()
     safe_spot_3_.gantry = {-7.2, 0, 0.};
     safe_spot_3_.left_arm = zero_larm;
     safe_spot_3_.right_arm = zero_rarm;
-
-    initializeShelfConfiguration(); // check the location of the free_spaces in the bottom shelfs
 
     //--Raw pointers are frequently used to refer to the planning group for improved performance.
     //--To start, we will create a pointer that references the current robot’s state.
