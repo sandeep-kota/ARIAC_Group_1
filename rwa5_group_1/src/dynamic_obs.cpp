@@ -53,7 +53,11 @@ bool DynamicObs::isBlackout() {
 void DynamicObs::publish_data() {
 
 	bool blackout = isBlackout();
-	
+	ros::param::set("/ariac/sensor_blackout", blackout);
+	if (blackout) {
+		ROS_WARN_STREAM("Sensor blackout detected");
+	}
+
 	double cur_time = ros::Time::now().toSec();
 	if(!blackout) {
 

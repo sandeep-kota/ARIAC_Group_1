@@ -171,9 +171,9 @@ add_executable(rwa5_node
         src/sensor_control.cpp
         )
 
-#add_executable(dyn_obs_node
-#    src/dynamic_obs.cpp
-#)
+add_executable(dyn_obs_node
+    src/dynamic_obs.cpp
+)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -187,7 +187,8 @@ add_executable(rwa5_node
 add_dependencies(rwa5_node  ${catkin_EXPORTED_TARGETS})
 ## Specify libraries to link a library or executable target against
 target_link_libraries(rwa5_node ${catkin_LIBRARIES})
-#target_link_libraries(dyn_obs_node ${catkin_LIBRARIES})
+
+target_link_libraries(dyn_obs_node ${catkin_LIBRARIES})
 # target_link_libraries(robot_controller_node ${catkin_LIBRARIES})
 
 #############

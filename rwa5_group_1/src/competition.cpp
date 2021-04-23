@@ -402,3 +402,22 @@ std::vector<Product> Competition::get_product_list() {
 
 
 }
+
+
+/**
+ * @brief getter to obtain the current list of products from a particluar shipment
+ * 
+ * @return std::vector<Product> list of products being processed
+ */
+std::vector<Product> Competition::get_product_list_from_shipment(Shipment shipment) {
+  std::vector<Product> products_for_shipment;
+  for (int p = 0; p < shipment.products.size(); p++) {
+    if (!shipment.products.at(p).isPlacedOnAGV) {
+      products_for_shipment.emplace_back(shipment.products.at(p));
+    }
+  }
+  
+  ROS_INFO_STREAM("PRODUCT SIZE: " << products_for_shipment.size());
+  return products_for_shipment;
+
+}
