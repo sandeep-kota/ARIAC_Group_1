@@ -26,7 +26,7 @@ git checkout rwa5
 catkin build
 ```
 
-
+---
 ## Run Instructions
  - The launch directory of the package `/rwa5_group_1` has a launch file `rwa5.launch`. All the necessary nodes will be launched within this node.
 
@@ -41,4 +41,8 @@ roslaunch rwa5_group_1 rwa5.launch load_moveit:=true
 source ~/ariac_ws/devel/setup.bash
 
 rosrun rwa5_group_1 rwa5_node
- ```            
+ ``` 
+
+
+---
+ ## [Output Video](https://drive.google.com/drive/folders/1SD0k3rtUNtA19fljxNB2-TI2M0F4D8mn?usp=sharing)
