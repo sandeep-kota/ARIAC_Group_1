@@ -34,5 +34,5 @@ roslaunch rwa4_group_1 rwa4.launch load_moveit:=true
  - Run the rwa4 node 
  ```
  source ~/ariac_ws/devel/setup.bash
-rosrun rwa3_group_1 rwa3_node
+rosrun rwa4_group_1 rwa4_node
  ```            
