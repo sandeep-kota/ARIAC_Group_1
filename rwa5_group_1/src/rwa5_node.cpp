@@ -703,13 +703,15 @@ int main(int argc, char **argv)
                             blackout = checkBlackout(sensorNum, list_of_products.size(), sensors);
                         }
                         ROS_WARN_STREAM("Sensor blackout over..");
-                        // check the faulty parts again and the parts that are to be flipped
-                        faultyPartsProcess(gantry, sensors);
-                        ros::param::set("/check_parts_to_flip", true);
-                        ros::Duration(1).sleep();
-                        gantry.flipProductsAGV(sensors.getcheckPartsToFlip());
-                        sensors.clearcheckPartsToFlip();
+
                     }
+                    
+                    // check the faulty parts again and the parts that are to be flipped
+                    faultyPartsProcess(gantry, sensors);
+                    ros::param::set("/check_parts_to_flip", true);
+                    ros::Duration(1).sleep();
+                    gantry.flipProductsAGV(sensors.getcheckPartsToFlip());
+                    sensors.clearcheckPartsToFlip();
 
                     
                     std::string shipmentTray = agvTrayMap.at(shipmentAGV);
