@@ -37,16 +37,26 @@
 
 #include <tf2/LinearMath/Quaternion.h>
 
+/**
+ * @brief Check for sensor blackout 
+ * 
+ * @param sensorNum Logical Camera ID : 0 or 1
+ * @param numProductsToBeSent Product size from orders
+ * @param sensors Sensor control object
+ * @return true 
+ * @return false 
+ */
 bool checkBlackout(int sensorNum, int numProductsToBeSent, SensorControl &sensors) {
     ros::param::set(ACTIVATE_LOG_CAM, sensorNum);
     ros::Duration(1).sleep();
     ros::param::set(ACTIVATE_LOG_CAM, -1);
-    ROS_WARN_STREAM("Checking the products placed on the AGV before sending.");
+    ROS_INFO_STREAM("Checking the products placed on AGV.");
     int numProductsDetected = sensors.getLogicalCameraNumProducts(sensorNum);
-    ROS_WARN_STREAM("Number of products on the AGV: " << numProductsDetected);
+    ROS_INFO_STREAM("Number of parts detected :" << numProductsDetected);
     
     if (numProductsDetected != numProductsToBeSent) {
-        ROS_WARN_STREAM("Number of products mismatch. Products on AGV: " << numProductsDetected << ", Expected: " << numProductsToBeSent);
+        
+        ROS_INFO_STREAM("Number of products mismatched := Products on AGV : " << numProductsDetected << ", Expected : " << numProductsToBeSent );
         return true;
     }
     return false;
@@ -710,7 +720,7 @@ int main(int argc, char **argv)
                     }
                     
                     // check the faulty parts again and the parts that are to be flipped
-                    ROS_WARN_STREAM("Checking faulty parts before sending AGV");
+                    ROS_INFO_STREAM("Checking the fulty parts before sending AGV");
                     faultyPartsProcess(gantry, sensors);
                     ros::param::set("/check_parts_to_flip", true);
                     ros::Duration(1).sleep();

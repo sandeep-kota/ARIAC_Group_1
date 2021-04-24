@@ -51,15 +51,16 @@ void GantryControl::init()
     std::vector<double> aisle_left_arm = {0.0, -PI, 3 * PI / 4, -3 * PI / 4, -PI / 2, 0.};
     std::vector<double> aisle_right_arm = {PI, -PI, 3 * PI / 4, -3 * PI / 4, -PI / 2, 0.};
 
-
     initializeShelfConfiguration(); // check the location of the free_spaces in the bottom shelfs
     // std::vector<int> shelf_configuration{1,1,1};
     // double safe_1 = -11.3;
-    std::array<double,3> safe{0,0,0};
-    for(int i=0; i<3; i++)
+    std::array<double, 3> safe{0, 0, 0};
+    for (int i = 0; i < 3; i++)
     {
-        if(shelf_configuration[i]==1) safe[i]=-11.3;
-        else if(shelf_configuration[i]==0) safe[i]=-7.2;
+        if (shelf_configuration[i] == 1)
+            safe[i] = -11.3;
+        else if (shelf_configuration[i] == 0)
+            safe[i] = -7.2;
     }
     // joint positions to go to start location
     start_.location = "start";
@@ -113,7 +114,6 @@ void GantryControl::init()
     aisle2_90_.gantry = {0, 1.5, PI / 2};
     aisle2_90_.left_arm = start_.left_arm;
     aisle2_90_.right_arm = start_.right_arm;
-
 
     // joint positions to go to tray1
     tray1_left_negative_.location = "tray1";
@@ -313,52 +313,56 @@ void GantryControl::init()
  * @brief initialize the current configuration of the bottom shelves
  * 
  */
-void GantryControl::initializeShelfConfiguration(){
-//Get transforms world to shelfs
-  tf2_ros::Buffer tfBuffer;
-  tf2_ros::TransformListener tfListener(tfBuffer);
+void GantryControl::initializeShelfConfiguration()
+{
+    //Get transforms world to shelfs
+    tf2_ros::Buffer tfBuffer;
+    tf2_ros::TransformListener tfListener(tfBuffer);
 
-  ros::Duration timeout(5.0);
+    ros::Duration timeout(5.0);
 
-  geometry_msgs::TransformStamped transformStamped;
+    geometry_msgs::TransformStamped transformStamped;
 
-  for (int i = 3; i < 12; i++)
-  {
-    try
+    for (int i = 3; i < 12; i++)
     {
-      transformStamped = tfBuffer.lookupTransform("world", "shelf" + std::to_string(i) + "_frame",
-                                                  ros::Time(0), timeout);
+        try
+        {
+            transformStamped = tfBuffer.lookupTransform("world", "shelf" + std::to_string(i) + "_frame",
+                                                        ros::Time(0), timeout);
+        }
+        catch (tf2::TransformException &ex)
+        {
+            ROS_WARN("%s", ex.what());
+            ros::Duration(1.0).sleep();
+            continue;
+        }
+        //Initialize attribute that stores the frame transforms to world of each camera
+        shelf_w_transforms_.at(i - 3) = transformStamped;
     }
-    catch (tf2::TransformException &ex)
-    {
-      ROS_WARN("%s", ex.what());
-      ros::Duration(1.0).sleep();
-      continue;
-    }
-    //Initialize attribute that stores the frame transforms to world of each camera
-    shelf_w_transforms_.at(i-3) = transformStamped;
-  }
 
     double d3_4 = abs(shelf_w_transforms_.at(0).transform.translation.x - shelf_w_transforms_.at(1).transform.translation.x);
     double d4_5 = abs(shelf_w_transforms_.at(1).transform.translation.x - shelf_w_transforms_.at(2).transform.translation.x);
 
-  if (d4_5 > d3_4){
-      shelf_configuration.at(0) += 1;
-  }
+    if (d4_5 > d3_4)
+    {
+        shelf_configuration.at(0) += 1;
+    }
 
     double d6_7 = abs(shelf_w_transforms_.at(3).transform.translation.x - shelf_w_transforms_.at(4).transform.translation.x);
-    double  d7_8 = abs(shelf_w_transforms_.at(4).transform.translation.x - shelf_w_transforms_.at(5).transform.translation.x);
+    double d7_8 = abs(shelf_w_transforms_.at(4).transform.translation.x - shelf_w_transforms_.at(5).transform.translation.x);
 
-  if (d7_8 > d6_7){
-      shelf_configuration.at(1) += 1;
-  }
+    if (d7_8 > d6_7)
+    {
+        shelf_configuration.at(1) += 1;
+    }
 
     double d9_10 = abs(shelf_w_transforms_.at(6).transform.translation.x - shelf_w_transforms_.at(7).transform.translation.x);
     double d10_11 = abs(shelf_w_transforms_.at(7).transform.translation.x - shelf_w_transforms_.at(8).transform.translation.x);
 
-  if (d10_11 > d9_10){
-      shelf_configuration.at(2) += 1;
-  }
+    if (d10_11 > d9_10)
+    {
+        shelf_configuration.at(2) += 1;
+    }
 }
 
 /**
@@ -444,6 +448,11 @@ std::string GantryControl::checkFreeGripper()
     return val;
 }
 
+/**
+ * @brief Pick part from shelf 5 with or without obstacles
+ * 
+ * @param product Product to be picked
+ */
 void GantryControl::pickPartFromShelf5Aisle1(product product)
 {
 
@@ -523,6 +532,11 @@ void GantryControl::pickPartFromShelf5Aisle1(product product)
     }
 }
 
+/**
+ * @brief Pick part from shelf 8 or shelf 5 without obstacles using Aisle2
+ * 
+ * @param product Product to be picked
+ */
 void GantryControl::pickPartFromShelfAisle2(product product)
 {
     goToPresetLocation(aisle1_);
@@ -554,6 +568,11 @@ void GantryControl::pickPartFromShelfAisle2(product product)
     goToPresetLocation(aisle1_90_);
 }
 
+/**
+ * @brief Pick part from shelf 8 or shelf 5 without obstacles using Aisle3
+ * 
+ * @param product Product to be picked
+ */
 void GantryControl::pickPartFromShelfAisle3(product product)
 {
     goToPresetLocation(aisle2_);
@@ -587,6 +606,11 @@ void GantryControl::pickPartFromShelfAisle3(product product)
     goToPresetLocation(aisle2_90_);
 }
 
+/**
+ * @brief Pick part from shelf 11 with or without obstacles
+ * 
+ * @param product Product to be picked
+ */
 void GantryControl::pickPartFromShelf11Aisle4(product product)
 {
     std::string free_arm = checkFreeGripper();
@@ -665,6 +689,11 @@ void GantryControl::pickPartFromShelf11Aisle4(product product)
     }
 }
 
+/**
+ * @brief Pick part from shelf 8 with obstacles when safe location only available in shelf row 2 
+ * 
+ * @param product Product to be picked
+ */
 void GantryControl::pickPartFromShelf8Aisle2ObstaclesSafe1(product product)
 {
     // Wait for Obstace in Aisle 2
@@ -991,6 +1020,11 @@ void GantryControl::pickPartFromShelf8Aisle2ObstaclesSafe1(product product)
     goToPresetLocation(aisle1_);
 }
 
+/**
+ * @brief Pick part from shelf 8 with obstacles when safe location only available in shelf row 1 
+ * 
+ * @param product Product to be picked
+ */
 void GantryControl::pickPartFromShelf8Aisle2Obstacles(product product)
 {
     // Wait for Obstace in Aisle 2
@@ -1317,6 +1351,11 @@ void GantryControl::pickPartFromShelf8Aisle2Obstacles(product product)
     goToPresetLocation(aisle1_);
 }
 
+/**
+ * @brief Pick part from shelf 8 with obstacles when safe location only available in shelf row 3 
+ * 
+ * @param product Product to be picked
+ */
 void GantryControl::pickPartFromShelf8Aisle3Obstacles(product product)
 {
     if (obstacle_1_pos[3] == 3)
@@ -1643,6 +1682,11 @@ void GantryControl::pickPartFromShelf8Aisle3Obstacles(product product)
     goToPresetLocation(aisle2_);
 }
 
+/**
+ * @brief Function to pick the part from the environment
+ * 
+ * @param product Product to be picked
+ */
 void GantryControl::getProduct(product product)
 {
     std::string location = product.p.location;
@@ -2034,15 +2078,15 @@ void GantryControl::getProduct(product product)
             {
                 goToPresetLocation(aisle1_);
                 pickPartFromShelf8Aisle2ObstaclesSafe1(product);
-                    //add product to arm
-    if (free_arm.compare("any") == 0 || free_arm.compare("left") == 0)
-    {
-        product_left_arm_ = product;
-    }
-    else
-    {
-        product_right_arm_ = product;
-    }
+                //add product to arm
+                if (free_arm.compare("any") == 0 || free_arm.compare("left") == 0)
+                {
+                    product_left_arm_ = product;
+                }
+                else
+                {
+                    product_right_arm_ = product;
+                }
                 return;
             }
         }
@@ -2164,7 +2208,7 @@ void GantryControl::getProduct(product product)
 }
 // /**
 //  * @brief retrieve a specific product detected from the sensors from wherever in the environment
-//  * 
+//  *
 //  * @param product product of product list to be found and retrieved
 //  */
 // void GantryControl::getProduct(product product)
@@ -2450,7 +2494,6 @@ geometry_msgs::Pose GantryControl::getTargetWorldPose(geometry_msgs::Pose target
         }
     }
 
-
     /**
  *ee_target_tf and  world_target_tf are expressed in the same frame: "world"
  We want to find the relative rotation, q_r, to go from ee_target_tf to world_target_tf
@@ -2471,7 +2514,6 @@ geometry_msgs::Pose GantryControl::getTargetWorldPose(geometry_msgs::Pose target
     world_target.orientation.y = world_target_tf.transform.rotation.y;
     world_target.orientation.z = world_target_tf.transform.rotation.z;
     world_target.orientation.w = world_target_tf.transform.rotation.w;
-    
 
     // ros::Duration(10).sleep();
     return world_target;
@@ -2483,7 +2525,8 @@ geometry_msgs::Pose GantryControl::getTargetWorldPose(geometry_msgs::Pose target
  */
 void GantryControl::reachPartBinLeftArm(part part)
 {
-    if (part.bin_location == "top"){
+    if (part.bin_location == "top")
+    {
         rotateTorso(-PI);
     }
     geometry_msgs::Pose currentArmPose = left_arm_group_.getCurrentPose().pose;
@@ -2511,7 +2554,8 @@ void GantryControl::reachPartBinLeftArm(part part)
 void GantryControl::reachPartBinRightArm(part part)
 {
 
-    if (part.bin_location == "bottom"){
+    if (part.bin_location == "bottom")
+    {
         rotateTorso(-PI);
     }
     geometry_msgs::Pose currentArmPose = right_arm_group_.getCurrentPose().pose;
@@ -2607,10 +2651,10 @@ void GantryControl::reachPartShelfRightArm(part part)
     // FKRightArm({PI, -2.13, 1.49, -2.48, -1.57, 0});
     geometry_msgs::Pose currentArmPose = right_arm_group_.getCurrentPose().pose;
 
-    tf2::Quaternion q (currentArmPose.orientation.x,
-                        currentArmPose.orientation.y,
-                        currentArmPose.orientation.z,
-                        currentArmPose.orientation.w);
+    tf2::Quaternion q(currentArmPose.orientation.x,
+                      currentArmPose.orientation.y,
+                      currentArmPose.orientation.z,
+                      currentArmPose.orientation.w);
     tf2::Matrix3x3 m(q);
     double roll, pitch, yaw;
     m.getRPY(roll, pitch, yaw);
@@ -2767,16 +2811,15 @@ bool GantryControl::pickPartLeftArm(part part)
     activateGripper("left_arm");
     geometry_msgs::Pose currentPose = left_arm_group_.getCurrentPose().pose;
 
-    tf2::Quaternion q_arm (currentPose.orientation.x,
-                            currentPose.orientation.y,
-                            currentPose.orientation.z,
-                            currentPose.orientation.w);
+    tf2::Quaternion q_arm(currentPose.orientation.x,
+                          currentPose.orientation.y,
+                          currentPose.orientation.z,
+                          currentPose.orientation.w);
 
-    tf2::Quaternion q_world_part (part.pose.orientation.x,
-                            part.pose.orientation.y,
-                            part.pose.orientation.z,
-                            part.pose.orientation.w);
-
+    tf2::Quaternion q_world_part(part.pose.orientation.x,
+                                 part.pose.orientation.y,
+                                 part.pose.orientation.z,
+                                 part.pose.orientation.w);
 
     part.pose.position.z = part.pose.position.z + model_height.at(part.type) + GRIPPER_HEIGHT - EPSILON + 0.007;
     part.pose.orientation.x = currentPose.orientation.x;
@@ -2784,10 +2827,10 @@ bool GantryControl::pickPartLeftArm(part part)
     part.pose.orientation.z = currentPose.orientation.z;
     part.pose.orientation.w = currentPose.orientation.w;
 
-    tf2::Quaternion q_world_left_ee_link (currentPose.orientation.x,
-                            currentPose.orientation.y,
-                            currentPose.orientation.z,
-                            currentPose.orientation.w);
+    tf2::Quaternion q_world_left_ee_link(currentPose.orientation.x,
+                                         currentPose.orientation.y,
+                                         currentPose.orientation.z,
+                                         currentPose.orientation.w);
 
     q_left_ee_link_part = q_world_left_ee_link.inverse() * q_world_part;
 
@@ -2858,16 +2901,15 @@ bool GantryControl::pickPartRightArm(part part)
     activateGripper("right_arm");
     geometry_msgs::Pose currentPose = right_arm_group_.getCurrentPose().pose;
 
-    tf2::Quaternion q_arm (currentPose.orientation.x,
-                            currentPose.orientation.y,
-                            currentPose.orientation.z,
-                            currentPose.orientation.w);
- 
-    tf2::Quaternion q_world_part (part.pose.orientation.x,
-                            part.pose.orientation.y,
-                            part.pose.orientation.z,
-                            part.pose.orientation.w);
+    tf2::Quaternion q_arm(currentPose.orientation.x,
+                          currentPose.orientation.y,
+                          currentPose.orientation.z,
+                          currentPose.orientation.w);
 
+    tf2::Quaternion q_world_part(part.pose.orientation.x,
+                                 part.pose.orientation.y,
+                                 part.pose.orientation.z,
+                                 part.pose.orientation.w);
 
     part.pose.position.z = part.pose.position.z + model_height.at(part.type) + GRIPPER_HEIGHT - EPSILON + 0.007;
     part.pose.orientation.x = currentPose.orientation.x;
@@ -2875,10 +2917,10 @@ bool GantryControl::pickPartRightArm(part part)
     part.pose.orientation.z = currentPose.orientation.z;
     part.pose.orientation.w = currentPose.orientation.w;
 
-    tf2::Quaternion q_world_right_ee_link (currentPose.orientation.x,
-                            currentPose.orientation.y,
-                            currentPose.orientation.z,
-                            currentPose.orientation.w);
+    tf2::Quaternion q_world_right_ee_link(currentPose.orientation.x,
+                                          currentPose.orientation.y,
+                                          currentPose.orientation.z,
+                                          currentPose.orientation.w);
 
     q_right_ee_link_part = q_world_right_ee_link.inverse() * q_world_part;
 
@@ -3395,14 +3437,17 @@ bool GantryControl::throwPartLeft(part part)
 
     // check if part is in products_to_flip_ an erase it from the vector
 
-    if (products_to_flip_.empty() != 1){
-        for (int i=0; i<products_to_flip_.size(); i++){
-            if (part.pose.position.x + 0.1 >= products_to_flip_.at(i).p.pose.position.x && 
-                    part.pose.position.x - 0.1 <= products_to_flip_.at(i).p.pose.position.x &&
-                    part.pose.position.y + 0.1 >= products_to_flip_.at(i).p.pose.position.y && 
-                    part.pose.position.y - 0.1 <= products_to_flip_.at(i).p.pose.position.y){
+    if (products_to_flip_.empty() != 1)
+    {
+        for (int i = 0; i < products_to_flip_.size(); i++)
+        {
+            if (part.pose.position.x + 0.1 >= products_to_flip_.at(i).p.pose.position.x &&
+                part.pose.position.x - 0.1 <= products_to_flip_.at(i).p.pose.position.x &&
+                part.pose.position.y + 0.1 >= products_to_flip_.at(i).p.pose.position.y &&
+                part.pose.position.y - 0.1 <= products_to_flip_.at(i).p.pose.position.y)
+            {
 
-                        products_to_flip_.erase(products_to_flip_.begin() + i);
+                products_to_flip_.erase(products_to_flip_.begin() + i);
             }
         }
     }
@@ -3423,26 +3468,25 @@ bool GantryControl::throwPartLeft(part part)
     }
 
     if (part.location.compare("agv_2") == 0)
+    {
+        for (int j = 0; j < products_kit_tray_2_.size(); ++j)
+        {
+            if (products_kit_tray_2_.at(j).p.id == part.id)
             {
-                for (int j=0; j<products_kit_tray_2_.size(); ++j)
-                {
-                    if (products_kit_tray_2_.at(j).p.id == part.id)
-                    {
-                        products_kit_tray_2_.erase(products_kit_tray_2_.begin() + j);
-                    }
-
-                }
+                products_kit_tray_2_.erase(products_kit_tray_2_.begin() + j);
             }
-            else
+        }
+    }
+    else
+    {
+        for (int j = 0; j < products_kit_tray_1_.size(); ++j)
+        {
+            if (products_kit_tray_1_.at(j).p.id == part.id)
             {
-                for (int j=0; j<products_kit_tray_1_.size(); ++j)
-                {
-                    if (products_kit_tray_1_.at(j).p.id == part.id)
-                    {
-                        products_kit_tray_1_.erase(products_kit_tray_1_.begin() + j);
-                    }
-                }
+                products_kit_tray_1_.erase(products_kit_tray_1_.begin() + j);
             }
+        }
+    }
 }
 
 /**
@@ -3599,13 +3643,13 @@ void GantryControl::placePartLeftArm()
         }
     }
 
-    ROS_INFO_STREAM("Product left arm "<< product_left_arm_.type<<std::endl);
+    ROS_INFO_STREAM("Product left arm " << product_left_arm_.type << std::endl);
     auto target_pose_in_tray = getTargetWorldPose(product_left_arm_.pose, product_left_arm_.agv_id);
 
-    tf2::Quaternion q_world_tray_pose (target_pose_in_tray.orientation.x,
-                                        target_pose_in_tray.orientation.y,
-                                        target_pose_in_tray.orientation.z,
-                                        target_pose_in_tray.orientation.w);
+    tf2::Quaternion q_world_tray_pose(target_pose_in_tray.orientation.x,
+                                      target_pose_in_tray.orientation.y,
+                                      target_pose_in_tray.orientation.z,
+                                      target_pose_in_tray.orientation.w);
 
     geometry_msgs::Pose currentArmPose = left_arm_group_.getCurrentPose().pose;
 
@@ -3613,7 +3657,6 @@ void GantryControl::placePartLeftArm()
 
     double actual_z = target_pose_in_tray.position.z + 0.007;
     target_pose_in_tray.position.z += (ABOVE_TARGET + 1.5 * model_height[product_left_arm_.type]);
-
 
     tf2::Quaternion q_rotation = q_world_tray_pose * q_left_ee_link_part.inverse();
     q_rotation.normalize();
@@ -3635,15 +3678,16 @@ void GantryControl::placePartLeftArm()
     pos_t = product_left_arm_.type.find("_");
     type = product_left_arm_.type.substr(0, pos_t);
 
-    if (part_roll - 0.1 <= -3.14 && part_roll + 0.1 >= -3.14 && type.compare("pulley") == 0){
+    if (part_roll - 0.1 <= -3.14 && part_roll + 0.1 >= -3.14 && type.compare("pulley") == 0)
+    {
         target_pose_in_tray.orientation.x = currentArmPose.orientation.x;
         target_pose_in_tray.orientation.y = currentArmPose.orientation.y;
         target_pose_in_tray.orientation.z = currentArmPose.orientation.z;
         target_pose_in_tray.orientation.w = currentArmPose.orientation.w;
-        tf2::Quaternion q_rotation_flip (currentArmPose.orientation.x,
-                                            currentArmPose.orientation.y,
-                                            currentArmPose.orientation.z,
-                                            currentArmPose.orientation.w);
+        tf2::Quaternion q_rotation_flip(currentArmPose.orientation.x,
+                                        currentArmPose.orientation.y,
+                                        currentArmPose.orientation.z,
+                                        currentArmPose.orientation.w);
         q_world_tray_pose = q_rotation_flip * q_left_ee_link_part;
         q_rotation_flip.normalize();
 
@@ -3652,7 +3696,7 @@ void GantryControl::placePartLeftArm()
         product_left_arm_.p.pose.orientation.z = q_world_tray_pose.getZ();
         product_left_arm_.p.pose.orientation.w = q_world_tray_pose.getW();
 
-        products_to_flip_.push_back(product_left_arm_);        
+        products_to_flip_.push_back(product_left_arm_);
     }
 
     const double offset_y = target_pose_in_tray.position.y - currentArmPose.position.y;
@@ -3689,7 +3733,9 @@ void GantryControl::placePartLeftArm()
     {
         product_left_arm_.p.location = "agv_2";
         products_kit_tray_2_.push_back(product_left_arm_);
-    } else {
+    }
+    else
+    {
         product_left_arm_.p.location = "agv_1";
         products_kit_tray_1_.push_back(product_left_arm_);
     }
@@ -3766,17 +3812,16 @@ void GantryControl::placePartRightArm()
 
     auto target_pose_in_tray = getTargetWorldPose(product_right_arm_.pose, product_right_arm_.agv_id);
 
-    tf2::Quaternion q_world_tray_pose (target_pose_in_tray.orientation.x,
-                                        target_pose_in_tray.orientation.y,
-                                        target_pose_in_tray.orientation.z,
-                                        target_pose_in_tray.orientation.w);
+    tf2::Quaternion q_world_tray_pose(target_pose_in_tray.orientation.x,
+                                      target_pose_in_tray.orientation.y,
+                                      target_pose_in_tray.orientation.z,
+                                      target_pose_in_tray.orientation.w);
 
     geometry_msgs::Pose currentArmPose = right_arm_group_.getCurrentPose().pose;
 
     // // //--TODO: Consider agv1 too
     double actual_z = target_pose_in_tray.position.z + 0.007;
     target_pose_in_tray.position.z += (ABOVE_TARGET + 1.5 * model_height[product_right_arm_.type]);
-
 
     tf2::Quaternion q_rotation = q_world_tray_pose * q_right_ee_link_part.inverse();
     target_pose_in_tray.orientation.x = q_rotation.getX();
@@ -3795,19 +3840,20 @@ void GantryControl::placePartRightArm()
     std::string type;
     pos_t = product_right_arm_.type.find("_");
     type = product_right_arm_.type.substr(0, pos_t);
-    bool flip_process {false};
+    bool flip_process{false};
 
     ros::param::get("/flip_process", flip_process);
 
-    if (part_roll - 0.1 <= -3.14 && part_roll + 0.1 >= -3.14 && type.compare("pulley") == 0 && flip_process == 0){
+    if (part_roll - 0.1 <= -3.14 && part_roll + 0.1 >= -3.14 && type.compare("pulley") == 0 && flip_process == 0)
+    {
         target_pose_in_tray.orientation.x = currentArmPose.orientation.x;
         target_pose_in_tray.orientation.y = currentArmPose.orientation.y;
         target_pose_in_tray.orientation.z = currentArmPose.orientation.z;
         target_pose_in_tray.orientation.w = currentArmPose.orientation.w;
-        tf2::Quaternion q_rotation_flip (currentArmPose.orientation.x,
-                                            currentArmPose.orientation.y,
-                                            currentArmPose.orientation.z,
-                                            currentArmPose.orientation.w);
+        tf2::Quaternion q_rotation_flip(currentArmPose.orientation.x,
+                                        currentArmPose.orientation.y,
+                                        currentArmPose.orientation.z,
+                                        currentArmPose.orientation.w);
         q_world_tray_pose = q_rotation_flip * q_right_ee_link_part;
 
         product_right_arm_.p.pose.orientation.x = q_world_tray_pose.getX();
@@ -3815,9 +3861,8 @@ void GantryControl::placePartRightArm()
         product_right_arm_.p.pose.orientation.z = q_world_tray_pose.getZ();
         product_right_arm_.p.pose.orientation.w = q_world_tray_pose.getW();
 
-        products_to_flip_.push_back(product_right_arm_);        
+        products_to_flip_.push_back(product_right_arm_);
     }
-
 
     const double offset_y = target_pose_in_tray.position.y - currentArmPose.position.y;
 
@@ -3853,7 +3898,9 @@ void GantryControl::placePartRightArm()
     if (product_right_arm_.agv_id.compare("agv2") == 0 || product_right_arm_.agv_id.compare("any") == 0)
     {
         products_kit_tray_2_.push_back(product_right_arm_);
-    } else {
+    }
+    else
+    {
         products_kit_tray_1_.push_back(product_right_arm_);
     }
 
@@ -3861,7 +3908,6 @@ void GantryControl::placePartRightArm()
 
     FKGantry(retrieve);
 }
-
 
 /**
  * @brief Move gantry to a pre-defined location
@@ -3996,26 +4042,33 @@ void GantryControl::rotateTorso(const double angle)
 void GantryControl::flipProductsAGV(std::vector<Part> checkPartsToFlip)
 {
     ros::param::set("/flip_process", true);
-        
-    bool parts_to_flip_in_trays {};  // will equal false when there is sesor blackout so that we do not flip parts
 
-    if (checkPartsToFlip.empty() != 0 || products_to_flip_.empty() != 0){
+    bool parts_to_flip_in_trays{}; // will equal false when there is sesor blackout so that we do not flip parts
+
+    if (checkPartsToFlip.empty() != 0 || products_to_flip_.empty() != 0)
+    {
         parts_to_flip_in_trays = false;
-    } else {
-        ROS_WARN_STREAM("CHECK PARTS TO FLIP SIZE: "<< checkPartsToFlip.size() );
-        ROS_WARN_STREAM("PRODUCTS TO FLIP SIZE: " << products_to_flip_.size() );
-        for (int i=0; i<products_to_flip_.size(); i++){ // it can have pulleys that have already been flipped
+    }
+    else
+    {
+        ROS_WARN_STREAM("CHECK PARTS TO FLIP SIZE: " << checkPartsToFlip.size());
+        ROS_WARN_STREAM("PRODUCTS TO FLIP SIZE: " << products_to_flip_.size());
+        for (int i = 0; i < products_to_flip_.size(); i++)
+        { // it can have pulleys that have already been flipped
             parts_to_flip_in_trays = false;
-            for (int j=0; j<checkPartsToFlip.size(); j++){
-                if (checkPartsToFlip.at(j).pose.position.x + 0.1 >= products_to_flip_.at(i).p.pose.position.x && 
+            for (int j = 0; j < checkPartsToFlip.size(); j++)
+            {
+                if (checkPartsToFlip.at(j).pose.position.x + 0.1 >= products_to_flip_.at(i).p.pose.position.x &&
                     checkPartsToFlip.at(j).pose.position.x - 0.1 <= products_to_flip_.at(i).p.pose.position.x &&
-                    checkPartsToFlip.at(j).pose.position.y + 0.1 >= products_to_flip_.at(i).p.pose.position.y && 
-                    checkPartsToFlip.at(j).pose.position.y - 0.1 <= products_to_flip_.at(i).p.pose.position.y){
-                        parts_to_flip_in_trays = true;
-                        break;
+                    checkPartsToFlip.at(j).pose.position.y + 0.1 >= products_to_flip_.at(i).p.pose.position.y &&
+                    checkPartsToFlip.at(j).pose.position.y - 0.1 <= products_to_flip_.at(i).p.pose.position.y)
+                {
+                    parts_to_flip_in_trays = true;
+                    break;
                 }
             }
-            if (parts_to_flip_in_trays == false){
+            if (parts_to_flip_in_trays == false)
+            {
                 break;
             }
         }
@@ -4080,24 +4133,21 @@ void GantryControl::flipProductsAGV(std::vector<Part> checkPartsToFlip)
 
             FKGantry(retrieve);
 
-            
-
             if (products_to_flip_.at(i).agv_id.compare("agv2") == 0 || products_to_flip_.at(i).agv_id.compare("any") == 0)
             {
                 goToPresetLocation(agv2_);
-                for (int j=0; j<products_kit_tray_2_.size(); ++j)
+                for (int j = 0; j < products_kit_tray_2_.size(); ++j)
                 {
                     if (products_kit_tray_2_.at(j).p.id == products_to_flip_.at(i).p.id)
                     {
                         products_kit_tray_2_.erase(products_kit_tray_2_.begin() + j);
                     }
-
                 }
             }
             else
             {
                 goToPresetLocation(agv1_);
-                for (int j=0; j<products_kit_tray_1_.size(); ++j)
+                for (int j = 0; j < products_kit_tray_1_.size(); ++j)
                 {
                     if (products_kit_tray_1_.at(j).p.id == products_to_flip_.at(i).p.id)
                     {
@@ -4119,15 +4169,15 @@ void GantryControl::flipProductsAGV(std::vector<Part> checkPartsToFlip)
             geometry_msgs::Pose currentPoseLeftArm = left_arm_group_.getCurrentPose().pose;
             geometry_msgs::Pose currentPoseRightArm = right_arm_group_.getCurrentPose().pose;
 
-            tf2::Quaternion q_arm_left (currentPoseLeftArm.orientation.x,
-                                    currentPoseLeftArm.orientation.y,
-                                    currentPoseLeftArm.orientation.z,
-                                    currentPoseLeftArm.orientation.w);
+            tf2::Quaternion q_arm_left(currentPoseLeftArm.orientation.x,
+                                       currentPoseLeftArm.orientation.y,
+                                       currentPoseLeftArm.orientation.z,
+                                       currentPoseLeftArm.orientation.w);
 
-            tf2::Quaternion q_arm_right (currentPoseRightArm.orientation.x,
-                                    currentPoseRightArm.orientation.y,
-                                    currentPoseRightArm.orientation.z,
-                                    currentPoseRightArm.orientation.w);
+            tf2::Quaternion q_arm_right(currentPoseRightArm.orientation.x,
+                                        currentPoseRightArm.orientation.y,
+                                        currentPoseRightArm.orientation.z,
+                                        currentPoseRightArm.orientation.w);
 
             tf2::Quaternion q_world_part;
 
@@ -4148,7 +4198,6 @@ void GantryControl::flipProductsAGV(std::vector<Part> checkPartsToFlip)
 
         products_to_flip_.clear();
         ros::param::set("/flip_process", false);
-
     }
 }
 
@@ -4339,11 +4388,10 @@ bool GantryControl::getPartConveyorRightArm(product product)
     return picked;
 }
 
-
 void GantryControl::getLeftArmRoll()
 {
     geometry_msgs::Pose currentArmPose = left_arm_group_.getCurrentPose().pose;
-    tf2::Quaternion q_p (currentArmPose.orientation.x,
+    tf2::Quaternion q_p(currentArmPose.orientation.x,
                         currentArmPose.orientation.y,
                         currentArmPose.orientation.z,
                         currentArmPose.orientation.w);
@@ -4365,7 +4413,7 @@ void GantryControl::getLeftArmRoll()
         try
         {
             world_left_arm = tfBuffer.lookupTransform("world", "left_ee_link",
-                                                       ros::Time(0), timeout);
+                                                      ros::Time(0), timeout);
             // ROS_WARN_STREAM("target in world frame: " << world_target_tf.transform.rotation.x <<" "<<world_target_tf.transform.rotation.y<<" "<<world_target_tf.transform.rotation.z<<" "<<world_target_tf.transform.rotation.w);
         }
         catch (tf2::TransformException &ex)
@@ -4389,14 +4437,13 @@ void GantryControl::getLeftArmRoll()
     ROS_WARN_STREAM("LEFT GRIPPER YAW ANGLE: " << yaw);
 }
 
-
 void GantryControl::getRightArmRoll()
 {
     geometry_msgs::Pose currentArmPose = right_arm_group_.getCurrentPose().pose;
-    tf2::Quaternion q (currentArmPose.orientation.x,
-                        currentArmPose.orientation.y,
-                        currentArmPose.orientation.z,
-                        currentArmPose.orientation.w);
+    tf2::Quaternion q(currentArmPose.orientation.x,
+                      currentArmPose.orientation.y,
+                      currentArmPose.orientation.z,
+                      currentArmPose.orientation.w);
     tf2::Matrix3x3 m(q);
     double roll, pitch, yaw;
     m.getRPY(roll, pitch, yaw);

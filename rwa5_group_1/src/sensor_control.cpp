@@ -640,6 +640,13 @@ void SensorControl::quality_cntrl_sensor_callback(const nist_gear::LogicalCamera
     }
   }
 }
+
+/**
+ * @brief Return Parts in AGV
+ * 
+ * @param agv_id AGV ID
+ * @return std::array<std::array<std::vector<part>, 3>, 5> 
+ */
 std::array<std::array<std::vector<part>, 3>, 5> SensorControl::getPartsAGV(std::string agv_id)
 {
   if (agv_id.compare("agv1") == 1)
@@ -765,6 +772,12 @@ bool SensorControl::isPartPoseAGVCorrect(part target, std::string agv_id)
   return ret_val;
 }
 
+/**
+ * @brief Get parts from a logical camera
+ * 
+ * @param sensorNum Logical camera id.
+ * @return int 
+ */
 int SensorControl::getLogicalCameraNumProducts(int sensorNum) {
   if (logicalCamNumProducts.find(sensorNum) == logicalCamNumProducts.end()) {
     return 0;
