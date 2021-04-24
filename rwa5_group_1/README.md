@@ -18,21 +18,27 @@ Run the following commands in a terminal
 
 ```
 cd ~/ariac_ws/src/
+
 git clone https://github.com/sandeep-kota/ARIAC_Group_1.git
+
+git checkout rwa5
+
 catkin build
 ```
 
 
 ## Run Instructions
- - The launch directory of the package `/rwa4_group_1` has a launch file `rwa4.launch`. All the necessary nodes will be launched within this node.
+ - The launch directory of the package `/rwa5_group_1` has a launch file `rwa5.launch`. All the necessary nodes will be launched within this node.
 
  ```
 source ~/ariac_ws/devel/setup.bash
-roslaunch rwa4_group_1 rwa4.launch load_moveit:=true
+
+roslaunch rwa5_group_1 rwa5.launch load_moveit:=true
  ```
 
- - Run the rwa4 node 
+ - Run the rwa5 node 
  ```
- source ~/ariac_ws/devel/setup.bash
-rosrun rwa3_group_1 rwa3_node
+source ~/ariac_ws/devel/setup.bash
+
+rosrun rwa5_group_1 rwa5_node
  ```            
