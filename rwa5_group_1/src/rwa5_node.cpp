@@ -41,9 +41,12 @@ bool checkBlackout(int sensorNum, int numProductsToBeSent, SensorControl &sensor
     ros::param::set(ACTIVATE_LOG_CAM, sensorNum);
     ros::Duration(1).sleep();
     ros::param::set(ACTIVATE_LOG_CAM, -1);
+    ROS_WARN_STREAM("Checking the products placed on the AGV before sending.");
     int numProductsDetected = sensors.getLogicalCameraNumProducts(sensorNum);
+    ROS_WARN_STREAM("Number of products on the AGV: " << numProductsDetected);
     
     if (numProductsDetected != numProductsToBeSent) {
+        ROS_WARN_STREAM("Number of products mismatch. Products on AGV: " << numProductsDetected << ", Expected: " << numProductsToBeSent);
         return true;
     }
     return false;
@@ -707,6 +710,7 @@ int main(int argc, char **argv)
                     }
                     
                     // check the faulty parts again and the parts that are to be flipped
+                    ROS_WARN_STREAM("Checking faulty parts before sending AGV");
                     faultyPartsProcess(gantry, sensors);
                     ros::param::set("/check_parts_to_flip", true);
                     ros::Duration(1).sleep();
