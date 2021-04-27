@@ -3373,7 +3373,8 @@ bool GantryControl::throwPartLeft(part part)
     ROS_WARN_STREAM("FAULTY POSE Z: " << part.pose.position.z);
 
     part.pose.position.z += 0.015;
-    if (part.location.compare("agv_2") == 0)
+    ROS_WARN_STREAM("PART LOCATION: " << part.location);
+    if (part.location == "agv_2")
     {
         goToPresetLocation(agv2_);
         if (part.pose.position.x >= 0)
@@ -3385,7 +3386,7 @@ bool GantryControl::throwPartLeft(part part)
             goToPresetLocation(tray2_left_negative_);
         }
     }
-    else
+    else if (part.location == "agv_1" || part.location == "any")
     {
         goToPresetLocation(agv1_);
         if (-part.pose.position.x >= 0)
@@ -3729,7 +3730,7 @@ void GantryControl::placePartLeftArm()
     deactivateGripper("left_arm");
 
     ros::Duration(0.5).sleep();
-    if (product_left_arm_.agv_id.compare("agv2") == 0 || product_left_arm_.agv_id.compare("any") == 0)
+    if (product_left_arm_.agv_id.compare("agv2") == 0)
     {
         product_left_arm_.p.location = "agv_2";
         products_kit_tray_2_.push_back(product_left_arm_);
@@ -3895,12 +3896,14 @@ void GantryControl::placePartRightArm()
 
     ros::Duration(0.5).sleep();
 
-    if (product_right_arm_.agv_id.compare("agv2") == 0 || product_right_arm_.agv_id.compare("any") == 0)
+    if (product_right_arm_.agv_id.compare("agv2") == 0)
     {
+        product_right_arm_.p.location = "agv_2";
         products_kit_tray_2_.push_back(product_right_arm_);
     }
-    else
+    else if (product_right_arm_.agv_id.compare("agv1") == 0 || product_right_arm_.agv_id.compare("any") == 0)
     {
+        product_right_arm_.p.location = "agv_1";
         products_kit_tray_1_.push_back(product_right_arm_);
     }
 
