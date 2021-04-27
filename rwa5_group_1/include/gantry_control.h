@@ -77,7 +77,6 @@ public:
   void FKLeftArm(std::vector<double> joints);
   void FKRightArm(std::vector<double> joints);
   void FKGantry(std::vector<double> joints);
-  void moveOverPart(part part, std::string arm);
   void getProduct(product product);
   // void getProductsToFlip(std::vector<Part> partsToFlip);
   void flipProductsAGV(std::vector<Part> checkPartsToFlip);

@@ -82,13 +82,13 @@ void GantryControl::init()
 
     // joint positions to go to top left shelf
     shelf1_.location = "shelf_1";
-    shelf1_.gantry = {0, 4, -2.2};
+    shelf1_.gantry = {4, -2.4, 0};
     shelf1_.left_arm = aisle_left_arm;
     shelf1_.right_arm = aisle_right_arm;
 
     // joint positions to go to top right shelf
     shelf2_.location = "shelf_2";
-    shelf2_.gantry = {0, 4, -2.2};
+    shelf2_.gantry = {4, 2.4, 0};
     shelf2_.left_arm = aisle_left_arm;
     shelf2_.right_arm = aisle_right_arm;
 
@@ -1682,6 +1682,8 @@ void GantryControl::pickPartFromShelf8Aisle3Obstacles(product product)
     goToPresetLocation(aisle2_);
 }
 
+
+
 /**
  * @brief Function to pick the part from the environment
  * 
@@ -2134,20 +2136,19 @@ void GantryControl::getProduct(product product)
                 if (free_arm == "any" || free_arm == "left")
                 {
                     reachPartShelfLeftArm(product.p);
-                    moveOverPart(product.p, free_arm);
+                    FKLeftArm({0, -2.13, 1.49, -2.48, -1.57, 0});
                     pickPartLeftArm(product.p);
                     FKLeftArm(shelf1_.left_arm);
+                    goToPresetLocation(shelf1_);
                 }
                 else
                 {
                     reachPartShelfRightArm(product.p);
-                    moveOverPart(product.p, free_arm);
+                    FKRightArm({PI, -2.13, 1.49, -2.48, -1.57, 0});
                     pickPartRightArm(product.p);
                     FKRightArm(shelf1_.right_arm);
+                    goToPresetLocation(shelf1_);
                 }
-                FKGantry(shelf1_.gantry);
-                ros::Duration(0.5).sleep();
-                rotateTorso(0.);
             }
             else if (location == "shelf_2")
             {
@@ -2155,20 +2156,19 @@ void GantryControl::getProduct(product product)
                 if (free_arm == "any" || free_arm == "left")
                 {
                     reachPartShelfLeftArm(product.p);
-                    moveOverPart(product.p, free_arm);
+                    FKLeftArm({0, -2.13, 1.49, -2.48, -1.57, 0});
                     pickPartLeftArm(product.p);
                     FKLeftArm(shelf2_.left_arm);
+                    goToPresetLocation(shelf2_);
                 }
                 else
                 {
                     reachPartShelfRightArm(product.p);
-                    moveOverPart(product.p, free_arm);
+                    FKRightArm({PI, -2.13, 1.49, -2.48, -1.57, 0});
                     pickPartRightArm(product.p);
                     FKRightArm(shelf2_.right_arm);
+                    goToPresetLocation(shelf2_);
                 }
-                FKGantry(shelf2_.gantry);
-                ros::Duration(0.5).sleep();
-                rotateTorso(0.);
             }
             else if (location == "bins")
             {
@@ -2206,219 +2206,6 @@ void GantryControl::getProduct(product product)
         product_right_arm_ = product;
     }
 }
-// /**
-//  * @brief retrieve a specific product detected from the sensors from wherever in the environment
-//  *
-//  * @param product product of product list to be found and retrieved
-//  */
-// void GantryControl::getProduct(product product)
-// {
-//     std::string location = product.p.location;
-//     std::string free_arm = checkFreeGripper();
-
-//     //If part is located in the two top shelfs 1 and 2
-//     if (location == "shelf_1" || location == "shelf_2")
-//     {
-//         if (gantry_location_ == "aisle_1")
-//         {
-//             goToPresetLocation(aisle1_);
-//             FKGantry(start_.gantry);
-//         }
-//         else if (gantry_location_ == "aisle_2")
-//         {
-//             goToPresetLocation(aisle2_);
-//             FKGantry(start_.gantry);
-//         }
-
-//         if (location == "shelf_1")
-//         {
-//             goToPresetLocation(shelf1_);
-//         }
-//         else
-//         {
-//             goToPresetLocation(shelf2_);
-//         }
-
-//         if (free_arm == "any" || free_arm == "left")
-//         {
-//             reachPartShelfLeftArm(product.p);
-//             moveOverPart(product.p, free_arm);
-//             pickPartLeftArm(product.p);
-//             FKLeftArm(shelf1_.left_arm);
-//         }
-//         else
-//         {
-//             reachPartShelfRightArm(product.p);
-//             moveOverPart(product.p, free_arm);
-//             pickPartRightArm(product.p);
-//             FKRightArm(shelf1_.right_arm);
-//         }
-
-//         FKGantry(shelf1_.gantry);
-//         ros::Duration(0.5).sleep();
-//         rotateTorso(0.);
-
-//         // If part is located in any of the bins
-//     }
-//     else if (location == "bins")
-//     {
-//         if (gantry_location_ == "aisle_1")
-//         {
-//             goToPresetLocation(aisle1_);
-//             goToPresetLocation(start_);
-//         }
-//         else if (gantry_location_ == "aisle_2")
-//         {
-//             goToPresetLocation(aisle2_);
-//             goToPresetLocation(start_);
-//         }
-//         else if (gantry_location_ == "shelf_1" || gantry_location_ == "shelf_2")
-//         {
-//             FKRightArm(bins_.right_arm);
-//             FKLeftArm(bins_.left_arm);
-//         }
-
-//         if (free_arm == "any" || free_arm == "left")
-//         {
-//             goToPresetLocation(bins_);
-//             reachPartBinLeftArm(product.p);
-//             gantry_location_ = "bins";
-//             ros::Duration(0.5).sleep();
-//             pickPartLeftArm(product.p);
-//             ros::Duration(1).sleep();
-//         }
-//         else
-//         {
-//             goToPresetLocation(bins_);
-//             gantry_location_ = "bins";
-//             reachPartBinRightArm(product.p);
-//             ros::Duration(0.5).sleep();
-//             pickPartRightArm(product.p);
-//             ros::Duration(1).sleep();
-//         }
-//         goToPresetLocation(bins_);
-//         gantry_location_ = "bins";
-
-//         //If part is located in bottom shelf 5
-//     }
-//     else if (location == "shelf_5")
-//     {
-//         if (gantry_location_ == "shelf_1" || gantry_location_ == "shelf_2" || gantry_location_ == "bins" || gantry_location_ == "start")
-//         {
-//             FKGantry(start_.gantry);
-//             goToPresetLocation(aisle1_);
-//             gantry_location_ = "aisle_1";
-//         }
-//         else if (gantry_location_ == "aisle_2")
-//         {
-//             goToPresetLocation(aisle2_);
-//             goToPresetLocation(aisle1_);
-//             gantry_location_ = "aisle_1";
-//         }
-
-//         goToBottomShelfs();
-//         if (free_arm == "any" || free_arm == "left")
-//         {
-//             reachPartShelfLeftArm(product.p);
-//             ros::Duration(1).sleep();
-//             pickPartLeftArm(product.p);
-//             ros::Duration(1).sleep();
-//             retriveFromBottomShelf();
-//         }
-//         else
-//         {
-//             reachPartShelfRightArm(product.p);
-//             ros::Duration(1).sleep();
-//             pickPartRightArm(product.p);
-//             ros::Duration(1).sleep();
-//             retriveFromBottomShelf();
-//         }
-
-//         gantry_location_ = "aisle_1";
-
-//         //If part is located in bottom shelf 11
-//     }
-//     else if (location == "shelf_11")
-//     {
-//         if (gantry_location_ == "shelf_1" || gantry_location_ == "shelf_2" || gantry_location_ == "bins" || gantry_location_ == "start")
-//         {
-//             FKGantry(start_.gantry);
-//             goToPresetLocation(aisle2_);
-//         }
-//         else if (gantry_location_ == "aisle_1")
-//         {
-//             goToPresetLocation(aisle1_);
-//             goToPresetLocation(aisle2_);
-//             gantry_location_ = "aisle_2";
-//         }
-
-//         goToBottomShelfs();
-//         if (free_arm == "any" || free_arm == "left")
-//         {
-//             reachPartShelfLeftArm(product.p);
-//             ros::Duration(1).sleep();
-//             pickPartLeftArm(product.p);
-//             retriveFromBottomShelf();
-//         }
-//         else
-//         {
-//             reachPartShelfRightArm(product.p);
-//             ros::Duration(1).sleep();
-//             pickPartRightArm(product.p);
-//             ros::Duration(1).sleep();
-//             retriveFromBottomShelf();
-//         }
-
-//         gantry_location_ = "aisle_2";
-
-//         //If part is located in bottom shelf 8
-//     }
-//     else if (location == "shelf_8")
-//     {
-//         if (gantry_location_ == "shelf_1" || gantry_location_ == "shelf_2" || gantry_location_ == "bins" || gantry_location_ == "start")
-//         {
-//             FKGantry(start_.gantry);
-//             if (product.p.pose.position.y > 0)
-//             {
-//                 goToPresetLocation(aisle1_);
-//                 gantry_location_ = "aisle_1";
-//             }
-//             else
-//             {
-//                 goToPresetLocation(aisle2_);
-//                 gantry_location_ = "aisle_2";
-//             }
-//         }
-
-//         goToBottomShelfs();
-//         if (free_arm == "any" || free_arm == "left")
-//         {
-//             reachPartShelfLeftArm(product.p);
-//             ros::Duration(1).sleep();
-//             pickPartLeftArm(product.p);
-//             ros::Duration(1).sleep();
-//             retriveFromBottomShelf();
-//         }
-//         else
-//         {
-//             reachPartShelfRightArm(product.p);
-//             ros::Duration(1).sleep();
-//             pickPartRightArm(product.p);
-//             ros::Duration(1).sleep();
-//             retriveFromBottomShelf();
-//         }
-//     }
-
-//     //add product to arm
-//     if (free_arm.compare("any") == 0 || free_arm.compare("left") == 0)
-//     {
-//         product_left_arm_ = product;
-//     }
-//     else
-//     {
-//         product_right_arm_ = product;
-//     }
-// }
 
 /**
  * @brief Gets the pose in pose of part in world frame
@@ -2757,44 +2544,6 @@ void GantryControl::goToBottomShelfs()
     bool success = (full_robot_group_.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
     if (success)
         full_robot_group_.move();
-}
-
-/**
- * @brief Move over the part
- * 
- * @param part Part object
- * @param arm Arm name
- * 
- */
-void GantryControl::moveOverPart(part part, std::string arm)
-{
-    geometry_msgs::Pose currentPose{};
-    if (arm == "left")
-    {
-        currentPose = left_arm_group_.getCurrentPose().pose;
-    }
-    else
-    {
-        currentPose = right_arm_group_.getCurrentPose().pose;
-    }
-    part.pose.position.z += 0.5;
-    part.pose.orientation.x = currentPose.orientation.x;
-    part.pose.orientation.y = currentPose.orientation.y;
-    part.pose.orientation.z = currentPose.orientation.z;
-    part.pose.orientation.w = currentPose.orientation.w;
-
-    if (arm == "left")
-    {
-        left_arm_group_.setPoseTarget(part.pose);
-        left_arm_group_.move();
-    }
-    else
-    {
-        right_arm_group_.setPoseTarget(part.pose);
-        right_arm_group_.move();
-    }
-
-    ros::Duration(0.5).sleep();
 }
 
 /**
