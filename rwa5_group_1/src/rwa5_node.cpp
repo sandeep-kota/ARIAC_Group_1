@@ -54,7 +54,7 @@ bool checkBlackout(int sensorNum, int numProductsToBeSent, SensorControl &sensor
     int numProductsDetected = sensors.getLogicalCameraNumProducts(sensorNum);
     // ROS_INFO_STREAM("Number of parts detected :" << numProductsDetected);
     
-    if (numProductsDetected != numProductsToBeSent) {
+    if (numProductsDetected == 0) {
         
         ROS_INFO_STREAM("Number of products mismatched := Products on AGV : " << numProductsDetected << ", Expected : " << numProductsToBeSent );
         return true;
@@ -369,7 +369,7 @@ int main(int argc, char **argv)
         transitionDone = false;
 
         Shipment current_shipment;
-        for (int n_ship = 0; n_ship < list_of_shipments.size(); n_ship++)
+        for (int n_ship = 0; n_ship < list_of_shipments.size() && !comp.newOrderAlert(); n_ship++)
         {
             current_shipment = list_of_shipments.at(n_ship);
             // for (auto& current_shipment: list_of_shipments) {
