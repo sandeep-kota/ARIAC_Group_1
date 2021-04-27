@@ -29,7 +29,7 @@
           $(arg load_moveit_args)
           $(arg fill_demo_shipment_args)
           --visualize-sensor-views
-          -f $(find rwa5_group_1)/config/rwa5-test.yaml
+          -f $(find rwa5_group_1)/config/baseline_2.yaml
           $(find rwa5_group_1)/config/rwa4_sensor_group_1.yaml
           " required="true" output="screen" />
 

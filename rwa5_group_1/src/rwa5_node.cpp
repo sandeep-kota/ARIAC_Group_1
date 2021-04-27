@@ -146,6 +146,7 @@ void faultyPartsProcess(GantryControl &gantry, SensorControl &sensors)
             {
                 //end of the list only pick and replace with left arm
                 gantry.throwPartLeft(faultyProducts.at(i).p); // update parts in tray vectors
+                
             }
             else
             {

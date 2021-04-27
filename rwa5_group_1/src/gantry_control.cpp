@@ -3126,7 +3126,10 @@ bool GantryControl::throwPartLeft(part part)
     if (part.location == "agv_2")
     {
         goToPresetLocation(agv2_);
-        if (part.pose.position.x >= 0)
+        if (part.pose.position.y < -7 && part.pose.position.x > 0){
+            goToPresetLocation(tray2_left_negative_);
+        }
+        else if (part.pose.position.x >= 0)
         {
             goToPresetLocation(tray2_left_positive_);
         }
@@ -3138,7 +3141,13 @@ bool GantryControl::throwPartLeft(part part)
     else if (part.location == "agv_1" || part.location == "any")
     {
         goToPresetLocation(agv1_);
-        if (-part.pose.position.x >= 0)
+        ROS_WARN_STREAM("X POSE: " << part.pose.position.x);
+        ROS_WARN_STREAM("Y POSE: " << part.pose.position.y);
+        if (part.pose.position.y > 7 && part.pose.position.x < 0){
+            ROS_WARN_STREAM("CONDITION BEING CALLED");
+            goToPresetLocation(tray1_left_negative_);
+        }
+        else if (-part.pose.position.x >= 0)
         {
             goToPresetLocation(tray1_left_positive_);
         }
@@ -3248,11 +3257,12 @@ bool GantryControl::throwPartLeft(part part)
  */
 bool GantryControl::throwPartRight(part part)
 {
-    ROS_WARN_STREAM("Faulty Part: " << product_right_arm_.type);
+    ROS_WARN_STREAM("Faulty Part: " << part.type);
+    ROS_WARN_STREAM("FAULTY POSE Z: " << part.pose.position.z);
 
     part.pose.position.z += 0.015;
-    part.type = product_right_arm_.type;
-    if (product_right_arm_.agv_id.compare("agv2") == 0 || product_right_arm_.agv_id.compare("any") == 0)
+    ROS_WARN_STREAM("PART LOCATION: " << part.location);
+    if (part.location == "agv_2")
     {
         goToPresetLocation(agv2_);
         if (part.pose.position.x >= 0)
@@ -3264,7 +3274,7 @@ bool GantryControl::throwPartRight(part part)
             goToPresetLocation(tray2_right_negative_);
         }
     }
-    else
+    else if (part.location == "agv_1" || part.location == "any")
     {
         goToPresetLocation(agv1_);
         if (-part.pose.position.x >= 0)
@@ -3285,6 +3295,8 @@ bool GantryControl::throwPartRight(part part)
     geometry_msgs::Pose currentArmPose = right_arm_group_.getCurrentPose().pose;
 
     // // //--TODO: Consider agv1 too
+
+    ROS_WARN_STREAM("TYPE: " << part.type);
 
     const double offset_y = part.pose.position.y - currentArmPose.position.y;
 
@@ -3309,13 +3321,30 @@ bool GantryControl::throwPartRight(part part)
         full_robot_group_.move();
 
     ros::Duration(1).sleep();
-    pickPartRightArm(part);
+    pickPartLeftArm(part);
     ros::Duration(1).sleep();
+
+    // check if part is in products_to_flip_ an erase it from the vector
+
+    if (products_to_flip_.empty() != 1)
+    {
+        for (int i = 0; i < products_to_flip_.size(); i++)
+        {
+            if (part.pose.position.x + 0.1 >= products_to_flip_.at(i).p.pose.position.x &&
+                part.pose.position.x - 0.1 <= products_to_flip_.at(i).p.pose.position.x &&
+                part.pose.position.y + 0.1 >= products_to_flip_.at(i).p.pose.position.y &&
+                part.pose.position.y - 0.1 <= products_to_flip_.at(i).p.pose.position.y)
+            {
+
+                products_to_flip_.erase(products_to_flip_.begin() + i);
+            }
+        }
+    }
 
     auto state = getGripperState("right_arm");
     if (state.attached)
     {
-        if (product_right_arm_.agv_id.compare("agv2") == 0 || product_right_arm_.agv_id.compare("any") == 0)
+        if (part.location.compare("agv_2") == 0)
         {
             goToPresetLocation(agv2_);
         }
@@ -3323,7 +3352,29 @@ bool GantryControl::throwPartRight(part part)
         {
             goToPresetLocation(agv1_);
         }
+
         deactivateGripper("right_arm");
+    }
+
+    if (part.location.compare("agv_2") == 0)
+    {
+        for (int j = 0; j < products_kit_tray_2_.size(); ++j)
+        {
+            if (products_kit_tray_2_.at(j).p.id == part.id)
+            {
+                products_kit_tray_2_.erase(products_kit_tray_2_.begin() + j);
+            }
+        }
+    }
+    else
+    {
+        for (int j = 0; j < products_kit_tray_1_.size(); ++j)
+        {
+            if (products_kit_tray_1_.at(j).p.id == part.id)
+            {
+                products_kit_tray_1_.erase(products_kit_tray_1_.begin() + j);
+            }
+        }
     }
 }
 
