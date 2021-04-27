@@ -43,7 +43,7 @@ orders:
     announcement_condition: time
     announcement_condition_value: 0.0
     shipment_count: 2
-    destinations: [agv1,agv2]
+    destinations: [agv2,agv2]
     products:
       part_0:
         type: gasket_part_red
@@ -91,6 +91,13 @@ models_over_shelves:
 
 #Faulty products
 faulty_products:
-  - gasket_part_red_10
+  - gasket_part_red_1
+  - gasket_part_red_2
+  - gasket_part_red_3
   - gasket_part_red_4
-  - gear_part_blue_3
+  - gasket_part_red_5
+  - gasket_part_red_6
+  - gasket_part_red_7
+  - gasket_part_red_8
+  - gasket_part_red_9
+  - gear_part_blue_9

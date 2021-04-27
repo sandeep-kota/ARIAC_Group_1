@@ -311,6 +311,8 @@ void faultyPartsProcess(GantryControl &gantry, SensorControl &sensors)
         sensors.resetLogicCallQuality();
         ros::param::set("/activate_quality", true);
         ros::Duration(1).sleep();
+        ros::param::set("/activate_quality", false);
+        faultyParts = sensors.getFaultyParts();
     }
 }
 
