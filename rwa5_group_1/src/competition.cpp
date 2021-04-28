@@ -70,7 +70,8 @@ void Competition::order_callback(const nist_gear::Order::ConstPtr &order_msg)
   new_order.order_id = order_msg->order_id;
 
   // dont process the callback if the same order has been received
-  if (orderSet.find(new_order.order_id) != orderSet.end()) {
+  if (orderSet.find(new_order.order_id) != orderSet.end())
+  {
     return;
   }
 
@@ -166,10 +167,9 @@ bool Competition::processOrder()
       }
       agvToShipmentMap.at(agv_id).push(shipment_type);
 
-      
       //for (int p = 0; p < current_order.shipments.at(s).products.size(); p++)
       //{
-        //product_list_.emplace_back(current_order.shipments.at(s).products.at(p));
+      //product_list_.emplace_back(current_order.shipments.at(s).products.at(p));
       //}
     }
     ROS_INFO_STREAM("SHIPMENT SIZE: " << shipment_list_.size());
@@ -263,21 +263,21 @@ std::string Competition::getCompetitionState()
  * @param sensors Sensors object
  * @param gantry Gantry Object
  */
-void Competition::removePrevProductsFromAGV(std::string fromAGV, SensorControl& sensors, GantryControl& gantry)
+void Competition::removePrevProductsFromAGV(std::string fromAGV, SensorControl &sensors, GantryControl &gantry)
 {
   std::array<std::array<std::vector<part>, 3>, 5> parts_agv = sensors.getPartsAGV(fromAGV);
-  for (int i=0; i<5; i++)
+  for (int i = 0; i < 5; i++)
   {
-    for (int j=0; j<3; j++) 
+    for (int j = 0; j < 3; j++)
     {
       int t_sum = 0;
       for (int k = 0; k < parts_agv.at(i).at(j).size(); k++)
       {
         Part current_part = parts_agv.at(i).at(j).at(k);
-        
-        if (k%2==0 && t_sum < 2)
+
+        if (k % 2 == 0 && t_sum < 2)
         {
-          
+
           gantry.pickPartFromTrayLeftArm(current_part, fromAGV);
           if (fromAGV.compare("agv1"))
           {
@@ -288,9 +288,8 @@ void Competition::removePrevProductsFromAGV(std::string fromAGV, SensorControl& 
             gantry.product_left_arm_.agv_id = "agv1";
           }
           t_sum += 1;
-
         }
-        else if (k%2==1 && t_sum <2)
+        else if (k % 2 == 1 && t_sum < 2)
         {
           gantry.pickPartFromTrayRightArm(current_part, fromAGV);
           if (fromAGV.compare("agv1"))
@@ -303,18 +302,15 @@ void Competition::removePrevProductsFromAGV(std::string fromAGV, SensorControl& 
           }
           t_sum += 1;
         }
-        if (t_sum ==2)
+        if (t_sum == 2)
         {
           t_sum = 0;
           gantry.placePartLeftArm();
           gantry.placePartRightArm();
         }
-
       }
-
     }
   }
-
 
   // std::string toAGV = oppositeAGV.at(fromAGV);
 }
@@ -325,8 +321,9 @@ void Competition::removePrevProductsFromAGV(std::string fromAGV, SensorControl& 
  * @param prevShipments shipment that is currently being build and needs to be stored
  * @param gantry Gantry class passed by reference
  */
-void Competition::orderTransition(std::vector<Shipment> prevShipments, SensorControl &sensors, GantryControl& gantry) {
-  
+void Competition::orderTransition(std::vector<Shipment> prevShipments, SensorControl &sensors, GantryControl &gantry)
+{
+
   // Assuming there will be only one shipment in the new and the previous orders.
   // That is why collecting the element from index=0
   ROS_INFO_STREAM("New Order Received. Processing New Order Details. Will start assembling soon.");
@@ -336,17 +333,22 @@ void Competition::orderTransition(std::vector<Shipment> prevShipments, SensorCon
   orderStack.pop();
 
   // check for agvid:
-  if (prevShipment.agv_id.compare(newShipment.agv_id) == 0) {
+  if (prevShipment.agv_id.compare(newShipment.agv_id) == 0)
+  {
     removePrevProductsFromAGV(prevShipment.agv_id, sensors, gantry);
   }
-  else {
+  else
+  {
     // update the pending items and done items for the previous AGV
-    ROS_INFO_STREAM("New shipment to be placed on different agv."); 
+    ROS_INFO_STREAM("New shipment to be placed on different agv.");
     ROS_INFO_STREAM("Previous AGV: " << prevShipment.agv_id << " New Shipment AGV: " << newShipment.agv_id);
-    
-    for (auto& productOnAGV: agvToProductsMap.at(prevShipment.agv_id)) {
-      for (auto& shipmentProduct: prevShipment.products) { 
-        if (productOnAGV.type.compare(shipmentProduct.type) == 0 && !shipmentProduct.isPlacedOnAGV) {
+
+    for (auto &productOnAGV : agvToProductsMap.at(prevShipment.agv_id))
+    {
+      for (auto &shipmentProduct : prevShipment.products)
+      {
+        if (productOnAGV.type.compare(shipmentProduct.type) == 0 && !shipmentProduct.isPlacedOnAGV)
+        {
           shipmentProduct.isPlacedOnAGV = true;
           break;
         }
@@ -354,9 +356,11 @@ void Competition::orderTransition(std::vector<Shipment> prevShipments, SensorCon
     }
 
     // placing the prodcucts with agv_id=any on the opposite agv.
-    if (newShipment.agv_id.compare(ANY_AGV) == 0) {
+    if (newShipment.agv_id.compare(ANY_AGV) == 0)
+    {
       ROS_WARN_STREAM("New Shipment to be placed on any AGV");
-      for (auto& product: newShipment.products) {
+      for (auto &product : newShipment.products)
+      {
         //product.agv_id = oppositeAGV.at(prevShipment.agv_id);
         product.tray = agvTrayMap.at(oppositeAGV.at(prevShipment.agv_id));
       }
@@ -369,14 +373,11 @@ void Competition::orderTransition(std::vector<Shipment> prevShipments, SensorCon
   orderStack.emplace(prevShipments);
   orderStack.emplace(shipment_list_);
 
-
   ROS_WARN_STREAM("clearing AGV map");
   agvToProductsMap.at(AGV1_ID).clear();
   agvToProductsMap.at(AGV2_ID).clear();
 
   ROS_INFO_STREAM("Starting building kit for new order.");
-
-
 }
 
 /**
@@ -384,40 +385,40 @@ void Competition::orderTransition(std::vector<Shipment> prevShipments, SensorCon
  * 
  * @return std::vector<Product> list of products being processed
  */
-std::vector<Product> Competition::get_product_list() {
+std::vector<Product> Competition::get_product_list()
+{
   product_list_.clear();
-  
+
   for (int s = 0; s < shipment_list_.size(); s++)
   {
     for (int p = 0; p < shipment_list_.at(s).products.size(); p++)
     {
-      if (!shipment_list_.at(s).products.at(p).isPlacedOnAGV) {
+      if (!shipment_list_.at(s).products.at(p).isPlacedOnAGV)
+      {
         product_list_.emplace_back(shipment_list_.at(s).products.at(p));
       }
     }
   }
   ROS_INFO_STREAM("PRODUCT SIZE: " << product_list_.size());
   return product_list_;
-
-
-
 }
-
 
 /**
  * @brief getter to obtain the current list of products from a particluar shipment
  * 
  * @return std::vector<Product> list of products being processed
  */
-std::vector<Product> Competition::get_product_list_from_shipment(Shipment shipment) {
+std::vector<Product> Competition::get_product_list_from_shipment(Shipment shipment)
+{
   std::vector<Product> products_for_shipment;
-  for (int p = 0; p < shipment.products.size(); p++) {
-    if (!shipment.products.at(p).isPlacedOnAGV) {
+  for (int p = 0; p < shipment.products.size(); p++)
+  {
+    if (!shipment.products.at(p).isPlacedOnAGV)
+    {
       products_for_shipment.emplace_back(shipment.products.at(p));
     }
   }
-  
+
   ROS_INFO_STREAM("PRODUCT SIZE: " << products_for_shipment.size());
   return products_for_shipment;
-
 }

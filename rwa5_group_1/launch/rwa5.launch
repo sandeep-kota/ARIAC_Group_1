@@ -22,14 +22,14 @@
   <param name="/use_sim_time" value="true"></param>
 
   <node name="ariac_sim" pkg="nist_gear" type="gear.py"
-        args=" --development-mode
+        args=" 
           $(arg verbose_args)
           $(arg state_logging_args)
           $(arg gui_args)
           $(arg load_moveit_args)
           $(arg fill_demo_shipment_args)
           --visualize-sensor-views
-          -f $(find rwa5_group_1)/config/rwa5-sample.yaml
+          -f $(find rwa5_group_1)/config/baseline_4.yaml
           $(find rwa5_group_1)/config/rwa4_sensor_group_1.yaml
           " required="true" output="screen" />
 

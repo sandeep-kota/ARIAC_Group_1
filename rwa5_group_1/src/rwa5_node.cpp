@@ -37,16 +37,26 @@
 
 #include <tf2/LinearMath/Quaternion.h>
 
+/**
+ * @brief Check for sensor blackout 
+ * 
+ * @param sensorNum Logical Camera ID : 0 or 1
+ * @param numProductsToBeSent Product size from orders
+ * @param sensors Sensor control object
+ * @return true 
+ * @return false 
+ */
 bool checkBlackout(int sensorNum, int numProductsToBeSent, SensorControl &sensors) {
     ros::param::set(ACTIVATE_LOG_CAM, sensorNum);
     ros::Duration(1).sleep();
     ros::param::set(ACTIVATE_LOG_CAM, -1);
-    ROS_WARN_STREAM("Checking the products placed on the AGV before sending.");
+    // ROS_INFO_STREAM("Checking the products placed on AGV.");
     int numProductsDetected = sensors.getLogicalCameraNumProducts(sensorNum);
-    ROS_WARN_STREAM("Number of products on the AGV: " << numProductsDetected);
+    // ROS_INFO_STREAM("Number of parts detected :" << numProductsDetected);
     
-    if (numProductsDetected != numProductsToBeSent) {
-        ROS_WARN_STREAM("Number of products mismatch. Products on AGV: " << numProductsDetected << ", Expected: " << numProductsToBeSent);
+    if (numProductsDetected == 0) {
+        
+        ROS_INFO_STREAM("Number of products mismatched := Products on AGV : " << numProductsDetected << ", Expected : " << numProductsToBeSent );
         return true;
     }
     return false;
@@ -61,6 +71,7 @@ bool checkBlackout(int sensorNum, int numProductsToBeSent, SensorControl &sensor
  */
 void faultyPartsProcess(GantryControl &gantry, SensorControl &sensors)
 {
+    sensors.resetLogicCallQuality();
     //Check for faulty product
     ros::Duration(1).sleep();
     ros::param::set("/activate_quality", true);
@@ -80,19 +91,19 @@ void faultyPartsProcess(GantryControl &gantry, SensorControl &sensors)
     double d_x;
     double d_y;
 
-    ROS_WARN_STREAM("FAULTY PRODUCTS DETECTED: " << sensors.isFaultyPartDetected());
-    ROS_WARN_STREAM("FAULTY PARTD LIST SIZE: " << faultyParts.size());
-    ROS_WARN_STREAM("FAULTY PRODUCTS LIST SIZE: " << faultyProducts.size());
+    // ROS_WARN_STREAM("FAULTY PRODUCTS DETECTED: " << sensors.isFaultyPartDetected());
+    // ROS_WARN_STREAM("FAULTY PARTD LIST SIZE: " << faultyParts.size());
+    // ROS_WARN_STREAM("FAULTY PRODUCTS LIST SIZE: " << faultyProducts.size());
     faultyParts = sensors.getFaultyParts();
     while (faultyParts.size() > 0)
     {
         ROS_WARN_STREAM("PROCESS FAULTY PART");
         faultyParts = sensors.getFaultyParts();
         products_tray_1 = gantry.getProductsTray1();
-        products_tray_2 = gantry.getProductsTray1();
+        products_tray_2 = gantry.getProductsTray2();
+        ROS_WARN_STREAM("SIZE FAULTY PARTS DETECTED: " << faultyParts.size());
 
         // create a faulty product list with type and id from quality sensor data
-        ROS_WARN_STREAM("FAULTY PARTS SIZE: " << faultyParts.size());
         for (int f = 0; f < faultyParts.size(); f++)
         {
             if (faultyParts.at(f).location == "agv_1")
@@ -101,10 +112,11 @@ void faultyPartsProcess(GantryControl &gantry, SensorControl &sensors)
                 {
                     d_x = abs(faultyParts.at(f).pose.position.x - products_tray_1.at(p).p.pose.position.x);
                     d_y = abs(faultyParts.at(f).pose.position.y - products_tray_1.at(p).p.pose.position.y);
-
+                
                     if (d_x < 0.1 && d_y < 0.1)
                     {
                         faultyProducts.push_back(products_tray_1.at(p));
+                        ROS_WARN_STREAM("FAULTY PRODUCT DETECT TRAY 1: " << products_tray_1.at(p).type);
                         break;
                     }
                 }
@@ -119,11 +131,14 @@ void faultyPartsProcess(GantryControl &gantry, SensorControl &sensors)
                     if (d_x < 0.1 && d_y < 0.1)
                     {
                         faultyProducts.push_back(products_tray_2.at(p));
+                        ROS_WARN_STREAM("FAULTY PRODUCT DETECT TRAY 2: " << products_tray_2.at(p).type);
                         break;
                     }
                 }
             }
         }
+
+        ROS_WARN_STREAM("SIZE FAULTY PRODUCTS TO BE REMOVED: " << faultyProducts.size());
 
         for (int i = 0; i < faultyProducts.size(); i += 2)
         {
@@ -131,6 +146,7 @@ void faultyPartsProcess(GantryControl &gantry, SensorControl &sensors)
             {
                 //end of the list only pick and replace with left arm
                 gantry.throwPartLeft(faultyProducts.at(i).p); // update parts in tray vectors
+                
             }
             else
             {
@@ -198,13 +214,12 @@ void faultyPartsProcess(GantryControl &gantry, SensorControl &sensors)
                 gantry.getProduct(faultyProducts.at(i)); // get product after placing in agv
             }
 
-            ROS_WARN_STREAM("NEW PRODUCT PICKED LEFT ARM");
-
+            // ROS_WARN_STREAM("NEW PRODUCT PICKED LEFT ARM");
             if ((i + 1) < faultyProducts.size()) // if the elements in the faulty product list are even
             {
-                ROS_WARN_STREAM("TYPE PART TO REPLACE: " << faultyProducts.at(i + 1).p.type);
+                // ROS_WARN_STREAM("TYPE PART TO REPLACE: " << faultyProducts.at(i + 1).p.type);
                 faultyProducts.at(i + 1).p = sensors.findPart(faultyProducts.at(i + 1).type); // find a new part in the env to replace
-                ROS_WARN_STREAM("TYPE PART TO REPLACE: " << faultyProducts.at(i + 1).p.type);
+                // ROS_WARN_STREAM("TYPE PART TO REPLACE: " << faultyProducts.at(i + 1).p.type);
 
                 if (faultyProducts.at(i + 1).p.type.empty()) // no parts of desired product found go to conveyor
                 {
@@ -213,7 +228,7 @@ void faultyPartsProcess(GantryControl &gantry, SensorControl &sensors)
                 else
                 {
                     get_product_from_conveyor = false;
-                    ROS_WARN_STREAM("GO PICK PART RICHT ARM");
+                    // ROS_WARN_STREAM("GO PICK PART RICHT ARM");
                 }
                 // get product in the env
                 if (get_product_from_conveyor)
@@ -258,7 +273,7 @@ void faultyPartsProcess(GantryControl &gantry, SensorControl &sensors)
                 }
                 else
                 {
-                    ROS_WARN_STREAM("GO PICK PART RICHT ARM");
+                    // ROS_WARN_STREAM("GO PICK PART RICHT ARM");
                     gantry.getProduct(faultyProducts.at(i + 1)); // get product after placing in agv
                 }
             }
@@ -293,9 +308,11 @@ void faultyPartsProcess(GantryControl &gantry, SensorControl &sensors)
             faultyProducts.clear();
         }
         sensors.clearFaultyProducts();
-
+        sensors.resetLogicCallQuality();
         ros::param::set("/activate_quality", true);
         ros::Duration(1).sleep();
+        ros::param::set("/activate_quality", false);
+        faultyParts = sensors.getFaultyParts();
     }
 }
 
@@ -343,7 +360,7 @@ int main(int argc, char **argv)
     while (comp.areOrdersLeft() && sensors.read_all_sensors_) //--1-Read order until no more found
     {
 
-        ROS_WARN_STREAM("Starting building kit for the new order");
+        // ROS_WARN_STREAM("Starting building kit for the new order");
         list_of_shipments = comp.get_shipment_list(); // get list of shipments of current order in priority order
         //list_of_products = comp.get_product_list();   // get list of products of current order in priority order
 
@@ -352,7 +369,7 @@ int main(int argc, char **argv)
         transitionDone = false;
 
         Shipment current_shipment;
-        for (int n_ship = 0; n_ship < list_of_shipments.size(); n_ship++)
+        for (int n_ship = 0; n_ship < list_of_shipments.size() && !comp.newOrderAlert(); n_ship++)
         {
             current_shipment = list_of_shipments.at(n_ship);
             // for (auto& current_shipment: list_of_shipments) {
@@ -361,10 +378,10 @@ int main(int argc, char **argv)
             for (int p = 0; p < list_of_products.size(); p++) // loop all the products to be retrieve from current order
             {
 
-                ROS_WARN_STREAM("Picking next product: " << p + 1 << "/" << list_of_products.size() << " for AGV: " << list_of_products.at(p).agv_id);
+                // ROS_WARN_STREAM("Picking next product: " << p + 1 << "/" << list_of_products.size() << " for AGV: " << list_of_products.at(p).agv_id);
                 if (currentOrderCount != comp.getTotalReceivedOrdersCount())
                 {
-                    ROS_WARN_STREAM("New Order Received. We need to stop current assembly.");
+                    // ROS_WARN_STREAM("New Order Received. We need to stop current assembly.");
                     /** new high priority order received;
                      *  need to stop the current process and process the new order
                      *  take care of the pending products
@@ -386,6 +403,16 @@ int main(int argc, char **argv)
                 current_product.p = sensors.findPart(current_product.type); //--2-Look for parts in this order
 
                 ROS_WARN_STREAM(current_product.p.location);
+
+                if (current_product.p.type.empty()) // no parts of desired product found go to conveyor
+                {
+                    get_product_from_conveyor = true;
+                    ROS_WARN_STREAM("PRODUCT NOT FOUND");
+                }
+                else
+                {
+                    get_product_from_conveyor = false;
+                }
 
                 if (gantry.checkFreeGripper().compare("none") == 0 && !comp.newOrderAlert()) // if none of the grippers are free place both products in trays
                 {
@@ -503,7 +530,9 @@ int main(int argc, char **argv)
                     // ros::Duration(2).sleep();
 
                     // gantry.getProductsToFlip(sensors.getPartsToFlip());
+                    ROS_WARN_STREAM("START FIRST FAULTY PART");
                     faultyPartsProcess(gantry, sensors);
+                    ROS_WARN_STREAM("FINISH FIRST FAULTY PART");
                     ros::param::set("/check_parts_to_flip", true);
                     ros::Duration(1).sleep();
                     gantry.flipProductsAGV(sensors.getcheckPartsToFlip());
@@ -555,21 +584,22 @@ int main(int argc, char **argv)
                     // ros::Duration(2).sleep();
 
                     // gantry.getProductsToFlip(sensors.getPartsToFlip());
-                    faultyPartsProcess(gantry, sensors);
-                    ros::param::set("/check_parts_to_flip", true);
-                    ros::Duration(1).sleep();
-                    gantry.flipProductsAGV(sensors.getcheckPartsToFlip());
-                    sensors.clearcheckPartsToFlip();
-                    // sensors.clearPartsToFlip();
 
-                    gantry.goToPresetLocation(gantry.start_90_); // go back to start position
+                    // faultyPartsProcess(gantry, sensors);
+                    // ros::param::set("/check_parts_to_flip", true);
+                    // ros::Duration(1).sleep();
+                    // gantry.flipProductsAGV(sensors.getcheckPartsToFlip());
+                    // sensors.clearcheckPartsToFlip();
+                    // // sensors.clearPartsToFlip();
+
+                    // gantry.goToPresetLocation(gantry.start_90_); // go back to start position
 
                     // the last two products that were picked have been placed.
 
-                    comp.updateAGVProductMap(list_of_products.at(p - 1).agv_id, list_of_products.at(p - 1));
-                    comp.updateAGVProductMap(list_of_products.at(p - 2).agv_id, list_of_products.at(p - 2));
+                    // comp.updateAGVProductMap(list_of_products.at(p - 1).agv_id, list_of_products.at(p - 1));
+                    // comp.updateAGVProductMap(list_of_products.at(p - 2).agv_id, list_of_products.at(p - 2));
 
-                    ROS_WARN_STREAM("Product placed on AGV: " << list_of_products.at(p - 1).agv_id << " ID");
+                    // ROS_WARN_STREAM("Product placed on AGV: " << list_of_products.at(p - 1).agv_id << " ID");
                 }
 
                 if (p < list_of_products.size() && !comp.newOrderAlert()) // get product not called in last iteration
@@ -614,19 +644,19 @@ int main(int argc, char **argv)
                             }
                             time = ros::Time::now().toSec() - startig_time;
                         }
-                        ROS_WARN_STREAM("Picked from conveyor belt");
+                        // ROS_WARN_STREAM("Picked from conveyor belt");
                     }
                     else
                     {
                         gantry.getProduct(current_product); // get product after placing in agv
-                        ROS_WARN_STREAM("Picked from a bin or shelf");
+                        // ROS_WARN_STREAM("Picked from a bin or shelf");
                     }
-                    ROS_WARN_STREAM("Picked from conveyor belt");
+                    // ROS_WARN_STREAM("Picked from conveyor belt");
                 }
                 else
                 {
                     gantry.getProduct(current_product); // get product after placing in agv
-                    ROS_WARN_STREAM("Picked from a bin or shelf");
+                    // ROS_WARN_STREAM("Picked from a bin or shelf");
                 }
             }
             // }
@@ -652,7 +682,7 @@ int main(int argc, char **argv)
                     std::string free_gripper = gantry.checkFreeGripper();
                     if (list_of_products.size()%2 == 0)
                     {
-                        ROS_WARN_STREAM("LAST PART RIGHT ARM PLACING");
+                        // ROS_WARN_STREAM("LAST PART RIGHT ARM PLACING");
                         gantry.placePartRightArm(); // Place product of right arm in agv
                     }
                     else
@@ -666,7 +696,9 @@ int main(int argc, char **argv)
                     // if (sensors.getPartsToFlip().empty() != 1)
                     // {
                     //     // gantry.getProductsToFlip(sensors.getPartsToFlip());
+                    ROS_WARN_STREAM("FIRST FAULTY PARTS CALLED");
                     faultyPartsProcess(gantry, sensors);
+                    ROS_WARN_STREAM("FIRST FAULTY PARTS FINISHED");
                     ros::param::set("/check_parts_to_flip", true);
                     ros::Duration(1).sleep();
                     gantry.flipProductsAGV(sensors.getcheckPartsToFlip());
@@ -699,18 +731,18 @@ int main(int argc, char **argv)
                     blackout = checkBlackout(sensorNum, list_of_products.size(), sensors);
                     if (blackout)
                     {
-                        ROS_WARN_STREAM("Sensor blackout is there. Waiting for it to get over..");
+                        // ROS_WARN_STREAM("Sensor blackout is there. Waiting for it to get over..");
                         // wait till blackout is over
                         while (blackout)
                         {
                             blackout = checkBlackout(sensorNum, list_of_products.size(), sensors);
                         }
-                        ROS_WARN_STREAM("Sensor blackout over..");
+                        // ROS_WARN_STREAM("Sensor blackout over..");
 
                     }
                     
                     // check the faulty parts again and the parts that are to be flipped
-                    ROS_WARN_STREAM("Checking faulty parts before sending AGV");
+                    ROS_INFO_STREAM("Checking the faulty parts before sending AGV");
                     faultyPartsProcess(gantry, sensors);
                     ros::param::set("/check_parts_to_flip", true);
                     ros::Duration(1).sleep();
@@ -737,7 +769,7 @@ int main(int argc, char **argv)
 
             if (comp.newOrderAlert() && !transitionDone)
             {
-                ROS_WARN_STREAM("New Order Received. We need to stop current assembly.");
+                // ROS_WARN_STREAM("New Order Received. We need to stop current assembly.");
                 /** new high priority order received;
                  *  need to stop the current process and process the new order
                  *  take care of the pending products

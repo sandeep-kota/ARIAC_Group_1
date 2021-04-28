@@ -1,0 +1,103 @@
+#Baseline #2
+
+
+#Number of orders: 1
+#Number of shipments: 2
+#Challenges:
+#  -Interruption: No
+#  -Drop parts: No
+#  -Sensor blackout: No
+#  -Part flipping: No
+#  -Faulty parts: Yes
+#  -Moving obstacle: No
+#2 arms advantageous: No
+#Containers
+# -Belt: No
+# -Bins: Yes
+# -Shelf: Yes (shelf2)
+#AGV
+# -order_0:
+#   -shipment_0: agv1
+#   -shipment_1: agv2
+#Time limit: Yes
+
+time_limit: -1
+
+options:
+  gazebo_state_logging: true
+  insert_models_over_bins: true
+  insert_models_over_shelves: true
+  belt_population_cycles: 0
+  model_type_aliases:
+    order_part1: gasket_part_red
+    order_part2: gear_part_blue
+
+shelf_layout:
+  row_1: ['base','collar',0,'base'] #shelves: 3, 4, 5
+  row_2: ['pipe', 0,'base','base']   #shelves: 6, 7, 8
+  row_3: ['base','pipe',0,'collar'] #shelves: 9, 10, 11
+
+
+orders:
+  order_0:
+    announcement_condition: time
+    announcement_condition_value: 0.0
+    shipment_count: 2
+    destinations: [agv2,agv2]
+    products:
+      part_0:
+        type: gasket_part_red
+        pose:
+          xyz: [0.1, -0.2, 0]
+          rpy: [0, 0, 0]
+      part_1:
+        type: gasket_part_red
+        pose:
+          xyz: [-0.1, -0.2, 0]
+          rpy: [0, 0, 0]
+      part_2:
+        type: gear_part_blue
+        pose:
+          xyz: [0.15, 0.15, 0]
+          rpy: [0, 0, 0]
+
+models_over_bins:
+  bin3:
+    models:
+      gear_part_blue:
+        xyz_start: [0.1, 0.1, 0.0]
+        xyz_end: [0.5, 0.5, 0.0]
+        rpy: [0, 0, 0]
+        num_models_x: 3
+        num_models_y: 3
+  # bin5:
+  #   models:
+  #     gasket_part_red:
+  #       xyz_start: [0.1, 0.1, 0.0]
+  #       xyz_end: [0.5, 0.5, 0.0]
+  #       rpy: [0, 0, 'pi/4']
+  #       num_models_x: 3
+  #       num_models_y: 3
+
+models_over_shelves:
+  shelf2:
+    models:
+      gasket_part_red:
+        xyz_start: [1.5, 0.4, 0.0]
+        xyz_end: [-1, 0.4, 0.0]
+        rpy: [0, 0, 'pi/4']
+        num_models_x: 10
+        num_models_y: 1
+
+#Faulty products
+faulty_products:
+  - gasket_part_red_1
+  - gasket_part_red_2
+  - gasket_part_red_3
+  - gasket_part_red_4
+  - gasket_part_red_5
+  - gasket_part_red_6
+  - gasket_part_red_7
+  - gasket_part_red_8
+  - gasket_part_red_9
+  - gear_part_blue_9

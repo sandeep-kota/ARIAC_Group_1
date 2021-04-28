@@ -381,7 +381,7 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
   ros::param::get("/check_parts_to_flip", check_parts_to_flip_in_trays);
   if (check_parts_to_flip_in_trays && (sensor_n == 0 || sensor_n == 1))
   {
-    ROS_WARN_STREAM("CHECKING PARTS IN TRAY TO FLIP");
+    // ROS_WARN_STREAM("CHECKING PARTS IN TRAY TO FLIP");
     int t_sum = 0;
     for (int i = 0; i < 2; i++)
     {
@@ -402,7 +402,7 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
           pos_t = msg->models.at(i).type.find("_");
           type = msg->models.at(i).type.substr(0, pos_t);
           if (type == "pulley"){
-            ROS_WARN_STREAM("IT IS A: "<<type);
+            // ROS_WARN_STREAM("IT IS A: "<<type);
             Part.picked_status = false;
             Part.type = msg->models.at(i).type;
             Part.pose = frame_to_world(i, msg->models.at(i).pose, c_w_transforms_.at(sensor_n));
@@ -435,7 +435,7 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
     {
       t_sum += logic_call_agv_[i];
     }
-    ROS_WARN_STREAM("SUM AGV :" << t_sum);
+    // ROS_WARN_STREAM("SUM AGV :" << t_sum);
     if (t_sum == 2)
     {
       ros::param::set("/update_agv_parts", false);
@@ -445,7 +445,7 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
     if ((logic_call_agv_[sensor_n] == 0) && t_sum < 2)
     {
       logic_call_agv_[sensor_n] = 1;
-      ROS_WARN_STREAM("Update AGV Parts" << sensor_n);
+      // ROS_WARN_STREAM("Update AGV Parts" << sensor_n);
       for (int i = 0; i < 5; i++)
       {
         for (int j = 0; j < 3; j++)
@@ -484,14 +484,14 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
           Part.location = "agv_1";
           Part.id = Part.type + std::to_string(parts_agv1_.at(ktype).at(kcolor).size());
           parts_agv1_.at(ktype).at(kcolor).push_back(Part);
-          ROS_INFO_STREAM("New part added to AGV1. Part tye:: " << Part.type);
+          // ROS_INFO_STREAM("New part added to AGV1. Part tye:: " << Part.type);
         }
         if (sensor_n == 1)
         {
           Part.location = "agv_2";
           Part.id = Part.type + std::to_string(parts_agv2_.at(ktype).at(kcolor).size());
           parts_agv2_.at(ktype).at(kcolor).push_back(Part);
-          ROS_INFO_STREAM("New part added to AGV2. Part tye:: " << Part.type);
+          // ROS_INFO_STREAM("New part added to AGV2. Part tye:: " << Part.type);
         }
       }
     }
@@ -552,6 +552,7 @@ Part SensorControl::findPart(std::string type)
         return parts_.at(ktype).at(kcolor).at(i);
       }
     }
+    return no_part;
   }
 }
 
@@ -582,17 +583,19 @@ void SensorControl::quality_cntrl_sensor_callback(const nist_gear::LogicalCamera
 {
   bool activate_quality;
   ros::param::get("/activate_quality", activate_quality);
-  ROS_WARN_STREAM("QUALITY CALL");
-  if (msg == nullptr) {
-    ROS_WARN_STREAM("MSG SIZE: EMPTY");
-  }
-  else {
-    ROS_WARN_STREAM("MSG SIZE: " << msg->models.size());
-  }
+  // ROS_WARN_STREAM("QUALITY CALL");
+  // if (msg == nullptr) {
+  //   ROS_WARN_STREAM("MSG SIZE: EMPTY");
+  // }
+  // else {
+  //   ROS_WARN_STREAM("MSG SIZE: " << msg->models.size());
+  // }
   
   
   if (activate_quality)
   {
+    ROS_WARN_STREAM("SENSOR N: " << sensor_n);
+    ROS_WARN_STREAM("MSG MODEL SIZE: " << msg->models.size());
     int sum = 0;
     for (int i = 0; i < 2; i++)
     {
@@ -602,12 +605,12 @@ void SensorControl::quality_cntrl_sensor_callback(const nist_gear::LogicalCamera
     if (sum == 2)
     {
       ros::param::set("/activate_quality", false);
-      logic_call_quality_[0] = 0;
-      logic_call_quality_[1] = 0;
-      ROS_WARN_STREAM("SUM EQUALS 2");
+      ROS_WARN_STREAM("ALL SENSORS CALLED " << sensor_n);
+      
       if (faultyPartsList.size() > 0)
       {
         setFaultyPartDetectedFlag(true);
+        // ROS_WARN_STREAM("SUM " << sum);
       } else {
         setFaultyPartDetectedFlag(false);
       }
@@ -640,6 +643,13 @@ void SensorControl::quality_cntrl_sensor_callback(const nist_gear::LogicalCamera
     }
   }
 }
+
+/**
+ * @brief Return Parts in AGV
+ * 
+ * @param agv_id AGV ID
+ * @return std::array<std::array<std::vector<part>, 3>, 5> 
+ */
 std::array<std::array<std::vector<part>, 3>, 5> SensorControl::getPartsAGV(std::string agv_id)
 {
   if (agv_id.compare("agv1") == 1)
@@ -765,6 +775,12 @@ bool SensorControl::isPartPoseAGVCorrect(part target, std::string agv_id)
   return ret_val;
 }
 
+/**
+ * @brief Get parts from a logical camera
+ * 
+ * @param sensorNum Logical camera id.
+ * @return int 
+ */
 int SensorControl::getLogicalCameraNumProducts(int sensorNum) {
   if (logicalCamNumProducts.find(sensorNum) == logicalCamNumProducts.end()) {
     return 0;

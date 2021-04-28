@@ -115,6 +115,11 @@ public:
     partsConveyor.erase(partsConveyor.begin() + p);
   }
 
+  void resetLogicCallQuality(){
+    logic_call_quality_[0] = 0;
+    logic_call_quality_[1] = 0;
+  }
+
   std::unordered_set<std::string> getEmptyLocations() const {
     return emptyLocations;
   }
