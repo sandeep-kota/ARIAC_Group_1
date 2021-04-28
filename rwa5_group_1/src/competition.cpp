@@ -283,11 +283,11 @@ void Competition::removePrevProductsFromAGV(std::string fromAGV, SensorControl &
         {
 
           gantry.pickPartFromTrayLeftArm(current_part, fromAGV);
-          if (fromAGV.compare("agv1"))
+          if (fromAGV.compare("agv1") == 0)
           {
             gantry.product_left_arm_.agv_id = "agv2";
           }
-          if (fromAGV.compare("agv2"))
+          if (fromAGV.compare("agv2") == 0)
           {
             gantry.product_left_arm_.agv_id = "agv1";
           }
@@ -296,11 +296,11 @@ void Competition::removePrevProductsFromAGV(std::string fromAGV, SensorControl &
         else if (k % 2 == 1 && t_sum < 2)
         {
           gantry.pickPartFromTrayRightArm(current_part, fromAGV);
-          if (fromAGV.compare("agv1"))
+          if (fromAGV.compare("agv1")==0)
           {
             gantry.product_right_arm_.agv_id = "agv2";
           }
-          if (fromAGV.compare("agv2"))
+          if (fromAGV.compare("agv2")==0)
           {
             gantry.product_right_arm_.agv_id = "agv1";
           }

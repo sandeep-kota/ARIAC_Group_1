@@ -90,14 +90,14 @@ models_over_shelves:
         num_models_y: 1
 
 #Faulty products
-faulty_products:
-  - gasket_part_red_1
-  - gasket_part_red_2
-  - gasket_part_red_3
-  - gasket_part_red_4
-  - gasket_part_red_5
-  - gasket_part_red_6
-  - gasket_part_red_7
-  - gasket_part_red_8
-  - gasket_part_red_9
-  - gear_part_blue_9
+# faulty_products:
+  # - gasket_part_red_1
+  # - gasket_part_red_2
+  # - gasket_part_red_3
+  # - gasket_part_red_4
+  # - gasket_part_red_5
+  # - gasket_part_red_6
+  # - gasket_part_red_7
+  # - gasket_part_red_8
+  # - gasket_part_red_9
+  # - gear_part_blue_9
