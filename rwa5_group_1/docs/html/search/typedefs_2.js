@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['order',['order',['../utils_8h.html#a88b083f4969e7c61a34a7231180f9e41',1,'utils.h']]]
+  ['emptybin',['emptybin',['../utils_8h.html#a5629ab80c795b05d1b1afc111dfe48d6',1,'utils.h']]]
 ];

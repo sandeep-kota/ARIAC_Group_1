@@ -6,6 +6,5 @@ var searchData=
   ['max_5fpicking_5fattempts',['MAX_PICKING_ATTEMPTS',['../utils_8h.html#a90cee088fb10cf6717fec7eb20aee725',1,'utils.h']]],
   ['model_5fheight',['model_height',['../utils_8cpp.html#a4443f04d04826b4cb4d695dadc9a3a03',1,'model_height():&#160;utils.cpp'],['../utils_8h.html#a4443f04d04826b4cb4d695dadc9a3a03',1,'model_height():&#160;utils.cpp']]],
   ['move_5ftime',['MOVE_TIME',['../dynamic__obs_8h.html#af92987fa28f95158530e288a1d97f6cb',1,'dynamic_obs.h']]],
-  ['moveleftarmroll',['moveLeftArmRoll',['../classGantryControl.html#ae7627420de9fff3754593668bc19dde2',1,'GantryControl']]],
-  ['moveoverpart',['moveOverPart',['../classGantryControl.html#a2d94b086fff9a28fa7c7ce4aafd9c083',1,'GantryControl']]]
+  ['moveleftarmroll',['moveLeftArmRoll',['../classGantryControl.html#ae7627420de9fff3754593668bc19dde2',1,'GantryControl']]]
 ];

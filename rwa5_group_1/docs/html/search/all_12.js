@@ -16,6 +16,7 @@ var searchData=
   ['sensornummap',['sensorNumMap',['../utils_8cpp.html#a1ad4b6b03302de6d8e2256e5fbfa6bbd',1,'sensorNumMap():&#160;utils.cpp'],['../utils_8h.html#a1ad4b6b03302de6d8e2256e5fbfa6bbd',1,'sensorNumMap():&#160;utils.cpp']]],
   ['set_5fproduct_5fleft_5farm_5f',['set_product_left_arm_',['../classGantryControl.html#aaa10b9266811831188819f242eaf8ff6',1,'GantryControl']]],
   ['set_5fproduct_5fright_5farm_5f',['set_product_right_arm_',['../classGantryControl.html#a326662aef5639bc0a7ab9eb030d489d7',1,'GantryControl']]],
+  ['setagvinuse',['setAgvInUse',['../classCompetition.html#a1c836f04dc78860e9766bd61362120d5',1,'Competition']]],
   ['setfaultypartdetectedflag',['setFaultyPartDetectedFlag',['../classSensorControl.html#a44026c9abefdef9fa7ddb60eee8d906c',1,'SensorControl']]],
   ['setgantrylocation',['setGantryLocation',['../classGantryControl.html#a0bed89d06118acac29a6bd5f1d92aa57',1,'GantryControl']]],
   ['setneworderalert',['setNewOrderAlert',['../classCompetition.html#abc749f2839f418ba0d0db8e33a2edfb0',1,'Competition']]],

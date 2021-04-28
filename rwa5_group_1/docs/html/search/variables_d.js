@@ -11,7 +11,7 @@ var searchData=
   ['picked_5fstatus',['picked_status',['../structPart.html#a07240a248335a1477e0568ffc83a0cf5',1,'Part']]],
   ['planning_5fgroup_5f',['planning_group_',['../classGantryControl.html#a015e7036d9b36309521b0a1ccdaa2919',1,'GantryControl']]],
   ['planning_5ftime',['PLANNING_TIME',['../utils_8h.html#a9d3410770ee083c74e767d72261a798f',1,'utils.h']]],
-  ['pose',['pose',['../structPart.html#a67a8ee9f1aaecf76537554dbc429bca8',1,'Part::pose()'],['../structProduct.html#afdb4498246a795bdc91b8df0ba2f76b4',1,'Product::pose()']]],
+  ['pose',['pose',['../structPart.html#a67a8ee9f1aaecf76537554dbc429bca8',1,'Part::pose()'],['../structProduct.html#afdb4498246a795bdc91b8df0ba2f76b4',1,'Product::pose()'],['../structEmptyBin.html#ab684111a4b78099a2ad8d9f0af9eb699',1,'EmptyBin::pose()']]],
   ['product_5fleft_5farm_5f',['product_left_arm_',['../classGantryControl.html#a85950252d50253ad9ebb0d20a7ad92ee',1,'GantryControl']]],
   ['product_5flist_5f',['product_list_',['../classCompetition.html#aeaa598d75ca5789548017ff8604a8d14',1,'Competition']]],
   ['product_5fright_5farm_5f',['product_right_arm_',['../classGantryControl.html#a67b1db1a378e60cbedd1f9a862f84aaa',1,'GantryControl']]],

@@ -3,6 +3,7 @@ var searchData=
   ['belt_5fspeed',['BELT_SPEED',['../utils_8h.html#ad0c4f19278f08a8e1859b67e7c29a481',1,'utils.h']]],
   ['bin_5fheight',['BIN_HEIGHT',['../utils_8h.html#a77876460e2cb342aa6783c5fda04ef5c',1,'utils.h']]],
   ['bin_5flocation',['bin_location',['../structPart.html#aa4b0de8d8dd7a40927d604214cd20619',1,'Part']]],
+  ['bin_5fnumber',['bin_number',['../structEmptyBin.html#abd6159c17e2d9080a8275e611d48b2b2',1,'EmptyBin']]],
   ['binmap',['binMap',['../utils_8cpp.html#a459d418fdd860c893eb99381e77e20c0',1,'binMap():&#160;utils.cpp'],['../utils_8h.html#a459d418fdd860c893eb99381e77e20c0',1,'binMap():&#160;utils.cpp']]],
   ['bins',['BINS',['../utils_8h.html#a7b07340baf0597ee62ab5ff4031fb26a',1,'utils.h']]],
   ['bins_5f',['bins_',['../classGantryControl.html#a9e5c43159e8f62a0e984f3c3f431cf04',1,'GantryControl']]],

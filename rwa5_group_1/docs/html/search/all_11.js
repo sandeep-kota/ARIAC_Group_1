@@ -15,6 +15,7 @@ var searchData=
   ['receivedorderscount',['receivedOrdersCount',['../classCompetition.html#ac1d1bc7a8195d308bf944deec390b8d0',1,'Competition']]],
   ['remove_5ffrom_5ftray',['REMOVE_FROM_TRAY',['../utils_8h.html#aaf7e202ccc2e0bac6d05d124e49b11d3a959c659e71fd412d5ee576d45775cf54',1,'utils.h']]],
   ['removeprevproductsfromagv',['removePrevProductsFromAGV',['../classCompetition.html#a1e74242b70036ba19bcbc3be819124f5',1,'Competition']]],
+  ['resetlogiccallquality',['resetLogicCallQuality',['../classSensorControl.html#accacfe32ff6dbcf2040a9c2ba340acce',1,'SensorControl']]],
   ['retrieve_5ftimeout',['RETRIEVE_TIMEOUT',['../utils_8h.html#a810037d8e3661f8fba6182e550fada34',1,'utils.h']]],
   ['retrivefrombottomshelf',['retriveFromBottomShelf',['../classGantryControl.html#ac2af9b73ab7187547a6ab3b2fba6d5c1',1,'GantryControl']]],
   ['right',['right',['../structPosition.html#a4212665c40ee3db37d21dd0925b252e8',1,'Position']]],

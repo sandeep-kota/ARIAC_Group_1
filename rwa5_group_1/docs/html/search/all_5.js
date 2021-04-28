@@ -5,6 +5,8 @@ var searchData=
   ['faultypartslist',['faultyPartsList',['../classSensorControl.html#a76555bfde05b7c4d7bff390fa15d2b56',1,'SensorControl']]],
   ['faultypartsprocess',['faultyPartsProcess',['../rwa5__node_8cpp.html#aa35b13fa7e2909c662abd0f21eccd62b',1,'rwa5_node.cpp']]],
   ['findpart',['findPart',['../classSensorControl.html#a01c9823d568d9ca99ee7f78f502d9d9c',1,'SensorControl']]],
+  ['first_5flocation',['first_location',['../classSensorControl.html#aeab95481b76b23986a8ea2e714fb13f3',1,'SensorControl']]],
+  ['first_5ftime',['first_time',['../classSensorControl.html#a83affd1128ff9dfc1facbd11c7e24b5a',1,'SensorControl']]],
   ['fkgantry',['FKGantry',['../classGantryControl.html#ae3f0c0d3f8359cfe72049b0ea8fdcca8',1,'GantryControl']]],
   ['fkleftarm',['FKLeftArm',['../classGantryControl.html#acb95c1f46eb9e8ff3892bdef11282e65',1,'GantryControl']]],
   ['fkrightarm',['FKRightArm',['../classGantryControl.html#ab8d8f5a043c0a8add278ffb2c5c4f9a3',1,'GantryControl']]],

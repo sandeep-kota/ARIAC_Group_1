@@ -73,8 +73,10 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ad9c2bb065ed9e1b150628633ef122e7a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAGVControl.html#ad9c2bb065ed9e1b150628633ef122e7a">AGVControl</a> (ros::NodeHandle &amp;)</td></tr>
+<tr class="memdesc:ad9c2bb065ed9e1b150628633ef122e7a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a new <a class="el" href="classAGVControl.html#ad9c2bb065ed9e1b150628633ef122e7a" title="Construct a new AGVControl::AGVControl object. ">AGVControl::AGVControl</a> object.  <a href="#ad9c2bb065ed9e1b150628633ef122e7a">More...</a><br /></td></tr>
 <tr class="separator:ad9c2bb065ed9e1b150628633ef122e7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5a3b1e1d03538380f8982af5e7c5f747"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAGVControl.html#a5a3b1e1d03538380f8982af5e7c5f747">isAGVReady</a> (std::string tray_name)</td></tr>
+<tr class="memdesc:a5a3b1e1d03538380f8982af5e7c5f747"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if the AGV is ready to submit or not.  <a href="#a5a3b1e1d03538380f8982af5e7c5f747">More...</a><br /></td></tr>
 <tr class="separator:a5a3b1e1d03538380f8982af5e7c5f747"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2cb1d6e8fa531fc2f8f74e5027617d7b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classAGVControl.html#a2cb1d6e8fa531fc2f8f74e5027617d7b">sendAGV</a> (std::string shipment_type, std::string kit_tray)</td></tr>
 <tr class="memdesc:a2cb1d6e8fa531fc2f8f74e5027617d7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Submit an AGV shipment.  <a href="#a2cb1d6e8fa531fc2f8f74e5027617d7b">More...</a><br /></td></tr>
@@ -126,6 +128,14 @@ Private Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Construct a new <a class="el" href="classAGVControl.html#ad9c2bb065ed9e1b150628633ef122e7a" title="Construct a new AGVControl::AGVControl object. ">AGVControl::AGVControl</a> object. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">node</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
@@ -146,6 +156,7 @@ Private Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>State for AGV1. </p>
+<p>Callback for the AGV1 state.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">msg</td><td></td></tr>
@@ -172,6 +183,7 @@ Private Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>State for AGV2. </p>
+<p>Callback for the AGV2 state.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">msg</td><td></td></tr>
@@ -197,6 +209,17 @@ Private Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Check if the AGV is ready to submit or not. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">tray_name</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true </dd>
+<dd>
+false </dd></dl>
+
 </div>
 </div>
 <a id="a2cb1d6e8fa531fc2f8f74e5027617d7b"></a>
@@ -215,7 +238,7 @@ Private Attributes</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">std::string&#160;</td>
-          <td class="paramname"><em>kit_tray</em>&#160;</td>
+          <td class="paramname"><em>tray_name</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -226,6 +249,7 @@ Private Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Submit an AGV shipment. </p>
+<p>Send the AGV for Evaluation.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">shipment_type</td><td><a class="el" href="structShipment.html" title="Struct to store shipments. ">Shipment</a> type which should match the order </td></tr>
@@ -235,7 +259,17 @@ Private Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true AGV successfully submitted </dd>
 <dd>
-false AGV not successfully submitted </dd></dl>
+false AGV not successfully submitted</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">shipment_type</td><td></td></tr>
+    <tr><td class="paramname">tray_name</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true </dd>
+<dd>
+false </dd></dl>
 
 </div>
 </div>

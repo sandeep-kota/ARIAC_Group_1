@@ -129,6 +129,11 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:af3345d0c30750f1b356a6b7492b77809"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abc749f2839f418ba0d0db8e33a2edfb0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCompetition.html#abc749f2839f418ba0d0db8e33a2edfb0">setNewOrderAlert</a> (bool flag)</td></tr>
 <tr class="separator:abc749f2839f418ba0d0db8e33a2edfb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c836f04dc78860e9766bd61362120d5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCompetition.html#a1c836f04dc78860e9766bd61362120d5">setAgvInUse</a> (const std::string &amp;agv_id)</td></tr>
+<tr class="memdesc:a1c836f04dc78860e9766bd61362120d5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check free AGV to place part.  <a href="#a1c836f04dc78860e9766bd61362120d5">More...</a><br /></td></tr>
+<tr class="separator:a1c836f04dc78860e9766bd61362120d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0d34d33ecbd4b9fc95c75db5531383b2"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCompetition.html#a0d34d33ecbd4b9fc95c75db5531383b2">getAgvInUse</a> () const</td></tr>
+<tr class="separator:a0d34d33ecbd4b9fc95c75db5531383b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8f7aa2e324cf8ed071a3b3bf7d8df8f2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCompetition.html#a8f7aa2e324cf8ed071a3b3bf7d8df8f2">orderTransition</a> (std::vector&lt; <a class="el" href="structShipment.html">Shipment</a> &gt; prevShipments, <a class="el" href="classSensorControl.html">SensorControl</a> &amp;sensors, <a class="el" href="classGantryControl.html">GantryControl</a> &amp;gantry)</td></tr>
 <tr class="memdesc:a8f7aa2e324cf8ed071a3b3bf7d8df8f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Process a new priority order.  <a href="#a8f7aa2e324cf8ed071a3b3bf7d8df8f2">More...</a><br /></td></tr>
 <tr class="separator:a8f7aa2e324cf8ed071a3b3bf7d8df8f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -179,6 +184,8 @@ Private Attributes</h2></td></tr>
 <tr class="separator:ab34deae64af4f3412f79a5bebe976403"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac1d1bc7a8195d308bf944deec390b8d0"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCompetition.html#ac1d1bc7a8195d308bf944deec390b8d0">receivedOrdersCount</a></td></tr>
 <tr class="separator:ac1d1bc7a8195d308bf944deec390b8d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a38f9bdae2c2560b6b2c6d7e484db2ebe"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classCompetition.html#a38f9bdae2c2560b6b2c6d7e484db2ebe">agvInUse</a> = &quot;&quot;</td></tr>
+<tr class="separator:a38f9bdae2c2560b6b2c6d7e484db2ebe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p><a class="el" href="classCompetition.html" title="Competition class. ">Competition</a> class. </p>
@@ -262,6 +269,7 @@ Private Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Time since the competition started. </p>
+<p>Callback to get the clock.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">msg</td><td></td></tr>
@@ -315,6 +323,7 @@ Private Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>End competition through ROS service. </p>
+<p>End the competition. </p>
 
 </div>
 </div>
@@ -384,6 +393,31 @@ Private Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a0d34d33ecbd4b9fc95c75db5531383b2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d34d33ecbd4b9fc95c75db5531383b2">&#9670;&nbsp;</a></span>getAgvInUse()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string Competition::getAgvInUse </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a4ea6b45be32e5b0e1f8e72fc053c4550"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4ea6b45be32e5b0e1f8e72fc053c4550">&#9670;&nbsp;</a></span>getClock()</h2>
 
@@ -400,6 +434,7 @@ Private Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Get the Clock objectGet. </p>
+<p>get the current clock time</p>
 <dl class="section return"><dt>Returns</dt><dd>double </dd></dl>
 
 </div>
@@ -420,6 +455,7 @@ Private Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Get the <a class="el" href="classCompetition.html" title="Competition class. ">Competition</a> State object. </p>
+<p>Get the state of the competition.</p>
 <dl class="section return"><dt>Returns</dt><dd>std::string </dd></dl>
 
 </div>
@@ -440,6 +476,7 @@ Private Attributes</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Get the Start Time object. </p>
+<p>Get competition start time.</p>
 <dl class="section return"><dt>Returns</dt><dd>double </dd></dl>
 
 </div>
@@ -652,6 +689,32 @@ false </dd></dl>
 
 </div>
 </div>
+<a id="a1c836f04dc78860e9766bd61362120d5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1c836f04dc78860e9766bd61362120d5">&#9670;&nbsp;</a></span>setAgvInUse()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void Competition::setAgvInUse </td>
+          <td>(</td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>agv_id</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Check free AGV to place part. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">agv_id</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="abc749f2839f418ba0d0db8e33a2edfb0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abc749f2839f418ba0d0db8e33a2edfb0">&#9670;&nbsp;</a></span>setNewOrderAlert()</h2>
 
@@ -694,6 +757,7 @@ false </dd></dl>
 </div><div class="memdoc">
 
 <p>Start the competition through ROS service. </p>
+<p>Start the competition. </p>
 
 </div>
 </div>
@@ -759,6 +823,28 @@ false </dd></dl>
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
+<a id="a38f9bdae2c2560b6b2c6d7e484db2ebe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a38f9bdae2c2560b6b2c6d7e484db2ebe">&#9670;&nbsp;</a></span>agvInUse</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string Competition::agvInUse = &quot;&quot;</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a52202adcb1143e44213cfc9bda1f6cc4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a52202adcb1143e44213cfc9bda1f6cc4">&#9670;&nbsp;</a></span>agvToProductsMap</h2>
 

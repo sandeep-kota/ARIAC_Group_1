@@ -132,6 +132,9 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structOrder.html">Order</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">struct to parse and store orders published on /ariac/orders  <a href="structOrder.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structEmptyBin.html">EmptyBin</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">struct to parse and store the state of the empty bins of the environment  <a href="structEmptyBin.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -183,6 +186,9 @@ Typedefs</h2></td></tr>
 <tr class="memitem:ac33d19e14b97838596178faf9194d5e2"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structPosition.html">Position</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="utils_8h.html#ac33d19e14b97838596178faf9194d5e2">position</a></td></tr>
 <tr class="memdesc:ac33d19e14b97838596178faf9194d5e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Struct to store joint positions for each group.  <a href="#ac33d19e14b97838596178faf9194d5e2">More...</a><br /></td></tr>
 <tr class="separator:ac33d19e14b97838596178faf9194d5e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5629ab80c795b05d1b1afc111dfe48d6"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structEmptyBin.html">EmptyBin</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="utils_8h.html#a5629ab80c795b05d1b1afc111dfe48d6">emptybin</a></td></tr>
+<tr class="memdesc:a5629ab80c795b05d1b1afc111dfe48d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">struct to parse and store the state of the empty bins of the environment  <a href="#a5629ab80c795b05d1b1afc111dfe48d6">More...</a><br /></td></tr>
+<tr class="separator:a5629ab80c795b05d1b1afc111dfe48d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -300,6 +306,8 @@ Variables</h2></td></tr>
 <tr class="separator:a1ad4b6b03302de6d8e2256e5fbfa6bbd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a459d418fdd860c893eb99381e77e20c0"><td class="memItemLeft" align="right" valign="top">std::unordered_map&lt; int, std::unordered_map&lt; std::string, int &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="utils_8h.html#a459d418fdd860c893eb99381e77e20c0">binMap</a></td></tr>
 <tr class="separator:a459d418fdd860c893eb99381e77e20c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3706f5f03edcf8ff320452674f39c7c2"><td class="memItemLeft" align="right" valign="top">std::unordered_map&lt; int, std::unordered_map&lt; std::string, int &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="utils_8h.html#a3706f5f03edcf8ff320452674f39c7c2">emptyBinsMap</a></td></tr>
+<tr class="separator:a3706f5f03edcf8ff320452674f39c7c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa491b4dfa61945c1599258cef4e09328"><td class="memItemLeft" align="right" valign="top">std::unordered_map&lt; std::string, std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="utils_8h.html#aa491b4dfa61945c1599258cef4e09328">oppositeAGV</a></td></tr>
 <tr class="separator:aa491b4dfa61945c1599258cef4e09328"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8c707f25b0a384c1c7f4b2db49ded9df"><td class="memItemLeft" align="right" valign="top">std::unordered_map&lt; std::string, std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="utils_8h.html#a8c707f25b0a384c1c7f4b2db49ded9df">agvTrayMap</a></td></tr>
@@ -373,6 +381,22 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a5629ab80c795b05d1b1afc111dfe48d6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5629ab80c795b05d1b1afc111dfe48d6">&#9670;&nbsp;</a></span>emptybin</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef struct <a class="el" href="structEmptyBin.html">EmptyBin</a>  <a class="el" href="utils_8h.html#a5629ab80c795b05d1b1afc111dfe48d6">emptybin</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>struct to parse and store the state of the empty bins of the environment </p>
 
 </div>
 </div>
@@ -915,6 +939,20 @@ Variables</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">const std::string CONV_BELT = &quot;conveyor_belt&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a3706f5f03edcf8ff320452674f39c7c2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3706f5f03edcf8ff320452674f39c7c2">&#9670;&nbsp;</a></span>emptyBinsMap</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::unordered_map&lt;int, std::unordered_map&lt;std::string, int&gt; &gt; emptyBinsMap</td>
         </tr>
       </table>
 </div><div class="memdoc">

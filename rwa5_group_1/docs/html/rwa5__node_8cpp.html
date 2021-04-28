@@ -104,6 +104,8 @@ Include dependency graph for rwa5_node.cpp:</div>
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a566a49e87914b079856c4c58d918af82"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rwa5__node_8cpp.html#a566a49e87914b079856c4c58d918af82">placePartsEmptyBins</a> (<a class="el" href="classGantryControl.html">GantryControl</a> &amp;gantry, <a class="el" href="classSensorControl.html">SensorControl</a> &amp;sensors)</td></tr>
+<tr class="separator:a566a49e87914b079856c4c58d918af82"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae0165fb6fd9d3ddbe2940b8a9c3b5b6f"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rwa5__node_8cpp.html#ae0165fb6fd9d3ddbe2940b8a9c3b5b6f">checkBlackout</a> (int sensorNum, int numProductsToBeSent, <a class="el" href="classSensorControl.html">SensorControl</a> &amp;sensors)</td></tr>
 <tr class="memdesc:ae0165fb6fd9d3ddbe2940b8a9c3b5b6f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check for sensor blackout.  <a href="#ae0165fb6fd9d3ddbe2940b8a9c3b5b6f">More...</a><br /></td></tr>
 <tr class="separator:ae0165fb6fd9d3ddbe2940b8a9c3b5b6f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -236,6 +238,34 @@ false </dd></dl>
 <p>if (sensors.getPartsToFlip().empty() != 1) { gantry.getProductsToFlip(sensors.getPartsToFlip()); gantry.flipProductsAGV(); sensors.clearPartsToFlip(); } gantry.goToPresetLocation(gantry.start_); // go back to start position }</p>
 <p>ROS_WARN_STREAM("COMPLETED TEST, NOW SEND AGV"); if (agvControl.isAGVReady(AGV1_TRAY)) { std::string shipmentType = comp.agvToShipmentMap.at(AGV1_ID).front(); comp.agvToShipmentMap.at(AGV1_ID).pop(); agvControl.sendAGV(shipmentType, AGV1_TRAY); }</p>
 <p>if (agvControl.isAGVReady(AGV2_TRAY)) { std::string shipmentType = comp.agvToShipmentMap.at(AGV2_ID).front(); comp.agvToShipmentMap.at(AGV2_ID).pop(); agvControl.sendAGV(shipmentType, AGV2_TRAY); } ROS_WARN_STREAM("AGV SEND");</p>
+
+</div>
+</div>
+<a id="a566a49e87914b079856c4c58d918af82"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a566a49e87914b079856c4c58d918af82">&#9670;&nbsp;</a></span>placePartsEmptyBins()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void placePartsEmptyBins </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classGantryControl.html">GantryControl</a> &amp;&#160;</td>
+          <td class="paramname"><em>gantry</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="classSensorControl.html">SensorControl</a> &amp;&#160;</td>
+          <td class="paramname"><em>sensors</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>

@@ -107,11 +107,18 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a7a46374c4f04cdbfa40f0087958b420c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="sensor__control_8h.html#aa107bc1c2d86eae3e234ca343d6bd856">color_code</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#a7a46374c4f04cdbfa40f0087958b420c">hashit_color</a> (std::string const &amp;colorString)</td></tr>
 <tr class="memdesc:a7a46374c4f04cdbfa40f0087958b420c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maps part color to keys.  <a href="#a7a46374c4f04cdbfa40f0087958b420c">More...</a><br /></td></tr>
 <tr class="separator:a7a46374c4f04cdbfa40f0087958b420c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ba2c2ae149a06101bfdc5097383ecce"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#a0ba2c2ae149a06101bfdc5097383ecce">updatePartDataStruct</a> (<a class="el" href="utils_8h.html#a48a7207852c0455cce7e65703b12ec7e">product</a> <a class="el" href="utils_8h.html#a48a7207852c0455cce7e65703b12ec7e">product</a>)</td></tr>
+<tr class="memdesc:a0ba2c2ae149a06101bfdc5097383ecce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the parts data structure with the new product.  <a href="#a0ba2c2ae149a06101bfdc5097383ecce">More...</a><br /></td></tr>
+<tr class="separator:a0ba2c2ae149a06101bfdc5097383ecce"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aae126549ae1e19d69a9707ff531db167"><td class="memItemLeft" align="right" valign="top">geometry_msgs::Pose&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#aae126549ae1e19d69a9707ff531db167">frame_to_world</a> (int i, geometry_msgs::Pose original_pos, geometry_msgs::TransformStamped c_w_transform)</td></tr>
 <tr class="memdesc:aae126549ae1e19d69a9707ff531db167"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transform frame to World Frame.  <a href="#aae126549ae1e19d69a9707ff531db167">More...</a><br /></td></tr>
 <tr class="separator:aae126549ae1e19d69a9707ff531db167"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8f3caca1725b7570cb6995d8afe065f0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#a8f3caca1725b7570cb6995d8afe065f0">print_available_parts</a> ()</td></tr>
 <tr class="separator:a8f3caca1725b7570cb6995d8afe065f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a29fd822fe8af87a1feed6633e00c6fab"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#a29fd822fe8af87a1feed6633e00c6fab">clearLogicalCallVector</a> ()</td></tr>
+<tr class="separator:a29fd822fe8af87a1feed6633e00c6fab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a06fdc29ae2b6c930f926830e69923b00"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#a06fdc29ae2b6c930f926830e69923b00">clearPartsList</a> ()</td></tr>
+<tr class="separator:a06fdc29ae2b6c930f926830e69923b00"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a88f620b3a79d683479bd35a0933bc425"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structPart.html">Part</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#a88f620b3a79d683479bd35a0933bc425">getFaultyParts</a> ()</td></tr>
 <tr class="separator:a88f620b3a79d683479bd35a0933bc425"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af19fd00de34843a4004790b27ca2d77e"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structPart.html">Part</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#af19fd00de34843a4004790b27ca2d77e">getcheckPartsToFlip</a> ()</td></tr>
@@ -132,8 +139,14 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a5761aefc83e2b5cc8562625434d07857"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad2d00d988580198b895a483fe71fb699"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#ad2d00d988580198b895a483fe71fb699">erasePartConveyor</a> (int p)</td></tr>
 <tr class="separator:ad2d00d988580198b895a483fe71fb699"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:accacfe32ff6dbcf2040a9c2ba340acce"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#accacfe32ff6dbcf2040a9c2ba340acce">resetLogicCallQuality</a> ()</td></tr>
+<tr class="separator:accacfe32ff6dbcf2040a9c2ba340acce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa7560869337908344138d1bb72e7f027"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#aa7560869337908344138d1bb72e7f027">updateEmptyBins</a> (std::vector&lt; <a class="el" href="structEmptyBin.html">EmptyBin</a> &gt; emptybins)</td></tr>
+<tr class="separator:aa7560869337908344138d1bb72e7f027"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac913ad0348760ccda7a8ee17165f4ade"><td class="memItemLeft" align="right" valign="top">std::unordered_set&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#ac913ad0348760ccda7a8ee17165f4ade">getEmptyLocations</a> () const</td></tr>
 <tr class="separator:ac913ad0348760ccda7a8ee17165f4ade"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af20644e4fb9d428654f20397ff4a5d88"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structEmptyBin.html">EmptyBin</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#af20644e4fb9d428654f20397ff4a5d88">getEmptyBins</a> ()</td></tr>
+<tr class="separator:af20644e4fb9d428654f20397ff4a5d88"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae6b484e3925f0116929f283947d8ef54"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#ae6b484e3925f0116929f283947d8ef54">isPartPoseAGVCorrect</a> (<a class="el" href="utils_8h.html#a67ee3a5b9091664130eca8efc8b97ab9">part</a> p, std::string agv_id)</td></tr>
 <tr class="memdesc:ae6b484e3925f0116929f283947d8ef54"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if the given part is aligned properly in the tray.  <a href="#ae6b484e3925f0116929f283947d8ef54">More...</a><br /></td></tr>
 <tr class="separator:ae6b484e3925f0116929f283947d8ef54"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -205,6 +218,18 @@ Private Attributes</h2></td></tr>
 <tr class="separator:a97cf5022eef77d13b86c80fbe56e0a92"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5265591e7d6c7ef5e2c78a3e9e5609d2"><td class="memItemLeft" align="right" valign="top">std::array&lt; int, 2 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#a5265591e7d6c7ef5e2c78a3e9e5609d2">logic_call_quality_</a> {0}</td></tr>
 <tr class="separator:a5265591e7d6c7ef5e2c78a3e9e5609d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0bfaf722cb7e0ac73437a229ab4938bf"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#a0bfaf722cb7e0ac73437a229ab4938bf">conveyor_callback_</a> = 0</td></tr>
+<tr class="separator:a0bfaf722cb7e0ac73437a229ab4938bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afa8478ce26058f853686d6f43c9ddae4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#afa8478ce26058f853686d6f43c9ddae4">detected_conveyor_</a> = 0</td></tr>
+<tr class="separator:afa8478ce26058f853686d6f43c9ddae4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a83affd1128ff9dfc1facbd11c7e24b5a"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#a83affd1128ff9dfc1facbd11c7e24b5a">first_time</a></td></tr>
+<tr class="separator:a83affd1128ff9dfc1facbd11c7e24b5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeab95481b76b23986a8ea2e714fb13f3"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#aeab95481b76b23986a8ea2e714fb13f3">first_location</a></td></tr>
+<tr class="separator:aeab95481b76b23986a8ea2e714fb13f3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4f616d7ff0cbcd074f8a6b6713fdbfd0"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#a4f616d7ff0cbcd074f8a6b6713fdbfd0">last_time</a></td></tr>
+<tr class="separator:a4f616d7ff0cbcd074f8a6b6713fdbfd0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa49a9a76e0046c58981ee3c60854419e"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#aa49a9a76e0046c58981ee3c60854419e">last_location</a></td></tr>
+<tr class="separator:aa49a9a76e0046c58981ee3c60854419e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6c36676313f72f7ee7ea826bb26a3ca7"><td class="memItemLeft" align="right" valign="top">std::array&lt; geometry_msgs::TransformStamped, 17 &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#a6c36676313f72f7ee7ea826bb26a3ca7">c_w_transforms_</a> {}</td></tr>
 <tr class="separator:a6c36676313f72f7ee7ea826bb26a3ca7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a688be001a281b923e0a9aab33385afdc"><td class="memItemLeft" align="right" valign="top">std::array&lt; geometry_msgs::TransformStamped, <a class="el" href="utils_8h.html#a0a059555e73d963a83b6230fa4f0b690">NUM_QUALITY_SENSORS</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#a688be001a281b923e0a9aab33385afdc">qualitySensorsTransforms</a> {}</td></tr>
@@ -227,6 +252,8 @@ Private Attributes</h2></td></tr>
 <tr class="separator:a48f40bf7b51041139e2bdba5a5413737"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab52a68feae70b96bc94697ea656f74a0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#ab52a68feae70b96bc94697ea656f74a0">faultyPartDetected</a> = false</td></tr>
 <tr class="separator:ab52a68feae70b96bc94697ea656f74a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4eee39a37e9cc8e601ae9b761a5ce7b0"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structEmptyBin.html">EmptyBin</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#a4eee39a37e9cc8e601ae9b761a5ce7b0">emptyBins</a></td></tr>
+<tr class="separator:a4eee39a37e9cc8e601ae9b761a5ce7b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9cac1aadb0408f42ab356d7810acc13f"><td class="memItemLeft" align="right" valign="top">std::unordered_set&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#a9cac1aadb0408f42ab356d7810acc13f">emptyLocations</a></td></tr>
 <tr class="separator:a9cac1aadb0408f42ab356d7810acc13f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0aa26cfc52e19c0f1b77b376447a3f52"><td class="memItemLeft" align="right" valign="top">std::unordered_map&lt; int, int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classSensorControl.html#a0aa26cfc52e19c0f1b77b376447a3f52">logicalCamNumProducts</a></td></tr>
@@ -330,6 +357,56 @@ Private Attributes</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">void SensorControl::clearFaultyProducts </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a29fd822fe8af87a1feed6633e00c6fab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a29fd822fe8af87a1feed6633e00c6fab">&#9670;&nbsp;</a></span>clearLogicalCallVector()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void SensorControl::clearLogicalCallVector </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a06fdc29ae2b6c930f926830e69923b00"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a06fdc29ae2b6c930f926830e69923b00">&#9670;&nbsp;</a></span>clearPartsList()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void SensorControl::clearPartsList </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -478,6 +555,31 @@ Private Attributes</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">std::vector&lt;<a class="el" href="structPart.html">Part</a>&gt; SensorControl::getcheckPartsToFlip </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="af20644e4fb9d428654f20397ff4a5d88"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af20644e4fb9d428654f20397ff4a5d88">&#9670;&nbsp;</a></span>getEmptyBins()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;<a class="el" href="structEmptyBin.html">EmptyBin</a>&gt; SensorControl::getEmptyBins </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -861,6 +963,31 @@ false </dd></dl>
 
 </div>
 </div>
+<a id="accacfe32ff6dbcf2040a9c2ba340acce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#accacfe32ff6dbcf2040a9c2ba340acce">&#9670;&nbsp;</a></span>resetLogicCallQuality()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void SensorControl::resetLogicCallQuality </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a08e651517837d62de644c205c65bce75"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a08e651517837d62de644c205c65bce75">&#9670;&nbsp;</a></span>save_part_array()</h2>
 
@@ -918,6 +1045,58 @@ false </dd></dl>
   </tr>
 </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="aa7560869337908344138d1bb72e7f027"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa7560869337908344138d1bb72e7f027">&#9670;&nbsp;</a></span>updateEmptyBins()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void SensorControl::updateEmptyBins </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; <a class="el" href="structEmptyBin.html">EmptyBin</a> &gt;&#160;</td>
+          <td class="paramname"><em>emptybins</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a0ba2c2ae149a06101bfdc5097383ecce"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0ba2c2ae149a06101bfdc5097383ecce">&#9670;&nbsp;</a></span>updatePartDataStruct()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void SensorControl::updatePartDataStruct </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="utils_8h.html#a48a7207852c0455cce7e65703b12ec7e">product</a>&#160;</td>
+          <td class="paramname"><em>product</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Update the parts data structure with the new product. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">product</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1010,6 +1189,72 @@ false </dd></dl>
 
 </div>
 </div>
+<a id="a0bfaf722cb7e0ac73437a229ab4938bf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0bfaf722cb7e0ac73437a229ab4938bf">&#9670;&nbsp;</a></span>conveyor_callback_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int SensorControl::conveyor_callback_ = 0</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="afa8478ce26058f853686d6f43c9ddae4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afa8478ce26058f853686d6f43c9ddae4">&#9670;&nbsp;</a></span>detected_conveyor_</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int SensorControl::detected_conveyor_ = 0</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a4eee39a37e9cc8e601ae9b761a5ce7b0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4eee39a37e9cc8e601ae9b761a5ce7b0">&#9670;&nbsp;</a></span>emptyBins</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;<a class="el" href="structEmptyBin.html">EmptyBin</a>&gt; SensorControl::emptyBins</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a9cac1aadb0408f42ab356d7810acc13f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9cac1aadb0408f42ab356d7810acc13f">&#9670;&nbsp;</a></span>emptyLocations</h2>
 
@@ -1090,6 +1335,50 @@ false </dd></dl>
 
 </div>
 </div>
+<a id="aeab95481b76b23986a8ea2e714fb13f3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeab95481b76b23986a8ea2e714fb13f3">&#9670;&nbsp;</a></span>first_location</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double SensorControl::first_location</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a83affd1128ff9dfc1facbd11c7e24b5a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a83affd1128ff9dfc1facbd11c7e24b5a">&#9670;&nbsp;</a></span>first_time</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double SensorControl::first_time</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a200559ad6fdcca0cbb054348c12e3b42"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a200559ad6fdcca0cbb054348c12e3b42">&#9670;&nbsp;</a></span>incorrect_part_agv1</h2>
 
@@ -1114,6 +1403,50 @@ false </dd></dl>
           <td class="memname"><a class="el" href="structPart.html">Part</a> SensorControl::incorrect_part_agv2</td>
         </tr>
       </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aa49a9a76e0046c58981ee3c60854419e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa49a9a76e0046c58981ee3c60854419e">&#9670;&nbsp;</a></span>last_location</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double SensorControl::last_location</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a4f616d7ff0cbcd074f8a6b6713fdbfd0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4f616d7ff0cbcd074f8a6b6713fdbfd0">&#9670;&nbsp;</a></span>last_time</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">double SensorControl::last_time</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">private</span></span>  </td>
+  </tr>
+</table>
 </div><div class="memdoc">
 
 </div>

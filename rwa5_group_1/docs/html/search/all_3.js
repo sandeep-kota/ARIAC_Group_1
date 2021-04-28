@@ -1,6 +1,7 @@
 var searchData=
 [
   ['deactivategripper',['deactivateGripper',['../classGantryControl.html#a1485577d4e29baf708a4c5c028a47798',1,'GantryControl']]],
+  ['detected_5fconveyor_5f',['detected_conveyor_',['../classSensorControl.html#afa8478ce26058f853686d6f43c9ddae4',1,'SensorControl']]],
   ['dyn_5fobs_5fpos_5fpub_5f',['dyn_obs_pos_pub_',['../classDynamicObs.html#a24d2b65adf814d0fb636e39ed1d13448',1,'DynamicObs']]],
   ['dynamic_5fobs_2ecpp',['dynamic_obs.cpp',['../dynamic__obs_8cpp.html',1,'']]],
   ['dynamic_5fobs_2eh',['dynamic_obs.h',['../dynamic__obs_8h.html',1,'']]],

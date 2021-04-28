@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['order',['Order',['../structOrder.html',1,'']]]
+  ['gantrycontrol',['GantryControl',['../classGantryControl.html',1,'']]]
 ];

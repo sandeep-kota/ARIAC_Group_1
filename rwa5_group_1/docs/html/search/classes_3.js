@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['gantrycontrol',['GantryControl',['../classGantryControl.html',1,'']]]
+  ['emptybin',['EmptyBin',['../structEmptyBin.html',1,'']]]
 ];

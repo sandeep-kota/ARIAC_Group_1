@@ -2,6 +2,8 @@ var searchData=
 [
   ['l_5fleft_5farm',['L_LEFT_ARM',['../utils_8h.html#ab94011049a953ceef2193ea686d54b8e',1,'utils.h']]],
   ['l_5fright_5farm',['L_RIGHT_ARM',['../utils_8h.html#a3859d676a169a4bc25d2511ac367923e',1,'utils.h']]],
+  ['last_5flocation',['last_location',['../classSensorControl.html#aa49a9a76e0046c58981ee3c60854419e',1,'SensorControl']]],
+  ['last_5ftime',['last_time',['../classSensorControl.html#a4f616d7ff0cbcd074f8a6b6713fdbfd0',1,'SensorControl']]],
   ['latest_5ftime',['latest_time',['../classDynamicObs.html#a5fbce57f5ad09f904fb5bb88b35b50bd',1,'DynamicObs']]],
   ['left',['left',['../structPosition.html#a31a63b03b11c8b38820596aa75fbc70f',1,'Position']]],
   ['left_5farm',['left_arm',['../structPresetLocation.html#af4ec647a46d50b9bdc9b73e9cc243efe',1,'PresetLocation::left_arm()'],['../utils_8h.html#a7e338f02bcd30a2970f4668c61c0661a',1,'LEFT_ARM():&#160;utils.h']]],
