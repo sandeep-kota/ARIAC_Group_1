@@ -398,11 +398,21 @@ int main(int argc, char **argv)
 
                 current_product = list_of_products.at(p);
 
-                // ROS_WARN_STREAM(current_product.type);
+                ROS_WARN_STREAM(current_product.type);
 
                 current_product.p = sensors.findPart(current_product.type); //--2-Look for parts in this order
 
-                // ROS_WARN_STREAM(current_product.p.location);
+                ROS_WARN_STREAM(current_product.p.location);
+
+                if (current_product.p.type.empty()) // no parts of desired product found go to conveyor
+                {
+                    get_product_from_conveyor = true;
+                    ROS_WARN_STREAM("PRODUCT NOT FOUND");
+                }
+                else
+                {
+                    get_product_from_conveyor = false;
+                }
 
                 if (gantry.checkFreeGripper().compare("none") == 0 && !comp.newOrderAlert()) // if none of the grippers are free place both products in trays
                 {
