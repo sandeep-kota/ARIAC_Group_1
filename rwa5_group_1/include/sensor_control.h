@@ -45,9 +45,13 @@ class SensorControl
 {
 
 public:
+  std::vector<float> conveyorPartsTime;
+  std::vector<Part> conveyorPartsList;
+  Part conveyorCameraPart; 
   explicit SensorControl(ros::NodeHandle &node);
   void logical_camera_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n);
   void quality_cntrl_sensor_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n);
+  void conveyor_camera_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg); 
   void break_beam_callback(const nist_gear::Proximity::ConstPtr &msg);
   void init();
   Part findPart(std::string type);
@@ -75,6 +79,7 @@ public:
     if (checkPartsToFlip.empty() != 1){
       checkPartsToFlip.clear();
     }
+    ROS_WARN_STREAM("PARTS TO FLIP CLEARED");
   }
 
   void clearFaultyProducts()
@@ -159,6 +164,13 @@ public:
     std::array<int, 17> logic_call_{0};
     std::array<int, 2> logic_call_agv_{0};
     std::array<int, 2> logic_call_quality_ {0};
+    int conveyor_callback_ = 0;
+    int detected_conveyor_ = 0;
+
+    double first_time;
+    double last_time;
+    double first_location;
+    double last_location;
 
     std::array<geometry_msgs::TransformStamped, 17> c_w_transforms_{};
     std::array<geometry_msgs::TransformStamped, NUM_QUALITY_SENSORS> qualitySensorsTransforms{};

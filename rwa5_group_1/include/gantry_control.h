@@ -172,6 +172,7 @@ public:
 
   PresetLocation rail_1_, rail_2_, agv1_90_, agv2_90_, start_90_, aisle1_90_, aisle2_90_;
   PresetLocation safe_spot_1_, safe_spot_2_, safe_spot_3_, ssi1_, ssi2_, ssi3_, ssi4_, ssi5_, ssi6_;
+  PresetLocation conveyor_left_;
 
   std::array<float, 4> obstacle_1_pos; // {X,Y,Direction,Aisle}
   std::array<float, 4> obstacle_2_pos; // {X,Y,Direction,Aisle}
