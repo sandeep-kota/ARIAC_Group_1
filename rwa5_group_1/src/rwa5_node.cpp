@@ -474,7 +474,7 @@ while (true) {
             }
         }
 
-        // for (int i=0; i<2; i++){
+        for (int i=0; i<2; i++){
         for (int c=0;c<conveyor_products.size();c++){
             time = 0.0;
             startig_time = ros::Time::now().toSec();
@@ -523,7 +523,7 @@ while (true) {
             }
             
         }
-        // }
+        }
         sensors.clearPartsList();
         sensors.clearLogicalCallVector();
         sensors.read_all_sensors_ = false;
