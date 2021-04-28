@@ -124,6 +124,7 @@ typedef struct Part {
   std::string id;
   std::string location;
   std::string bin_location;
+  double estimated_velocity;
   //   bool faulty;
   bool picked_status;
 } part;

@@ -28,8 +28,8 @@ void SensorControl::init()
       "/ariac/logical_camera_0", 1, boost::bind(&SensorControl::logical_camera_callback, this, _1, 0));
   logical_camera_1_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
       "/ariac/logical_camera_1", 1, boost::bind(&SensorControl::logical_camera_callback, this, _1, 1));
-  logical_camera_2_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
-      "/ariac/logical_camera_2", 1, boost::bind(&SensorControl::logical_camera_callback, this, _1, 2));
+  // logical_camera_2_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
+  //     "/ariac/logical_camera_2", 1, boost::bind(&SensorControl::logical_camera_callback, this, _1, 2));
   logical_camera_3_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
       "/ariac/logical_camera_3", 1, boost::bind(&SensorControl::logical_camera_callback, this, _1, 3));
   logical_camera_4_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
@@ -66,6 +66,9 @@ void SensorControl::init()
 
   // Subscribe to the '/ariac/breakbeam' Topic.
   break_beam_subscriber_ = node_.subscribe("/ariac/breakbeam_0_change", 1, &SensorControl::break_beam_callback, this);
+
+  logical_camera_2_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>("/ariac/logical_camera_2", 1, 
+  &SensorControl::conveyor_camera_callback, this); 
 
   //Get transforms world to logical camera sensors
   tf2_ros::Buffer tfBuffer;
@@ -340,42 +343,93 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
 
   //Check for new parts in conveyor
 
-  ros::param::get("/ariac/new_part_conveyor", new_part_conveyor);
-
-  if (new_part_conveyor && sensor_n == 2)
+  if (conveyor_callback_ == 1 && sensor_n == 2)
   {
-    part last_part_conveyor;
-    double current_y;
-
-    for (int i = 0; i < msg->models.size(); i++)
-    {
-      pos_t = msg->models.at(i).type.find("_");
-      type = msg->models.at(i).type.substr(0, pos_t);
-
-      Part.picked_status = false;
-      Part.type = msg->models.at(i).type;
-      Part.pose = frame_to_world(i, msg->models.at(i).pose, c_w_transforms_.at(sensor_n));
-      Part.save_pose = Part.pose;
-      Part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
-      Part.time_stamp = ros::Time::now();
-
-      if (partsConveyor.empty())
+    part new_part;
+    new_part.pose.position.y = -100;
+    double velocity;
+    
+    if (detected_conveyor_ == 1){
+      for (int i = 0; i < msg->models.size(); i++)
       {
-        partsConveyor.push_back(Part);
-      }
-      else
-      {
-        last_part_conveyor = partsConveyor.back();
-        current_y = last_part_conveyor.pose.position.y - 0.2 * (ros::Time::now().toSec() - last_part_conveyor.time_stamp.toSec());
+        pos_t = msg->models.at(i).type.find("_");
+        type = msg->models.at(i).type.substr(0, pos_t);
 
-        if ((current_y + 0.1) < Part.pose.position.y)
-        {
-          partsConveyor.push_back(Part);
+        Part.picked_status = false;
+        Part.type = msg->models.at(i).type;
+        Part.pose = frame_to_world(i, msg->models.at(i).pose, c_w_transforms_.at(sensor_n));
+        Part.save_pose = Part.pose;
+        Part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
+        Part.time_stamp = ros::Time::now();
+        if (new_part.pose.position.y < Part.pose.position.y){
+          new_part = Part;
+          first_time = Part.time_stamp.toSec();
+          first_location = Part.pose.position.y;
         }
       }
+      conveyor_callback_ = 0;
+    } else if (detected_conveyor_ == 0){
+      for (int i = 0; i < msg->models.size(); i++)
+      {
+        pos_t = msg->models.at(i).type.find("_");
+        type = msg->models.at(i).type.substr(0, pos_t);
+
+        Part.picked_status = false;
+        Part.type = msg->models.at(i).type;
+        Part.pose = frame_to_world(i, msg->models.at(i).pose, c_w_transforms_.at(sensor_n));
+        Part.save_pose = Part.pose;
+        Part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
+        Part.time_stamp = ros::Time::now();
+        if (new_part.pose.position.y < Part.pose.position.y){
+          new_part = Part;
+          last_time = Part.time_stamp.toSec();
+          last_location = Part.pose.position.y;
+        }
+      }
+
+      Part.estimated_velocity = (first_location - last_location)/(last_time - first_time);
+      partsConveyor.push_back(Part);
+      ROS_WARN_STREAM("PART CONVEYOR VELOCITY: " << Part.estimated_velocity);
+      conveyor_callback_ = 0;
     }
-    ros::param::set("/ariac/new_part_conveyor", false);
   }
+
+  // ros::param::get("/ariac/new_part_conveyor", new_part_conveyor);
+
+  // if (new_part_conveyor && sensor_n == 2)
+  // {
+  //   part last_part_conveyor;
+  //   double current_y;
+
+  //   for (int i = 0; i < msg->models.size(); i++)
+  //   {
+  //     pos_t = msg->models.at(i).type.find("_");
+  //     type = msg->models.at(i).type.substr(0, pos_t);
+
+  //     Part.picked_status = false;
+  //     Part.type = msg->models.at(i).type;
+  //     Part.pose = frame_to_world(i, msg->models.at(i).pose, c_w_transforms_.at(sensor_n));
+  //     Part.save_pose = Part.pose;
+  //     Part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
+  //     Part.time_stamp = ros::Time::now();
+
+  //     if (partsConveyor.empty())
+  //     {
+  //       partsConveyor.push_back(Part);
+  //     }
+  //     else
+  //     {
+  //       last_part_conveyor = partsConveyor.back();
+  //       current_y = last_part_conveyor.pose.position.y - 0.2 * (ros::Time::now().toSec() - last_part_conveyor.time_stamp.toSec());
+
+  //       if ((current_y + 0.1) < Part.pose.position.y)
+  //       {
+  //         partsConveyor.push_back(Part);
+  //       }
+  //     }
+  //   }
+  //   ros::param::set("/ariac/new_part_conveyor", false);
+  // }
 
   bool check_parts_to_flip_in_trays;
   ros::param::get("/check_parts_to_flip", check_parts_to_flip_in_trays);
@@ -498,6 +552,18 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
   }
 }
 
+void SensorControl::conveyor_camera_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg)
+{
+if (msg->models.size()>0)
+{
+conveyorCameraPart.picked_status = false;
+conveyorCameraPart.type = msg->models[0].type;
+conveyorCameraPart.pose = frame_to_world(0, msg->models[0].pose, c_w_transforms_.at(2));
+conveyorCameraPart.save_pose = conveyorCameraPart.pose;
+conveyorCameraPart.frame = "logical_camera_" + std::to_string(2) + "_frame";
+conveyorCameraPart.time_stamp = ros::Time::now();
+}
+}
 /**
  * @brief Transform frame to World Frame
  * 
@@ -563,14 +629,37 @@ Part SensorControl::findPart(std::string type)
  */
 void SensorControl::break_beam_callback(const nist_gear::Proximity::ConstPtr &msg)
 {
+  // if (msg->object_detected) // If there is an object in proximity.
+  // {
+  //   ROS_WARN("Break beam triggered.");
+  //   conveyor_callback_ = 1;
+  //   detected_conveyor_ = 1;
+  // }
+  // else
+  // {
+  //   conveyor_callback_ = 1;
+  //   detected_conveyor_ = 0;
+  //   ros::param::set("/ariac/new_part_conveyor", true);
   if (msg->object_detected) // If there is an object in proximity.
   {
     ROS_WARN("Break beam triggered.");
+    conveyorPartsTime.emplace_back(ros::Time::now().toSec());
+    conveyorPartsList.emplace_back(conveyorCameraPart);
+    for (int idx = 0; idx < conveyorPartsTime.size(); idx++)
+    {
+      ROS_INFO_STREAM("Conveyor Parts Sequence");
+      ROS_INFO_STREAM("Part " << idx << " Time :" << conveyorPartsTime.at(idx));
+      ROS_INFO_STREAM("Part " << idx << " Type :" << conveyorPartsList.at(idx).type);
+      ROS_INFO_STREAM("Part " << idx << " Pose x:" << conveyorPartsList.at(idx).pose.position.x);
+      ROS_INFO_STREAM("Part " << idx << " Pose y:" << conveyorPartsList.at(idx).pose.position.y);
+      ROS_INFO_STREAM("-----------------");
+    }
   }
   else
   {
     ros::param::set("/ariac/new_part_conveyor", true);
   }
+}
 }
 
 /**

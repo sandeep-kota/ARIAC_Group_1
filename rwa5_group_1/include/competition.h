@@ -104,6 +104,10 @@ public:
     }
 
     void updateAGVProductMap(std::string agvid, Product prod) {
+
+        if (agvid == "any"){
+            agvid = "agv2";
+        }
         agvToProductsMap.at(agvid).emplace_back(prod);
     }
 

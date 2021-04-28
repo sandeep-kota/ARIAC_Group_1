@@ -414,6 +414,8 @@ int main(int argc, char **argv)
                     get_product_from_conveyor = false;
                 }
 
+                ROS_WARN_STREAM("GET PRODICT FROM CONVEYOR: " << get_product_from_conveyor);
+
                 if (gantry.checkFreeGripper().compare("none") == 0 && !comp.newOrderAlert()) // if none of the grippers are free place both products in trays
                 {
                     // if (gantry.getGantryLocation().compare("aisle_1") == 0) // go to start location from current gantry location
@@ -530,9 +532,7 @@ int main(int argc, char **argv)
                     // ros::Duration(2).sleep();
 
                     // gantry.getProductsToFlip(sensors.getPartsToFlip());
-                    ROS_WARN_STREAM("START FIRST FAULTY PART");
                     faultyPartsProcess(gantry, sensors);
-                    ROS_WARN_STREAM("FINISH FIRST FAULTY PART");
                     ros::param::set("/check_parts_to_flip", true);
                     ros::Duration(1).sleep();
                     gantry.flipProductsAGV(sensors.getcheckPartsToFlip());
@@ -542,7 +542,6 @@ int main(int argc, char **argv)
                     gantry.goToPresetLocation(gantry.start_90_); // go back to start position
 
                     // the last two products that were picked have been placed.
-
                     comp.updateAGVProductMap(list_of_products.at(p - 1).agv_id, list_of_products.at(p - 1));
                     comp.updateAGVProductMap(list_of_products.at(p - 2).agv_id, list_of_products.at(p - 2));
 
@@ -606,7 +605,18 @@ int main(int argc, char **argv)
                 {
                     if (get_product_from_conveyor)
                     {
+                        // gantry.goToPresetLocation(gantry.conveyor_left_);
                         time = 0.0;
+                        startig_time = ros::Time::now().toSec();
+                        pickedConveyor == 0;
+                        while(sensors.conveyorPartsList.size()<1)
+                        {
+                        }
+                        if(sensors.conveyorPartsList.size()>0)
+                        {
+                            float distance  = sensors.conveyorPartsList.at(0).pose.position.y - (0.2*(ros::Time().now().toSec() - sensors.conveyorPartsTime.at(0)));
+
+                        }
                         while (time <= 120)
                         {
                             partsConveyor = sensors.getPartsConveyor();
@@ -615,8 +625,7 @@ int main(int argc, char **argv)
                                 double original_y;
                                 for (int prt = 0; prt < partsConveyor.size(); prt++)
                                 {
-                                    original_y = partsConveyor.at(prt).pose.position.y - 0.2 * (ros::Time::now().toSec() - partsConveyor.at(prt).time_stamp.toSec());
-                                    if (partsConveyor.at(prt).type.compare(current_product.type) == 0 && original_y >= 3)
+                                    if (partsConveyor.at(prt).type.compare(current_product.type) == 0 && original_y >= 0)
                                     {
                                         current_product.p = partsConveyor.at(prt);
 
@@ -632,7 +641,7 @@ int main(int argc, char **argv)
                                         sensors.erasePartConveyor(prt);
                                         break;
                                     }
-                                    else if (original_y < 3)
+                                    else if (original_y < 0)
                                     {
                                         sensors.erasePartConveyor(prt);
                                     }
