@@ -76,7 +76,7 @@ void Competition::order_callback(const nist_gear::Order::ConstPtr &order_msg)
   }
 
   orderSet.insert(new_order.order_id);
-
+  updateTotalOrderCount();
   //--shipments
   for (int s = 0; s < order_msg->shipments.size(); s++)
   {
@@ -105,7 +105,12 @@ void Competition::order_callback(const nist_gear::Order::ConstPtr &order_msg)
       // needs to be checked
       if (new_product.agv_id == "any")
       {
-        new_product.tray = "kit_tray_1";
+        if (this->agvInUse.size() != 0) {
+          new_product.tray = agvTrayMap.at(oppositeAGV.at(this->agvInUse));
+        }
+        else {
+          new_product.tray = "kit_tray_2";  
+        }
       };
       new_product.isPlacedOnAGV = false;
 
@@ -116,7 +121,6 @@ void Competition::order_callback(const nist_gear::Order::ConstPtr &order_msg)
   }
 
   order_list_.push_back(new_order);
-  updateTotalOrderCount();
 
   processOrder();
 }
@@ -160,12 +164,12 @@ bool Competition::processOrder()
       std::string agv_id = current_order.shipments.at(s).agv_id;
       std::string shipment_type = current_order.shipments.at(s).shipment_type;
 
-      if (agvToShipmentMap.find(agv_id) == agvToShipmentMap.end())
-      {
-        std::queue<std::string> shipmentQueue;
-        agvToShipmentMap.insert({agv_id, shipmentQueue});
-      }
-      agvToShipmentMap.at(agv_id).push(shipment_type);
+      // if (agvToShipmentMap.find(agv_id) == agvToShipmentMap.end())
+      // {
+      //   std::queue<std::string> shipmentQueue;
+      //   agvToShipmentMap.insert({agv_id, shipmentQueue});
+      // }
+      // agvToShipmentMap.at(agv_id).push(shipment_type);
 
       //for (int p = 0; p < current_order.shipments.at(s).products.size(); p++)
       //{
@@ -333,9 +337,10 @@ void Competition::orderTransition(std::vector<Shipment> prevShipments, SensorCon
   orderStack.pop();
 
   // check for agvid:
-  if (prevShipment.agv_id.compare(newShipment.agv_id) == 0)
+  if (this->agvInUse.compare(newShipment.agv_id) == 0)
   {
-    removePrevProductsFromAGV(prevShipment.agv_id, sensors, gantry);
+    removePrevProductsFromAGV(this->agvInUse, sensors, gantry);
+    agvToProductsMap.at(this->agvInUse).clear();
   }
   else
   {
@@ -343,7 +348,7 @@ void Competition::orderTransition(std::vector<Shipment> prevShipments, SensorCon
     ROS_INFO_STREAM("New shipment to be placed on different agv.");
     ROS_INFO_STREAM("Previous AGV: " << prevShipment.agv_id << " New Shipment AGV: " << newShipment.agv_id);
 
-    for (auto &productOnAGV : agvToProductsMap.at(prevShipment.agv_id))
+    for (auto &productOnAGV : agvToProductsMap.at(this->agvInUse))
     {
       for (auto &shipmentProduct : prevShipment.products)
       {
@@ -362,7 +367,7 @@ void Competition::orderTransition(std::vector<Shipment> prevShipments, SensorCon
       for (auto &product : newShipment.products)
       {
         //product.agv_id = oppositeAGV.at(prevShipment.agv_id);
-        product.tray = agvTrayMap.at(oppositeAGV.at(prevShipment.agv_id));
+        product.tray = agvTrayMap.at(oppositeAGV.at(this->agvInUse));
       }
     }
   }
@@ -374,8 +379,8 @@ void Competition::orderTransition(std::vector<Shipment> prevShipments, SensorCon
   orderStack.emplace(shipment_list_);
 
   ROS_WARN_STREAM("clearing AGV map");
-  agvToProductsMap.at(AGV1_ID).clear();
-  agvToProductsMap.at(AGV2_ID).clear();
+  // agvToProductsMap.at(AGV1_ID).clear();
+  // agvToProductsMap.at(AGV2_ID).clear();
 
   ROS_INFO_STREAM("Starting building kit for new order.");
 }
@@ -421,4 +426,12 @@ std::vector<Product> Competition::get_product_list_from_shipment(Shipment shipme
 
   ROS_INFO_STREAM("PRODUCT SIZE: " << products_for_shipment.size());
   return products_for_shipment;
+}
+void Competition::setAgvInUse(const std::string& agv_id) {
+  if (agv_id.compare(ANY_AGV) == 0) {
+    agvInUse = agvInUse.size() == 0  || receivedOrdersCount < 2 ? AGV2_ID : oppositeAGV.at(agvInUse);
+  }
+  else {
+    agvInUse = agv_id;
+  }      
 }

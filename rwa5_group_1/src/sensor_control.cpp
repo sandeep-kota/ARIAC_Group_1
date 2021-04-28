@@ -434,9 +434,9 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
         if (new_part.pose.position.y < Part.pose.position.y){
           new_part = Part;
           first_time = Part.time_stamp.toSec();
-          ROS_WARN_STREAM("FIRST TIME: " << first_time);
+          // ROS_WARN_STREAM("FIRST TIME: " << first_time);
           first_location = Part.pose.position.y;
-          ROS_WARN_STREAM("FIRST LOCATION: " << first_location);
+          // ROS_WARN_STREAM("FIRST LOCATION: " << first_location);
         }
       }
       conveyor_callback_ = 0;
@@ -455,14 +455,14 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
         if (new_part.pose.position.y < Part.pose.position.y){
           new_part = Part;
           last_time = Part.time_stamp.toSec();
-          ROS_WARN_STREAM("LAST TIME: " << last_time);
+          // ROS_WARN_STREAM("LAST TIME: " << last_time);
           last_location = Part.pose.position.y;
-          ROS_WARN_STREAM("LAST LOCATION: " << last_location);
+          // ROS_WARN_STREAM("LAST LOCATION: " << last_location);
         }
       }
       Part.estimated_velocity = (first_location - last_location)/(last_time - first_time);
       partsConveyor.push_back(Part);
-      ROS_WARN_STREAM("PART CONVEYOR VELOCITY: " << Part.estimated_velocity);
+      // ROS_WARN_STREAM("PART CONVEYOR VELOCITY: " << Part.estimated_velocity);
       conveyor_callback_ = 0;
     }
   }

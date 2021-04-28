@@ -105,10 +105,7 @@ public:
 
     void updateAGVProductMap(std::string agvid, Product prod) {
 
-        if (agvid == "any"){
-            agvid = "agv2";
-        }
-        agvToProductsMap.at(agvid).emplace_back(prod);
+        agvToProductsMap.at(agvInUse).emplace_back(prod);
     }
 
     bool areOrdersLeft() {
@@ -122,7 +119,11 @@ public:
     bool setNewOrderAlert(bool flag) {
         return newOrderAlertFlag = flag;
     }
+    void setAgvInUse(const std::string& agv_id);
 
+    std::string getAgvInUse() const {
+        return agvInUse;
+    }
     void orderTransition(std::vector<Shipment> prevShipments, SensorControl &sensors, GantryControl& gantry);
     void removePrevProductsFromAGV(std::string fromAGV, SensorControl &sensors, GantryControl &gantry);
 
@@ -148,7 +149,7 @@ private:
     bool newOrderAlertFlag = false;
 
     int receivedOrdersCount;
-
+    std::string agvInUse = "";
 };
 
 #endif

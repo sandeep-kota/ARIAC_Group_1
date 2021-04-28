@@ -438,10 +438,10 @@ int main(int argc, char **argv)
     bool pickedConveyor;
 
     bool transitionDone = false;
-
+while (true) {
     while (comp.areOrdersLeft() && sensors.read_all_sensors_) //--1-Read order until no more found
     {
-
+        
         // ROS_WARN_STREAM("Starting building kit for the new order");
         list_of_shipments = comp.get_shipment_list(); // get list of shipments of current order in priority order
         //list_of_products = comp.get_product_list();   // get list of products of current order in priority order
@@ -474,7 +474,7 @@ int main(int argc, char **argv)
             }
         }
 
-        for (int i=0; i<2; i++){
+        // for (int i=0; i<2; i++){
         for (int c=0;c<conveyor_products.size();c++){
             time = 0.0;
             startig_time = ros::Time::now().toSec();
@@ -523,19 +523,24 @@ int main(int argc, char **argv)
             }
             
         }
-        }
-
+        // }
+        // sensors.clearPartsList();
+        // sensors.clearLogicalCallVector();
+        // sensors.read_all_sensors_ = false;
+        
+        while (!agvControl.isAGVReady(AGV1_TRAY) && !agvControl.isAGVReady(AGV2_TRAY));
 
         for (int n_ship = 0; n_ship < list_of_shipments.size() && !comp.newOrderAlert(); n_ship++)
         {
             current_shipment = list_of_shipments.at(n_ship);
+            comp.setAgvInUse(current_shipment.agv_id);
             // for (auto& current_shipment: list_of_shipments) {
             list_of_products = comp.get_product_list_from_shipment(current_shipment);
 
             for (int p = 0; p < list_of_products.size(); p++) // loop all the products to be retrieve from current order
             {
 
-                // ROS_WARN_STREAM("Picking next product: " << p + 1 << "/" << list_of_products.size() << " for AGV: " << list_of_products.at(p).agv_id);
+                ROS_WARN_STREAM("Picking next product: " << p + 1 << "/" << list_of_products.size() << " for AGV: " << list_of_products.at(p).agv_id);
                 if (currentOrderCount != comp.getTotalReceivedOrdersCount())
                 {
                     // ROS_WARN_STREAM("New Order Received. We need to stop current assembly.");
@@ -554,7 +559,7 @@ int main(int argc, char **argv)
                 }
 
                 current_product = list_of_products.at(p);
-
+                current_product.agv_id = comp.getAgvInUse();
                 ROS_WARN_STREAM(current_product.type);
 
                 current_product.p = sensors.findPart(current_product.type); //--2-Look for parts in this order
@@ -774,7 +779,7 @@ int main(int argc, char **argv)
                                 double original_y;
                                 for (int prt = 0; prt < partsConveyor.size(); prt++)
                                 {
-                                    if (partsConveyor.at(prt).type.compare(current_product.type) == 0 && original_y >= -3)
+                                    if (partsConveyor.at(prt).type.compare(current_product.type) == 0 && original_y >= 1)
                                     {
                                         current_product.p = partsConveyor.at(prt);
 
@@ -790,7 +795,7 @@ int main(int argc, char **argv)
                                         sensors.erasePartConveyor(prt);
                                         break;
                                     }
-                                    else if (original_y < -3)
+                                    else if (original_y < 1)
                                     {
                                         sensors.erasePartConveyor(prt);
                                     }
@@ -811,7 +816,7 @@ int main(int argc, char **argv)
                     }
                     // ROS_WARN_STREAM("Picked from conveyor belt");
                 }
-                else
+                else if (!comp.newOrderAlert())
                 {
                     gantry.getProduct(current_product); // get product after placing in agv
                     // ROS_WARN_STREAM("Picked from a bin or shelf");
@@ -900,6 +905,7 @@ int main(int argc, char **argv)
                     }
                     
                     // check the faulty parts again and the parts that are to be flipped
+                if (!comp.newOrderAlert()) {
                     ROS_INFO_STREAM("Checking the faulty parts before sending AGV");
                     faultyPartsProcess(gantry, sensors);
                     ros::param::set("/check_parts_to_flip", true);
@@ -924,6 +930,7 @@ int main(int argc, char **argv)
                     ROS_INFO_STREAM("AGV SENT");
                 }
             }
+            }
 
             if (comp.newOrderAlert() && !transitionDone)
             {
@@ -938,7 +945,7 @@ int main(int argc, char **argv)
             }
         }
     }
-
+}
     // Not needed..
     /**
     // Place in agv the two last retrieved products

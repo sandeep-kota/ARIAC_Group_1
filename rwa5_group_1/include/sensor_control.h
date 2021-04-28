@@ -61,6 +61,20 @@ public:
   bool read_all_sensors_ = false;
   bool faulty_parts_ = false;
 
+void clearLogicalCallVector(){
+    for (int i=0;i<logic_call_.size();i++){
+      logic_call_.at(i) = 0;
+    }
+  }
+
+void clearPartsList(){
+  for (int i=0; i<5;i++){
+    for (int j=0; j<3;j++){
+      parts_.at(i).at(j).clear();
+      }
+  }
+}
+
   std::vector<Part> getFaultyParts()
   {
     return faultyPartsList;
