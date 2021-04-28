@@ -3127,16 +3127,17 @@ bool GantryControl::throwPartLeft(part part)
     ROS_WARN_STREAM("Faulty Part: " << part.type);
     ROS_WARN_STREAM("FAULTY POSE Z: " << part.pose.position.z);
 
-    part.pose.position.z += 0.015;
+    // part.pose.position.z += 0.015;
+    part.pose.position.z = 0.73 + 0.019;
     ROS_WARN_STREAM("PART LOCATION: " << part.location);
     if (part.location == "agv_2")
     {
         goToPresetLocation(agv2_);
-        if (part.pose.position.y < -7 && part.pose.position.x > 0)
-        {
-            goToPresetLocation(tray2_left_negative_);
-        }
-        else if (part.pose.position.x >= 0)
+        // if (part.pose.position.y < -7 && part.pose.position.x > 0)
+        // {
+        //     goToPresetLocation(tray2_left_negative_);
+        // }
+        if (part.pose.position.x >= 0)
         {
             goToPresetLocation(tray2_left_positive_);
         }
@@ -3268,7 +3269,8 @@ bool GantryControl::throwPartRight(part part)
     ROS_WARN_STREAM("Faulty Part: " << part.type);
     ROS_WARN_STREAM("FAULTY POSE Z: " << part.pose.position.z);
 
-    part.pose.position.z += 0.015;
+    // part.pose.position.z += 0.015;
+    part.pose.position.z = 0.73 + 0.019;
     ROS_WARN_STREAM("PART LOCATION: " << part.location);
     if (part.location == "agv_2")
     {
