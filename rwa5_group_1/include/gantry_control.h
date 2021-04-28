@@ -148,6 +148,9 @@ public:
   void pickPartFromShelf8Aisle3Obstacles(product product);
   void pickPartFromShelf8Aisle2ObstaclesSafe1(product product);
 
+  void placeProductLeftArmBin();
+  void placeProductRightArmBin();
+
   //--preset locations;
   start start_;
   aisle1 aisle1_;

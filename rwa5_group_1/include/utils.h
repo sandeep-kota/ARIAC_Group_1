@@ -88,6 +88,7 @@ extern std::unordered_map<std::string, double> model_height;
 extern std::unordered_map<int, std::string> sensorLocationMap;
 extern std::unordered_map<std::string, int> sensorNumMap;
 extern std::unordered_map<int, std::unordered_map<std::string, int>> binMap;
+extern std::unordered_map<int, std::unordered_map<std::string, int>> emptyBinsMap;
 
 
 extern std::unordered_map<std::string, std::string> oppositeAGV;// {{AGV1_ID, AGV2_ID}, {AGV2_ID, AGV1_ID}, {ANY_AGV, AGV2_ID}}; // logic for "any" should be changed
@@ -175,6 +176,15 @@ typedef struct Order {
     std::vector<Shipment> shipments;
 } order;
 
+/**
+ * @brief struct to parse and store the state of the empty bins of the environment
+ * 
+ */
+typedef struct EmptyBin {
+    int bin_number;
+    std::array<bool, 4> empty_locations {false};
+    geometry_msgs::Pose pose;
+} emptybin;
 
 
 #endif

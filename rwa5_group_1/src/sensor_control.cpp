@@ -28,8 +28,8 @@ void SensorControl::init()
       "/ariac/logical_camera_0", 1, boost::bind(&SensorControl::logical_camera_callback, this, _1, 0));
   logical_camera_1_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
       "/ariac/logical_camera_1", 1, boost::bind(&SensorControl::logical_camera_callback, this, _1, 1));
-  // logical_camera_2_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
-  //     "/ariac/logical_camera_2", 1, boost::bind(&SensorControl::logical_camera_callback, this, _1, 2));
+  logical_camera_2_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
+      "/ariac/logical_camera_2", 1, boost::bind(&SensorControl::logical_camera_callback, this, _1, 2));
   logical_camera_3_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
       "/ariac/logical_camera_3", 1, boost::bind(&SensorControl::logical_camera_callback, this, _1, 3));
   logical_camera_4_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>(
@@ -66,9 +66,6 @@ void SensorControl::init()
 
   // Subscribe to the '/ariac/breakbeam' Topic.
   break_beam_subscriber_ = node_.subscribe("/ariac/breakbeam_0_change", 1, &SensorControl::break_beam_callback, this);
-
-  logical_camera_2_subcriber_ = node_.subscribe<nist_gear::LogicalCameraImage>("/ariac/logical_camera_2", 1, 
-  &SensorControl::conveyor_camera_callback, this); 
 
   //Get transforms world to logical camera sensors
   tf2_ros::Buffer tfBuffer;
@@ -167,6 +164,10 @@ color_code SensorControl::hashit_color(std::string const &colorString)
 void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg, int sensor_n)
 {
 
+  int up_left{0};
+  int up_right{0};
+  int down_left{0};
+  int down_right{0};
   int explicit_activated_sensor = -1;
   ros::param::get(ACTIVATE_LOG_CAM, explicit_activated_sensor);
 
@@ -191,6 +192,7 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
   std::string type{};
   std::string color{};
   part Part;
+  emptybin emptybin;
   bool check_flipped{false};
   bool new_part_conveyor{false};
 
@@ -234,6 +236,7 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
 
       if (sensor_n > 2 && sensor_n < 7) {
         if (Part.pose.position.x > c_w_transforms_.at(sensor_n).transform.translation.x && Part.pose.position.y > msg->pose.position.y){
+          up_left += 1;
           if (binTransforms.at(binMap[sensor_n]["up_left"]).transform.translation.x + 0.1 < Part.pose.position.x){
             Part.bin_location = "top";
           } else if (binTransforms.at(binMap[sensor_n]["up_left"]).transform.translation.x - 0.1 > Part.pose.position.x){
@@ -243,6 +246,7 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
           }
           
         } else if (Part.pose.position.x < c_w_transforms_.at(sensor_n).transform.translation.x && Part.pose.position.y > msg->pose.position.y){
+          down_left += 1;
           if (binTransforms.at(binMap[sensor_n]["down_left"]).transform.translation.x + 0.1 < Part.pose.position.x){
             Part.bin_location = "top";
           } else if (binTransforms.at(binMap[sensor_n]["down_left"]).transform.translation.x - 0.1 > Part.pose.position.x){
@@ -251,6 +255,7 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
             Part.bin_location = "middle";
           }
         } else if (Part.pose.position.x > c_w_transforms_.at(sensor_n).transform.translation.x && Part.pose.position.y < msg->pose.position.y){
+          up_right += 1;
           if (binTransforms.at(binMap[sensor_n]["up_right"]).transform.translation.x + 0.1 < Part.pose.position.x){
             Part.bin_location = "top";
           } else if (binTransforms.at(binMap[sensor_n]["up_right"]).transform.translation.x - 0.1 > Part.pose.position.x){
@@ -259,6 +264,7 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
             Part.bin_location = "middle";
           }
         } else {
+          down_right += 1;
           if (binTransforms.at(binMap[sensor_n]["down_right"]).transform.translation.x + 0.1 < Part.pose.position.x){
             Part.bin_location = "top";
           } else if (binTransforms.at(binMap[sensor_n]["down_right"]).transform.translation.x - 0.1 > Part.pose.position.x){
@@ -292,6 +298,71 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
         ROS_INFO_STREAM("New part added from camera " << sensor_n << ". Part type, Part Location " << Part.type << "," << Part.location);
       }
     }
+
+    // identify empty bins
+    if (sensor_n > 2 && sensor_n < 7)
+    {
+      if (up_left == 0)
+      {
+        emptybin.bin_number = emptyBinsMap[sensor_n]["up_left"];
+        geometry_msgs::Pose bin_world{};
+        bin_world.position.x = binTransforms.at(emptyBinsMap[sensor_n]["up_left"]).transform.translation.x;
+        bin_world.position.y = binTransforms.at(emptyBinsMap[sensor_n]["up_left"]).transform.translation.y;
+        bin_world.position.z = binTransforms.at(emptyBinsMap[sensor_n]["up_left"]).transform.translation.z;
+        bin_world.orientation.x = binTransforms.at(emptyBinsMap[sensor_n]["up_left"]).transform.rotation.x;
+        bin_world.orientation.y = binTransforms.at(emptyBinsMap[sensor_n]["up_left"]).transform.rotation.y;
+        bin_world.orientation.z = binTransforms.at(emptyBinsMap[sensor_n]["up_left"]).transform.rotation.z;
+        bin_world.orientation.w = binTransforms.at(emptyBinsMap[sensor_n]["up_left"]).transform.rotation.w;
+        emptybin.pose = bin_world;
+        emptyBins.push_back(emptybin);
+      }
+      else if (up_right == 0)
+      {
+        emptybin.bin_number = emptyBinsMap[sensor_n]["up_right"];
+        geometry_msgs::Pose bin_world{};
+        bin_world.position.x = binTransforms.at(emptyBinsMap[sensor_n]["up_right"]).transform.translation.x;
+        bin_world.position.y = binTransforms.at(emptyBinsMap[sensor_n]["up_right"]).transform.translation.y;
+        bin_world.position.z = binTransforms.at(emptyBinsMap[sensor_n]["up_right"]).transform.translation.z;
+        bin_world.orientation.x = binTransforms.at(emptyBinsMap[sensor_n]["up_right"]).transform.rotation.x;
+        bin_world.orientation.y = binTransforms.at(emptyBinsMap[sensor_n]["up_right"]).transform.rotation.y;
+        bin_world.orientation.z = binTransforms.at(emptyBinsMap[sensor_n]["up_right"]).transform.rotation.z;
+        bin_world.orientation.w = binTransforms.at(emptyBinsMap[sensor_n]["up_right"]).transform.rotation.w;
+        emptybin.pose = bin_world;
+        emptyBins.push_back(emptybin);
+      }
+      else if (down_right == 0)
+      {
+        emptybin.bin_number = emptyBinsMap[sensor_n]["down_right"];
+        geometry_msgs::Pose bin_world{};
+        bin_world.position.x = binTransforms.at(emptyBinsMap[sensor_n]["down_right"]).transform.translation.x;
+        bin_world.position.y = binTransforms.at(emptyBinsMap[sensor_n]["down_right"]).transform.translation.y;
+        bin_world.position.z = binTransforms.at(emptyBinsMap[sensor_n]["down_right"]).transform.translation.z;
+        bin_world.orientation.x = binTransforms.at(emptyBinsMap[sensor_n]["down_right"]).transform.rotation.x;
+        bin_world.orientation.y = binTransforms.at(emptyBinsMap[sensor_n]["down_right"]).transform.rotation.y;
+        bin_world.orientation.z = binTransforms.at(emptyBinsMap[sensor_n]["down_right"]).transform.rotation.z;
+        bin_world.orientation.w = binTransforms.at(emptyBinsMap[sensor_n]["down_right"]).transform.rotation.w;
+        emptybin.pose = bin_world;
+        emptyBins.push_back(emptybin);
+      }
+      else if (down_left == 0)
+      {
+        emptybin.bin_number = emptyBinsMap[sensor_n]["down_left"];
+        geometry_msgs::Pose bin_world{};
+        bin_world.position.x = binTransforms.at(emptyBinsMap[sensor_n]["down_left"]).transform.translation.x;
+        bin_world.position.y = binTransforms.at(emptyBinsMap[sensor_n]["down_left"]).transform.translation.y;
+        bin_world.position.z = binTransforms.at(emptyBinsMap[sensor_n]["down_left"]).transform.translation.z;
+        bin_world.orientation.x = binTransforms.at(emptyBinsMap[sensor_n]["down_left"]).transform.rotation.x;
+        bin_world.orientation.y = binTransforms.at(emptyBinsMap[sensor_n]["down_left"]).transform.rotation.y;
+        bin_world.orientation.z = binTransforms.at(emptyBinsMap[sensor_n]["down_left"]).transform.rotation.z;
+        bin_world.orientation.w = binTransforms.at(emptyBinsMap[sensor_n]["down_left"]).transform.rotation.w;
+        emptybin.pose = bin_world;
+        emptyBins.push_back(emptybin);
+      }
+      else
+      {
+        ROS_WARN_STREAM("All bins empty sensor: " << sensor_n);
+      }
+    }
     logic_call_[sensor_n] = 1;
   }
 
@@ -322,7 +393,7 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
   //     logic_call_agv_[sensor_n] = 1;
   //     for (int i = 0; i < msg->models.size(); i++)
   //     {
-  //       pos_t = msg->models.at(i).type.find("_");
+  //       pos_t = msg->models.at(i).type.find("_");estimated_velocity
   //       type = msg->models.at(i).type.substr(0, pos_t);
 
   //       Part.picked_status = false;
@@ -347,7 +418,6 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
   {
     part new_part;
     new_part.pose.position.y = -100;
-    double velocity;
     
     if (detected_conveyor_ == 1){
       for (int i = 0; i < msg->models.size(); i++)
@@ -364,7 +434,9 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
         if (new_part.pose.position.y < Part.pose.position.y){
           new_part = Part;
           first_time = Part.time_stamp.toSec();
+          ROS_WARN_STREAM("FIRST TIME: " << first_time);
           first_location = Part.pose.position.y;
+          ROS_WARN_STREAM("FIRST LOCATION: " << first_location);
         }
       }
       conveyor_callback_ = 0;
@@ -383,10 +455,11 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
         if (new_part.pose.position.y < Part.pose.position.y){
           new_part = Part;
           last_time = Part.time_stamp.toSec();
+          ROS_WARN_STREAM("LAST TIME: " << last_time);
           last_location = Part.pose.position.y;
+          ROS_WARN_STREAM("LAST LOCATION: " << last_location);
         }
       }
-
       Part.estimated_velocity = (first_location - last_location)/(last_time - first_time);
       partsConveyor.push_back(Part);
       ROS_WARN_STREAM("PART CONVEYOR VELOCITY: " << Part.estimated_velocity);
@@ -552,18 +625,6 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
   }
 }
 
-void SensorControl::conveyor_camera_callback(const nist_gear::LogicalCameraImage::ConstPtr &msg)
-{
-if (msg->models.size()>0)
-{
-conveyorCameraPart.picked_status = false;
-conveyorCameraPart.type = msg->models[0].type;
-conveyorCameraPart.pose = frame_to_world(0, msg->models[0].pose, c_w_transforms_.at(2));
-conveyorCameraPart.save_pose = conveyorCameraPart.pose;
-conveyorCameraPart.frame = "logical_camera_" + std::to_string(2) + "_frame";
-conveyorCameraPart.time_stamp = ros::Time::now();
-}
-}
 /**
  * @brief Transform frame to World Frame
  * 
@@ -629,37 +690,18 @@ Part SensorControl::findPart(std::string type)
  */
 void SensorControl::break_beam_callback(const nist_gear::Proximity::ConstPtr &msg)
 {
-  // if (msg->object_detected) // If there is an object in proximity.
-  // {
-  //   ROS_WARN("Break beam triggered.");
-  //   conveyor_callback_ = 1;
-  //   detected_conveyor_ = 1;
-  // }
-  // else
-  // {
-  //   conveyor_callback_ = 1;
-  //   detected_conveyor_ = 0;
-  //   ros::param::set("/ariac/new_part_conveyor", true);
   if (msg->object_detected) // If there is an object in proximity.
   {
     ROS_WARN("Break beam triggered.");
-    conveyorPartsTime.emplace_back(ros::Time::now().toSec());
-    conveyorPartsList.emplace_back(conveyorCameraPart);
-    for (int idx = 0; idx < conveyorPartsTime.size(); idx++)
-    {
-      ROS_INFO_STREAM("Conveyor Parts Sequence");
-      ROS_INFO_STREAM("Part " << idx << " Time :" << conveyorPartsTime.at(idx));
-      ROS_INFO_STREAM("Part " << idx << " Type :" << conveyorPartsList.at(idx).type);
-      ROS_INFO_STREAM("Part " << idx << " Pose x:" << conveyorPartsList.at(idx).pose.position.x);
-      ROS_INFO_STREAM("Part " << idx << " Pose y:" << conveyorPartsList.at(idx).pose.position.y);
-      ROS_INFO_STREAM("-----------------");
-    }
+    conveyor_callback_ = 1;
+    detected_conveyor_ = 1;
   }
   else
   {
+    conveyor_callback_ = 1;
+    detected_conveyor_ = 0;
     ros::param::set("/ariac/new_part_conveyor", true);
   }
-}
 }
 
 /**
@@ -875,5 +917,38 @@ int SensorControl::getLogicalCameraNumProducts(int sensorNum) {
     return 0;
   }
   return logicalCamNumProducts.at(sensorNum);
+}
+
+
+void SensorControl::updatePartDataStruct(product product) {
+
+  int pos_t{};
+  int pos_c{};
+  int ktype{};
+  int kcolor{};
+  std::string type{};
+  std::string color{};
+  part Part;
+  
+  pos_t = product.p.type.find("_");
+  pos_c = product.p.type.rfind("_");
+
+  type = product.p.type.substr(0, pos_t);
+  color = product.p.type.substr(pos_c + 1);
+
+  ktype = hashit_type(type);
+  kcolor = hashit_color(color);
+
+  Part.picked_status = false;
+  Part.type = product.p.type;
+  Part.pose = product.p.pose;
+  Part.save_pose = Part.pose;
+  Part.frame = "bin";
+  Part.time_stamp = ros::Time::now();
+  Part.location = product.p.location;
+  Part.id = Part.type + std::to_string(parts_.at(ktype).at(kcolor).size());
+
+  parts_.at(ktype).at(kcolor).push_back(Part);
+
 }
 

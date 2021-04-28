@@ -37,6 +37,88 @@
 
 #include <tf2/LinearMath/Quaternion.h>
 
+
+
+
+
+
+void placePartsEmptyBins(GantryControl &gantry, SensorControl &sensors){
+    double b_x;
+    double b_y;
+    std::vector<EmptyBin> emptybins;
+    emptybins = sensors.getEmptyBins();
+    if (gantry.checkFreeGripper().compare("left") != 0){
+
+        if (emptybins.at(0).empty_locations.at(0) == 0)
+        {
+            b_x = emptybins.at(0).pose.position.x + 0.15;
+            b_y = emptybins.at(0).pose.position.y + 0.15;
+            emptybins.at(0).empty_locations.at(0) = true;
+        }
+        else if (emptybins.at(0).empty_locations.at(1) == 0)
+        {
+            b_x = emptybins.at(0).pose.position.x + 0.15;
+            b_y = emptybins.at(0).pose.position.y - 0.15;
+            emptybins.at(0).empty_locations.at(1) = true;
+        }
+        else if (emptybins.at(0).empty_locations.at(2) == 0)
+        {
+            b_x = emptybins.at(0).pose.position.x - 0.15;
+            b_y = emptybins.at(0).pose.position.y - 0.15;
+            emptybins.at(0).empty_locations.at(2) = true;
+        }
+        else if (emptybins.at(0).empty_locations.at(3) == 0)
+        {
+            b_x = emptybins.at(0).pose.position.x - 0.15;
+            b_y = emptybins.at(0).pose.position.y + 0.15;
+            emptybins.at(0).empty_locations.at(3) = true;
+            emptybins.erase(emptybins.begin() + 0);
+        }
+
+        gantry.product_left_arm_.pose.position.x = b_x;
+        gantry.product_left_arm_.pose.position.y = b_y;
+
+        gantry.placeProductLeftArmBin();
+        sensors.updatePartDataStruct(gantry.product_left_arm_);
+    }
+
+    if (gantry.checkFreeGripper().compare("right") != 0){
+
+        if (emptybins.at(0).empty_locations.at(0) == 0)
+        {
+            b_x = emptybins.at(0).pose.position.x + 0.15;
+            b_y = emptybins.at(0).pose.position.y + 0.15;
+            emptybins.at(0).empty_locations.at(0) = true;
+        }
+        else if (emptybins.at(0).empty_locations.at(1) == 0)
+        {
+            b_x = emptybins.at(0).pose.position.x + 0.15;
+            b_y = emptybins.at(0).pose.position.y - 0.15;
+            emptybins.at(0).empty_locations.at(1) = true;
+        }
+        else if (emptybins.at(0).empty_locations.at(2) == 0)
+        {
+            b_x = emptybins.at(0).pose.position.x - 0.15;
+            b_y = emptybins.at(0).pose.position.y - 0.15;
+            emptybins.at(0).empty_locations.at(2) = true;
+        }
+        else if (emptybins.at(0).empty_locations.at(3) == 0)
+        {
+            b_x = emptybins.at(0).pose.position.x - 0.15;
+            b_y = emptybins.at(0).pose.position.y + 0.15;
+            emptybins.at(0).empty_locations.at(3) = true;
+            emptybins.erase(emptybins.begin() + 0);
+        }
+
+        gantry.product_right_arm_.pose.position.x = b_x;
+        gantry.product_right_arm_.pose.position.y = b_y;
+
+        gantry.placeProductRightArmBin();
+        sensors.updatePartDataStruct(gantry.product_right_arm_);
+    }
+
+    sensors.updateEmptyBins(emptybins);
+}
 /**
  * @brief Check for sensor blackout 
  * 
@@ -369,6 +451,81 @@ int main(int argc, char **argv)
         transitionDone = false;
 
         Shipment current_shipment;
+
+        std::vector<Product> conveyor_products;
+        for (int n_ship = 0; n_ship < list_of_shipments.size() && !comp.newOrderAlert(); n_ship++)
+        {
+            current_shipment = list_of_shipments.at(n_ship);
+            // for (auto& current_shipment: list_of_shipments) {
+            list_of_products = comp.get_product_list_from_shipment(current_shipment);
+
+            for (int p = 0; p < list_of_products.size(); p++) // loop all the products to be retrieve from current order
+            {
+
+                current_product = list_of_products.at(p);
+
+                ROS_WARN_STREAM(current_product.type);
+
+                current_product.p = sensors.findPart(current_product.type);
+                if (current_product.p.type.empty()) // no parts of desired product found go to conveyor
+                {
+                    conveyor_products.push_back(current_product);
+                }
+            }
+        }
+
+        for (int i=0; i<2; i++){
+        for (int c=0;c<conveyor_products.size();c++){
+            time = 0.0;
+            startig_time = ros::Time::now().toSec();
+            pickedConveyor == 0;
+            while (time <= 120)
+            {
+                pickedConveyor = 0;
+                partsConveyor = sensors.getPartsConveyor();
+                if (partsConveyor.empty() != 1)
+                {
+                    double original_y;
+                    for (int prt = 0; prt < partsConveyor.size(); prt++)
+                    {
+                        original_y = partsConveyor.at(prt).pose.position.y - partsConveyor.at(prt).estimated_velocity * (ros::Time::now().toSec() - partsConveyor.at(prt).time_stamp.toSec());
+                        if (partsConveyor.at(prt).type.compare(conveyor_products.at(c).type) == 0 && original_y >= 2)
+                        {
+                            current_product.p = partsConveyor.at(prt);
+
+                            if (gantry.checkFreeGripper().compare("left") == 0 || gantry.checkFreeGripper().compare("any") == 0)
+                            {
+                                pickedConveyor = gantry.getPartConveyorLeftArm(current_product);
+                            }
+                            else if (gantry.checkFreeGripper().compare("right") == 0)
+                            {
+                                pickedConveyor = gantry.getPartConveyorRightArm(current_product);
+                            }
+
+                            sensors.erasePartConveyor(prt);
+                            break;
+                        }
+                        else if (original_y < 2)
+                        {
+                            sensors.erasePartConveyor(prt);
+                        }
+                    }
+                    if (pickedConveyor == 1)
+                    {
+                        break;
+                    }
+                }
+                time = ros::Time::now().toSec() - startig_time;
+            }
+
+            if (c%2!=0 || (c + 1) == conveyor_products.size()){
+                placePartsEmptyBins(gantry, sensors);
+            }
+            
+        }
+        }
+
+
         for (int n_ship = 0; n_ship < list_of_shipments.size() && !comp.newOrderAlert(); n_ship++)
         {
             current_shipment = list_of_shipments.at(n_ship);
@@ -609,14 +766,6 @@ int main(int argc, char **argv)
                         time = 0.0;
                         startig_time = ros::Time::now().toSec();
                         pickedConveyor == 0;
-                        while(sensors.conveyorPartsList.size()<1)
-                        {
-                        }
-                        if(sensors.conveyorPartsList.size()>0)
-                        {
-                            float distance  = sensors.conveyorPartsList.at(0).pose.position.y - (0.2*(ros::Time().now().toSec() - sensors.conveyorPartsTime.at(0)));
-
-                        }
                         while (time <= 120)
                         {
                             partsConveyor = sensors.getPartsConveyor();
@@ -625,7 +774,7 @@ int main(int argc, char **argv)
                                 double original_y;
                                 for (int prt = 0; prt < partsConveyor.size(); prt++)
                                 {
-                                    if (partsConveyor.at(prt).type.compare(current_product.type) == 0 && original_y >= 0)
+                                    if (partsConveyor.at(prt).type.compare(current_product.type) == 0 && original_y >= -3)
                                     {
                                         current_product.p = partsConveyor.at(prt);
 
@@ -641,7 +790,7 @@ int main(int argc, char **argv)
                                         sensors.erasePartConveyor(prt);
                                         break;
                                     }
-                                    else if (original_y < 0)
+                                    else if (original_y < -3)
                                     {
                                         sensors.erasePartConveyor(prt);
                                     }

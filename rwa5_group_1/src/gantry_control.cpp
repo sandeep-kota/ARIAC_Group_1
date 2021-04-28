@@ -3499,7 +3499,7 @@ void GantryControl::placePartLeftArm()
                                         currentArmPose.orientation.z,
                                         currentArmPose.orientation.w);
         q_world_tray_pose = q_rotation_flip * q_left_ee_link_part;
-        q_rotation_flip.normalize();
+        q_world_tray_pose.normalize();
 
         product_left_arm_.p.pose.orientation.x = q_world_tray_pose.getX();
         product_left_arm_.p.pose.orientation.y = q_world_tray_pose.getY();
@@ -4028,8 +4028,13 @@ bool GantryControl::getPartConveyorLeftArm(product product)
     bool picked{false};
     double offset_y;
     double offset_x;
-    double distance_part {100};
+    double distance_part {100}; 
     geometry_msgs::Pose currentArmPose;
+
+    tf2::Quaternion q_world_part(product.p.pose.orientation.x,
+                                 product.p.pose.orientation.y,
+                                 product.p.pose.orientation.z,
+                                 product.p.pose.orientation.w);
 
     original_z = product.p.pose.position.z;
     goToPresetLocation(start_90_);
@@ -4045,6 +4050,7 @@ bool GantryControl::getPartConveyorLeftArm(product product)
     currentArmPose = left_arm_group_.getCurrentPose().pose;
     product.p.pose.position.z = product.p.pose.position.z + model_height.at(product.p.type) + GRIPPER_HEIGHT - EPSILON + 0.02;
     product.p.pose.position.y = currentArmPose.position.y;
+    product.p.pose.position.x = currentArmPose.position.x;
     product.p.pose.orientation.x = currentArmPose.orientation.x;
     product.p.pose.orientation.y = currentArmPose.orientation.y;
     product.p.pose.orientation.z = currentArmPose.orientation.z;
@@ -4053,9 +4059,29 @@ bool GantryControl::getPartConveyorLeftArm(product product)
     left_arm_group_.move();
 
     activateGripper("left_arm");
-    auto state = getGripperState("left_arm");
+    ros::Duration(2).sleep();
 
+    currentArmPose = left_arm_group_.getCurrentPose().pose;
+
+    tf2::Quaternion q_arm(currentArmPose.orientation.x,
+                          currentArmPose.orientation.y,
+                          currentArmPose.orientation.z,
+                          currentArmPose.orientation.w);
+
+    tf2::Quaternion q_world_left_ee_link(currentArmPose.orientation.x,
+                                          currentArmPose.orientation.y,
+                                          currentArmPose.orientation.z,
+                                          currentArmPose.orientation.w);
+
+    q_left_ee_link_part = q_world_left_ee_link.inverse() * q_world_part;
+
+    q_left_ee_link_part.normalize();
+
+    ///////
+    auto state = getGripperState("left_arm");
+    ROS_WARN_STREAM("STATE: " << state.enabled);
     if(state.enabled){
+        ROS_WARN_STREAM("STATE: " << state.enabled);
         distance_part = original_y - product.p.estimated_velocity * (ros::Time::now().toSec() - product.p.time_stamp.toSec());
         while(distance_part > 0.1){
             distance_part = original_y - product.p.estimated_velocity * (ros::Time::now().toSec() - product.p.time_stamp.toSec());
@@ -4069,107 +4095,13 @@ bool GantryControl::getPartConveyorLeftArm(product product)
         product.p.pose.orientation.w = currentArmPose.orientation.w;
         left_arm_group_.setPoseTarget(product.p.pose);
         left_arm_group_.move();
-        state = getGripperState("left_arm");
-        if(state.attached){
-            goToPresetLocation(start_);
-        } else {
-            while(!state.attached){
-                 distance_part = original_y - product.p.estimated_velocity * (ros::Time::now().toSec() - product.p.time_stamp.toSec());
-                while(distance_part > 0.1){
-                    distance_part = original_y - product.p.estimated_velocity * (ros::Time::now().toSec() - product.p.time_stamp.toSec());
-                }
-                ROS_WARN_STREAM("TRIGGER PICK CONVEYOR");
-
-                product.p.pose.position.z = original_z + model_height.at(product.p.type) + GRIPPER_HEIGHT - EPSILON + 0.01;
-                product.p.pose.orientation.x = currentArmPose.orientation.x;
-                product.p.pose.orientation.y = currentArmPose.orientation.y;
-                product.p.pose.orientation.z = currentArmPose.orientation.z;
-                product.p.pose.orientation.w = currentArmPose.orientation.w;
-                left_arm_group_.setPoseTarget(product.p.pose);
-                left_arm_group_.move();
-                state = getGripperState("left_arm");
-            }
-        }
-    } 
-
     
-    gantry_location_ = "start";
+        goToPresetLocation(start_);
+        gantry_location_ = "start";
+    }
 
-    // joint_group_positions_.at(1) += 0.8;
-
-    // full_robot_group_.setJointValueTarget({joint_group_positions_.at(0), joint_group_positions_.at(1), joint_group_positions_.at(2),
-    //                                        -0.19, -0.74, 1.49, -0.75, 1.39, 0, joint_group_positions_.at(9), joint_group_positions_.at(10), joint_group_positions_.at(11),
-    //                                        joint_group_positions_.at(12), joint_group_positions_.at(13), joint_group_positions_.at(14)});
-    // full_robot_group_.move();
-    // ros::Duration(0.5).sleep();
-    // goToPresetLocation(start_);
-    
-    // int sum{0};
-    // while (sum < 4)
-    // {
-    //     currentArmPose = left_arm_group_.getCurrentPose().pose;
-
-    //     current_y = product.p.pose.position.y - product.p.estimated_velocity * (ros::Time::now().toSec() - product.p.time_stamp.toSec());
-    //     offset_y = current_y - currentArmPose.position.y;
-    //     offset_x = product.p.pose.position.x - currentArmPose.position.x;
-
-    //     joint_group_positions_.at(0) += offset_x;
-    //     joint_group_positions_.at(1) -= offset_y + 0.07;
-    //     gantry_group_.setJointValueTarget({joint_group_positions_.at(0), joint_group_positions_.at(1), joint_group_positions_.at(2)});
-    //     gantry_group_.move();
-
-    //     if (sum == 0)
-    //     {
-    //         currentArmPose = left_arm_group_.getCurrentPose().pose;
-    //         product.p.pose.position.z = product.p.pose.position.z + model_height.at(product.p.type) + GRIPPER_HEIGHT - EPSILON + 0.02;
-    //         product.p.pose.position.y = currentArmPose.position.y;
-    //         product.p.pose.orientation.x = currentArmPose.orientation.x;
-    //         product.p.pose.orientation.y = currentArmPose.orientation.y;
-    //         product.p.pose.orientation.z = currentArmPose.orientation.z;
-    //         product.p.pose.orientation.w = currentArmPose.orientation.w;
-    //         left_arm_group_.setPoseTarget(product.p.pose);
-    //         left_arm_group_.move();
-    //     }
-
-    //     sum += 1;
-    // }
-
-    // currentArmPose = left_arm_group_.getCurrentPose().pose;
-    // current_y = product.p.pose.position.y - product.p.estimated_velocity * (ros::Time::now().toSec() - product.p.time_stamp.toSec());
-    // offset_y = current_y - currentArmPose.position.y;
-    // offset_x = product.p.pose.position.x - currentArmPose.position.x;
-
-    // joint_group_positions_.at(0) += offset_x;
-    // joint_group_positions_.at(1) -= offset_y + 0.07;
-
-    // gantry_group_.setJointValueTarget({joint_group_positions_.at(0), joint_group_positions_.at(1), joint_group_positions_.at(2)});
-    // gantry_group_.move();
-
-    // product.p.pose.position.y = current_y + 0.07;
-    // product.p.pose.position.z = original_z + 0.01;
-    // activateGripper("left_arm");
-
-    // product.p.pose.position.z = product.p.pose.position.z + model_height.at(product.p.type) + GRIPPER_HEIGHT - EPSILON;
-    // product.p.pose.orientation.x = currentArmPose.orientation.x;
-    // product.p.pose.orientation.y = currentArmPose.orientation.y;
-    // product.p.pose.orientation.z = currentArmPose.orientation.z;
-    // product.p.pose.orientation.w = currentArmPose.orientation.w;
-    // left_arm_group_.setPoseTarget(product.p.pose);
-    // left_arm_group_.move();
-
-    // joint_group_positions_.at(1) += 0.8;
-
-    // full_robot_group_.setJointValueTarget({joint_group_positions_.at(0), joint_group_positions_.at(1), joint_group_positions_.at(2),
-    //                                        -0.19, -0.74, 1.49, -0.75, 1.39, 0, joint_group_positions_.at(9), joint_group_positions_.at(10), joint_group_positions_.at(11),
-    //                                        joint_group_positions_.at(12), joint_group_positions_.at(13), joint_group_positions_.at(14)});
-    // full_robot_group_.move();
-    // ros::Duration(0.5).sleep();
-    // goToPresetLocation(start_);
-    // gantry_location_ = "start";
-
+    product_left_arm_ = product;
     picked = true;
-
-    // product_left_arm_ = product;
 
     return picked;
 }
@@ -4185,63 +4117,33 @@ bool GantryControl::getPartConveyorRightArm(product product)
 {
     double current_y;
     double original_z;
-    double original_y;
+    double original_y = product.p.pose.position.y;
     bool picked{false};
     double offset_y;
     double offset_x;
+    double distance_part {100};
     geometry_msgs::Pose currentArmPose;
 
+    tf2::Quaternion q_world_part(product.p.pose.orientation.x,
+                                 product.p.pose.orientation.y,
+                                 product.p.pose.orientation.z,
+                                 product.p.pose.orientation.w);
+
     original_z = product.p.pose.position.z;
-    original_y = product.p.pose.position.y - product.p.estimated_velocity * (ros::Time::now().toSec() - product.p.time_stamp.toSec());
-
-    gantry_location_ = "conveyor";
-    rotateTorso(PI / 2);
-    int sum{0};
-    while (sum < 4)
-    {
-        currentArmPose = right_arm_group_.getCurrentPose().pose;
-        current_y = original_y - product.p.estimated_velocity * (ros::Time::now().toSec() - product.p.time_stamp.toSec());
-        ROS_WARN_STREAM("CURRENT Y: " << current_y);
-        offset_y = current_y - currentArmPose.position.y;
-        offset_x = product.p.pose.position.x - currentArmPose.position.x;
-
-        joint_group_positions_.at(0) += offset_x;
-        joint_group_positions_.at(1) -= offset_y - 0.25;
-        gantry_group_.setJointValueTarget({joint_group_positions_.at(0), joint_group_positions_.at(1), joint_group_positions_.at(2)});
-        gantry_group_.move();
-
-        if (sum == 0)
-        {
-            currentArmPose = right_arm_group_.getCurrentPose().pose;
-            product.p.pose.position.z = product.p.pose.position.z + model_height.at(product.p.type) + GRIPPER_HEIGHT - EPSILON + 0.02;
-            product.p.pose.position.y = currentArmPose.position.y;
-            product.p.pose.orientation.x = currentArmPose.orientation.x;
-            product.p.pose.orientation.y = currentArmPose.orientation.y;
-            product.p.pose.orientation.z = currentArmPose.orientation.z;
-            product.p.pose.orientation.w = currentArmPose.orientation.w;
-            right_arm_group_.setPoseTarget(product.p.pose);
-            right_arm_group_.move();
-        }
-
-        sum += 1;
-    }
-
+    goToPresetLocation(start_90_);
     currentArmPose = right_arm_group_.getCurrentPose().pose;
-    current_y = original_y - product.p.estimated_velocity * (ros::Time::now().toSec() - product.p.time_stamp.toSec());
-    offset_y = current_y - currentArmPose.position.y;
-    offset_x = product.p.pose.position.x - currentArmPose.position.x;
-
-    joint_group_positions_.at(0) += offset_x;
-    joint_group_positions_.at(1) -= offset_y - 0.35;
-
+    offset_y = -currentArmPose.position.y;
+    offset_x = +currentArmPose.position.x;
+    joint_group_positions_.at(0) -= offset_x;
+    joint_group_positions_.at(1) -= offset_y;
     gantry_group_.setJointValueTarget({joint_group_positions_.at(0), joint_group_positions_.at(1), joint_group_positions_.at(2)});
     gantry_group_.move();
+    gantry_location_ = "conveyor";
 
-    product.p.pose.position.y = current_y - 0.35;
-    product.p.pose.position.z = original_z + 0.01;
-    activateGripper("right_arm");
-
-    product.p.pose.position.z = product.p.pose.position.z + model_height.at(product.p.type) + GRIPPER_HEIGHT - EPSILON;
+    currentArmPose = right_arm_group_.getCurrentPose().pose;
+    product.p.pose.position.z = product.p.pose.position.z + model_height.at(product.p.type) + GRIPPER_HEIGHT - EPSILON + 0.02;
+    product.p.pose.position.y = currentArmPose.position.y;
+    product.p.pose.position.x = currentArmPose.position.x;
     product.p.pose.orientation.x = currentArmPose.orientation.x;
     product.p.pose.orientation.y = currentArmPose.orientation.y;
     product.p.pose.orientation.z = currentArmPose.orientation.z;
@@ -4249,20 +4151,50 @@ bool GantryControl::getPartConveyorRightArm(product product)
     right_arm_group_.setPoseTarget(product.p.pose);
     right_arm_group_.move();
 
-    joint_group_positions_.at(1) += 0.8;
+    activateGripper("right_arm");
 
-    full_robot_group_.setJointValueTarget({joint_group_positions_.at(0), joint_group_positions_.at(1), joint_group_positions_.at(2),
-                                           -0.19, -0.74, 1.49, -0.75, 1.39, 0, joint_group_positions_.at(9), joint_group_positions_.at(10), joint_group_positions_.at(11),
-                                           joint_group_positions_.at(12), joint_group_positions_.at(13), joint_group_positions_.at(14)});
-    full_robot_group_.move();
-    ros::Duration(0.5).sleep();
-    goToPresetLocation(start_);
+    ros::Duration(2).sleep();
 
-    gantry_location_ = "start";
+    currentArmPose = right_arm_group_.getCurrentPose().pose;
 
-    picked = true;
+    tf2::Quaternion q_arm(currentArmPose.orientation.x,
+                          currentArmPose.orientation.y,
+                          currentArmPose.orientation.z,
+                          currentArmPose.orientation.w);
+
+    tf2::Quaternion q_world_right_ee_link(currentArmPose.orientation.x,
+                                          currentArmPose.orientation.y,
+                                          currentArmPose.orientation.z,
+                                          currentArmPose.orientation.w);
+
+    q_right_ee_link_part = q_world_right_ee_link.inverse() * q_world_part;
+
+    q_right_ee_link_part.normalize();
+    auto state = getGripperState("right_arm");
+    ROS_WARN_STREAM("STATE: " << state.enabled);
+    if(state.enabled){
+        ROS_WARN_STREAM("STATE: " << state.enabled);
+        distance_part = original_y - product.p.estimated_velocity * (ros::Time::now().toSec() - product.p.time_stamp.toSec());
+        while(distance_part > 0.1){
+            distance_part = original_y - product.p.estimated_velocity * (ros::Time::now().toSec() - product.p.time_stamp.toSec());
+        }
+        ROS_WARN_STREAM("TRIGGER PICK CONVEYOR");
+
+        product.p.pose.position.z = original_z + model_height.at(product.p.type) + GRIPPER_HEIGHT - EPSILON + 0.01;
+        product.p.pose.orientation.x = currentArmPose.orientation.x;
+        product.p.pose.orientation.y = currentArmPose.orientation.y;
+        product.p.pose.orientation.z = currentArmPose.orientation.z;
+        product.p.pose.orientation.w = currentArmPose.orientation.w;
+        right_arm_group_.setPoseTarget(product.p.pose);
+        right_arm_group_.move();
+    
+        goToPresetLocation(start_);
+        gantry_location_ = "start";
+    }
 
     product_right_arm_ = product;
+    
+    picked = true;
 
     return picked;
 }
@@ -4506,4 +4438,114 @@ bool GantryControl::sendJointPosition(trajectory_msgs::JointTrajectory command_m
     {
         return false;
     }
+}
+
+void GantryControl::placeProductLeftArmBin(){
+    
+    goToPresetLocation(bins_);
+    geometry_msgs::Pose currentArmPose = left_arm_group_.getCurrentPose().pose;
+
+    const double offset_y = product_left_arm_.pose.position.y - currentArmPose.position.y;
+
+    const double offset_x = product_left_arm_.pose.position.x - currentArmPose.position.x;
+
+    joint_group_positions_.at(0) += offset_x;
+    joint_group_positions_.at(1) -= offset_y;
+
+    full_robot_group_.setJointValueTarget(joint_group_positions_);
+
+    moveit::planning_interface::MoveGroupInterface::Plan move_x;
+    bool success = (full_robot_group_.plan(move_x) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+    if (success)
+        full_robot_group_.move();
+
+    geometry_msgs::Pose target_pose_in_bin;
+    tf2::Quaternion q_world_bin_pos;
+    currentArmPose = left_arm_group_.getCurrentPose().pose;
+
+    product_left_arm_.p.pose.position.x = product_left_arm_.pose.position.x;
+    product_left_arm_.p.pose.position.y = product_left_arm_.pose.position.y;
+    product_left_arm_.p.pose.position.z = 0.73;
+    target_pose_in_bin.position.x = product_left_arm_.p.pose.position.x;
+    target_pose_in_bin.position.y = product_left_arm_.p.pose.position.y;
+    target_pose_in_bin.position.z = product_left_arm_.p.pose.position.z + (ABOVE_TARGET + 1.5 * model_height[product_left_arm_.type]);
+    target_pose_in_bin.orientation.x = currentArmPose.orientation.x;
+    target_pose_in_bin.orientation.y = currentArmPose.orientation.y;
+    target_pose_in_bin.orientation.z = currentArmPose.orientation.z;
+    target_pose_in_bin.orientation.w = currentArmPose.orientation.w;
+    tf2::Quaternion q_rotation(currentArmPose.orientation.x,
+                                    currentArmPose.orientation.y,
+                                    currentArmPose.orientation.z,
+                                    currentArmPose.orientation.w);
+    q_world_bin_pos = q_rotation * q_left_ee_link_part;
+    q_world_bin_pos.normalize();
+
+    product_left_arm_.p.pose.orientation.x = q_world_bin_pos.getX();
+    product_left_arm_.p.pose.orientation.y = q_world_bin_pos.getY();
+    product_left_arm_.p.pose.orientation.z = q_world_bin_pos.getZ();
+    product_left_arm_.p.pose.orientation.w = q_world_bin_pos.getW();
+
+    left_arm_group_.setPoseTarget(target_pose_in_bin);
+    left_arm_group_.move();
+
+    deactivateGripper("left_arm");
+
+
+    product_left_arm_.p.location = "bins";
+}
+
+
+void GantryControl::placeProductRightArmBin(){
+
+    goToPresetLocation(bins_);
+    
+    geometry_msgs::Pose currentArmPose = right_arm_group_.getCurrentPose().pose;
+
+    const double offset_y = product_right_arm_.pose.position.y - currentArmPose.position.y;
+
+    const double offset_x = product_right_arm_.pose.position.x - currentArmPose.position.x;
+
+    joint_group_positions_.at(0) += offset_x;
+    joint_group_positions_.at(1) -= offset_y;
+
+    full_robot_group_.setJointValueTarget(joint_group_positions_);
+
+    moveit::planning_interface::MoveGroupInterface::Plan move_x;
+    bool success = (full_robot_group_.plan(move_x) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+    if (success)
+        full_robot_group_.move();
+
+    geometry_msgs::Pose target_pose_in_bin;
+    tf2::Quaternion q_world_bin_pos;
+    currentArmPose = right_arm_group_.getCurrentPose().pose;
+
+    product_right_arm_.p.pose.position.x = product_right_arm_.pose.position.x;
+    product_right_arm_.p.pose.position.y = product_right_arm_.pose.position.y;
+    product_right_arm_.p.pose.position.z = 0.73;
+    target_pose_in_bin.position.x = product_right_arm_.p.pose.position.x;
+    target_pose_in_bin.position.y = product_right_arm_.p.pose.position.y;
+    target_pose_in_bin.position.z = product_right_arm_.p.pose.position.z + (ABOVE_TARGET + 1.5 * model_height[product_right_arm_.type]);
+    target_pose_in_bin.orientation.x = currentArmPose.orientation.x;
+    target_pose_in_bin.orientation.y = currentArmPose.orientation.y;
+    target_pose_in_bin.orientation.z = currentArmPose.orientation.z;
+    target_pose_in_bin.orientation.w = currentArmPose.orientation.w;
+    tf2::Quaternion q_rotation(currentArmPose.orientation.x,
+                                    currentArmPose.orientation.y,
+                                    currentArmPose.orientation.z,
+                                    currentArmPose.orientation.w);
+    q_world_bin_pos = q_rotation * q_left_ee_link_part;
+    q_world_bin_pos.normalize();
+
+    product_right_arm_.p.pose.orientation.x = q_world_bin_pos.getX();
+    product_right_arm_.p.pose.orientation.y = q_world_bin_pos.getY();
+    product_right_arm_.p.pose.orientation.z = q_world_bin_pos.getZ();
+    product_right_arm_.p.pose.orientation.w = q_world_bin_pos.getW();
+
+    right_arm_group_.setPoseTarget(target_pose_in_bin);
+    right_arm_group_.move();
+
+    deactivateGripper("right_arm");
+
+    product_right_arm_.p.location = "bins";
+
 }
