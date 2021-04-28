@@ -660,7 +660,7 @@ void SensorControl::break_beam_callback(const nist_gear::Proximity::ConstPtr &ms
     ros::param::set("/ariac/new_part_conveyor", true);
   }
 }
-}
+//}
 
 /**
  * @brief Quality Control Sensor Callback
