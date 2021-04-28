@@ -667,7 +667,7 @@ int main(int argc, char **argv)
                         }
                         // ROS_WARN_STREAM("Picked from conveyor belt");
                     }
-                    else
+                    else if (!comp.newOrderAlert())
                     {
                         gantry.getProduct(current_product); // get product after placing in agv
                         // ROS_WARN_STREAM("Picked from a bin or shelf");
@@ -756,28 +756,30 @@ int main(int argc, char **argv)
                         }
                         
                         // check the faulty parts again and the parts that are to be flipped
-                        ROS_INFO_STREAM("Checking the faulty parts before sending AGV");
-                        faultyPartsProcess(gantry, sensors);
-                        ros::param::set("/check_parts_to_flip", true);
-                        ros::Duration(1).sleep();
-                        gantry.flipProductsAGV(sensors.getcheckPartsToFlip());
-                        sensors.clearcheckPartsToFlip();
+                        if (!comp.newOrderAlert()) {
+                            ROS_INFO_STREAM("Checking the faulty parts before sending AGV");
+                            faultyPartsProcess(gantry, sensors);
+                            ros::param::set("/check_parts_to_flip", true);
+                            ros::Duration(1).sleep();
+                            gantry.flipProductsAGV(sensors.getcheckPartsToFlip());
+                            sensors.clearcheckPartsToFlip();
 
-                        
-                        std::string shipmentTray = agvTrayMap.at(shipmentAGV);
-                        ROS_INFO_STREAM("Product Placed, NOW SEND AGV: " << shipmentAGV << "Tray: " << shipmentTray);
+                            
+                            std::string shipmentTray = agvTrayMap.at(shipmentAGV);
+                            ROS_INFO_STREAM("Product Placed, NOW SEND AGV: " << shipmentAGV << "Tray: " << shipmentTray);
 
-                        if (agvControl.isAGVReady(shipmentTray))
-                        {
-                            std::string shipmentType = current_shipment.shipment_type;
-                            agvControl.sendAGV(shipmentType, shipmentTray);
+                            if (agvControl.isAGVReady(shipmentTray))
+                            {
+                                std::string shipmentType = current_shipment.shipment_type;
+                                agvControl.sendAGV(shipmentType, shipmentTray);
+                            }
+                            else
+                            {
+                                ROS_INFO_STREAM("Tray not ready: " << shipmentTray);
+                            }
+
+                            ROS_INFO_STREAM("AGV SENT");
                         }
-                        else
-                        {
-                            ROS_INFO_STREAM("Tray not ready: " << shipmentTray);
-                        }
-
-                        ROS_INFO_STREAM("AGV SENT");
                     }
                 }
 

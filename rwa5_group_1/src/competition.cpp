@@ -165,13 +165,13 @@ bool Competition::processOrder()
       std::string agv_id = current_order.shipments.at(s).agv_id;
       std::string shipment_type = current_order.shipments.at(s).shipment_type;
 
-      if (agvToShipmentMap.find(agv_id) == agvToShipmentMap.end())
+      /*if (agvToShipmentMap.find(agv_id) == agvToShipmentMap.end())
       {
         std::queue<std::string> shipmentQueue;
         agvToShipmentMap.insert({agv_id, shipmentQueue});
       }
       agvToShipmentMap.at(agv_id).push(shipment_type);
-
+      */
       //for (int p = 0; p < current_order.shipments.at(s).products.size(); p++)
       //{
       //product_list_.emplace_back(current_order.shipments.at(s).products.at(p));
@@ -340,7 +340,8 @@ void Competition::orderTransition(std::vector<Shipment> prevShipments, SensorCon
   // check for agvid:
   if (this->agvInUse.compare(newShipment.agv_id) == 0)
   {
-    removePrevProductsFromAGV(prevShipment.agv_id, sensors, gantry);
+    removePrevProductsFromAGV(this->agvInUse, sensors, gantry);
+    agvToProductsMap.at(this->agvInUse).clear();
   }
   else
   {
@@ -379,8 +380,8 @@ void Competition::orderTransition(std::vector<Shipment> prevShipments, SensorCon
   orderStack.emplace(shipment_list_);
 
   ROS_WARN_STREAM("clearing AGV map");
-  agvToProductsMap.at(AGV1_ID).clear();
-  agvToProductsMap.at(AGV2_ID).clear();
+  //agvToProductsMap.at(AGV1_ID).clear();
+  //agvToProductsMap.at(AGV2_ID).clear();
 
   ROS_INFO_STREAM("Starting building kit for new order.");
 }
