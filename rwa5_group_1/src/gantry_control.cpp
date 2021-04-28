@@ -250,7 +250,7 @@ void GantryControl::init()
     // Pick part conveyor
 
     conveyor_left_.location = "conveyor";
-    conveyor_left_.gantry = {0.0, -3.2, PI/2};
+    conveyor_left_.gantry = {0.0, -3.2, PI / 2};
     conveyor_left_.left_arm = {-0.19, -0.74, 1.49, -0.75, 1.39, 0};
     conveyor_left_.right_arm = aisle_right_arm;
 
@@ -1689,8 +1689,6 @@ void GantryControl::pickPartFromShelf8Aisle3Obstacles(product product)
     goToPresetLocation(aisle2_);
 }
 
-
-
 /**
  * @brief Function to pick the part from the environment
  * 
@@ -2744,7 +2742,6 @@ bool GantryControl::pickPartRightArm(part part)
  * @return true 
  * @return false 
  */
-
 bool GantryControl::correctPosePartLeftArm(Part part, geometry_msgs::Pose target, std::string agv_id)
 {
     if (agv_id.compare("agv2") == 0 || agv_id.compare("any") == 0)
@@ -3135,7 +3132,8 @@ bool GantryControl::throwPartLeft(part part)
     if (part.location == "agv_2")
     {
         goToPresetLocation(agv2_);
-        if (part.pose.position.y < -7 && part.pose.position.x > 0){
+        if (part.pose.position.y < -7 && part.pose.position.x > 0)
+        {
             goToPresetLocation(tray2_left_negative_);
         }
         else if (part.pose.position.x >= 0)
@@ -3152,7 +3150,8 @@ bool GantryControl::throwPartLeft(part part)
         goToPresetLocation(agv1_);
         ROS_WARN_STREAM("X POSE: " << part.pose.position.x);
         ROS_WARN_STREAM("Y POSE: " << part.pose.position.y);
-        if (part.pose.position.y > 7 && part.pose.position.x < 0){
+        if (part.pose.position.y > 7 && part.pose.position.x < 0)
+        {
             ROS_WARN_STREAM("CONDITION BEING CALLED");
             goToPresetLocation(tray1_left_negative_);
         }
@@ -3851,6 +3850,11 @@ void GantryControl::rotateTorso(const double angle)
 //     }
 // }
 
+/**
+ * @brief Flips the parts in the AGV if required
+ * 
+ * @param checkPartsToFlip 
+ */
 void GantryControl::flipProductsAGV(std::vector<Part> checkPartsToFlip)
 {
     ros::param::set("/flip_process", true);
@@ -4028,7 +4032,7 @@ bool GantryControl::getPartConveyorLeftArm(product product)
     bool picked{false};
     double offset_y;
     double offset_x;
-    double distance_part {100}; 
+    double distance_part{100};
     geometry_msgs::Pose currentArmPose;
 
     tf2::Quaternion q_world_part(product.p.pose.orientation.x,
@@ -4069,9 +4073,9 @@ bool GantryControl::getPartConveyorLeftArm(product product)
                           currentArmPose.orientation.w);
 
     tf2::Quaternion q_world_left_ee_link(currentArmPose.orientation.x,
-                                          currentArmPose.orientation.y,
-                                          currentArmPose.orientation.z,
-                                          currentArmPose.orientation.w);
+                                         currentArmPose.orientation.y,
+                                         currentArmPose.orientation.z,
+                                         currentArmPose.orientation.w);
 
     q_left_ee_link_part = q_world_left_ee_link.inverse() * q_world_part;
 
@@ -4080,10 +4084,12 @@ bool GantryControl::getPartConveyorLeftArm(product product)
     ///////
     auto state = getGripperState("left_arm");
     ROS_WARN_STREAM("STATE: " << state.enabled);
-    if(state.enabled){
+    if (state.enabled)
+    {
         ROS_WARN_STREAM("STATE: " << state.enabled);
         distance_part = original_y - product.p.estimated_velocity * (ros::Time::now().toSec() - product.p.time_stamp.toSec());
-        while(distance_part > 0.1){
+        while (distance_part > 0.1)
+        {
             distance_part = original_y - product.p.estimated_velocity * (ros::Time::now().toSec() - product.p.time_stamp.toSec());
         }
         ROS_WARN_STREAM("TRIGGER PICK CONVEYOR");
@@ -4095,7 +4101,7 @@ bool GantryControl::getPartConveyorLeftArm(product product)
         product.p.pose.orientation.w = currentArmPose.orientation.w;
         left_arm_group_.setPoseTarget(product.p.pose);
         left_arm_group_.move();
-    
+
         goToPresetLocation(start_);
         gantry_location_ = "start";
     }
@@ -4121,7 +4127,7 @@ bool GantryControl::getPartConveyorRightArm(product product)
     bool picked{false};
     double offset_y;
     double offset_x;
-    double distance_part {100};
+    double distance_part{100};
     geometry_msgs::Pose currentArmPose;
 
     tf2::Quaternion q_world_part(product.p.pose.orientation.x,
@@ -4172,10 +4178,12 @@ bool GantryControl::getPartConveyorRightArm(product product)
     q_right_ee_link_part.normalize();
     auto state = getGripperState("right_arm");
     ROS_WARN_STREAM("STATE: " << state.enabled);
-    if(state.enabled){
+    if (state.enabled)
+    {
         ROS_WARN_STREAM("STATE: " << state.enabled);
         distance_part = original_y - product.p.estimated_velocity * (ros::Time::now().toSec() - product.p.time_stamp.toSec());
-        while(distance_part > 0.1){
+        while (distance_part > 0.1)
+        {
             distance_part = original_y - product.p.estimated_velocity * (ros::Time::now().toSec() - product.p.time_stamp.toSec());
         }
         ROS_WARN_STREAM("TRIGGER PICK CONVEYOR");
@@ -4187,18 +4195,22 @@ bool GantryControl::getPartConveyorRightArm(product product)
         product.p.pose.orientation.w = currentArmPose.orientation.w;
         right_arm_group_.setPoseTarget(product.p.pose);
         right_arm_group_.move();
-    
+
         goToPresetLocation(start_);
         gantry_location_ = "start";
     }
 
     product_right_arm_ = product;
-    
+
     picked = true;
 
     return picked;
 }
 
+/**
+ * @brief Get the roll value of the Left Arm end effecor
+ * 
+ */
 void GantryControl::getLeftArmRoll()
 {
     geometry_msgs::Pose currentArmPose = left_arm_group_.getCurrentPose().pose;
@@ -4248,6 +4260,10 @@ void GantryControl::getLeftArmRoll()
     ROS_WARN_STREAM("LEFT GRIPPER YAW ANGLE: " << yaw);
 }
 
+/**
+ * @brief Get the roll value for the Right Arm end effector
+ * 
+ */
 void GantryControl::getRightArmRoll()
 {
     geometry_msgs::Pose currentArmPose = right_arm_group_.getCurrentPose().pose;
@@ -4260,6 +4276,7 @@ void GantryControl::getRightArmRoll()
     m.getRPY(roll, pitch, yaw);
     ROS_WARN_STREAM("RIGHT GRIPPER ROLL ANGLE: " << roll);
 }
+
 /**
  * @brief Activate the gripper
  * 
@@ -4440,8 +4457,13 @@ bool GantryControl::sendJointPosition(trajectory_msgs::JointTrajectory command_m
     }
 }
 
-void GantryControl::placeProductLeftArmBin(){
-    
+/**
+ * @brief Method to place the products in empty bins using left arm
+ * 
+ */
+void GantryControl::placeProductLeftArmBin()
+{
+
     goToPresetLocation(bins_);
     geometry_msgs::Pose currentArmPose = left_arm_group_.getCurrentPose().pose;
 
@@ -4474,9 +4496,9 @@ void GantryControl::placeProductLeftArmBin(){
     target_pose_in_bin.orientation.z = currentArmPose.orientation.z;
     target_pose_in_bin.orientation.w = currentArmPose.orientation.w;
     tf2::Quaternion q_rotation(currentArmPose.orientation.x,
-                                    currentArmPose.orientation.y,
-                                    currentArmPose.orientation.z,
-                                    currentArmPose.orientation.w);
+                               currentArmPose.orientation.y,
+                               currentArmPose.orientation.z,
+                               currentArmPose.orientation.w);
     q_world_bin_pos = q_rotation * q_left_ee_link_part;
     q_world_bin_pos.normalize();
 
@@ -4490,15 +4512,18 @@ void GantryControl::placeProductLeftArmBin(){
 
     deactivateGripper("left_arm");
 
-
     product_left_arm_.p.location = "bins";
 }
 
-
-void GantryControl::placeProductRightArmBin(){
+/**
+ * @brief Method to place the products in empty bins using right arm
+ * 
+ */
+void GantryControl::placeProductRightArmBin()
+{
 
     goToPresetLocation(bins_);
-    
+
     geometry_msgs::Pose currentArmPose = right_arm_group_.getCurrentPose().pose;
 
     const double offset_y = product_right_arm_.pose.position.y - currentArmPose.position.y;
@@ -4530,9 +4555,9 @@ void GantryControl::placeProductRightArmBin(){
     target_pose_in_bin.orientation.z = currentArmPose.orientation.z;
     target_pose_in_bin.orientation.w = currentArmPose.orientation.w;
     tf2::Quaternion q_rotation(currentArmPose.orientation.x,
-                                    currentArmPose.orientation.y,
-                                    currentArmPose.orientation.z,
-                                    currentArmPose.orientation.w);
+                               currentArmPose.orientation.y,
+                               currentArmPose.orientation.z,
+                               currentArmPose.orientation.w);
     q_world_bin_pos = q_rotation * q_left_ee_link_part;
     q_world_bin_pos.normalize();
 
@@ -4547,5 +4572,4 @@ void GantryControl::placeProductRightArmBin(){
     deactivateGripper("right_arm");
 
     product_right_arm_.p.location = "bins";
-
 }

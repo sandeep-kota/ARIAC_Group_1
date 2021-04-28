@@ -40,6 +40,7 @@ void Competition::init()
 
   startCompetition();
 }
+
 /**
  * @brief Competition State Callback
  * 
@@ -105,11 +106,13 @@ void Competition::order_callback(const nist_gear::Order::ConstPtr &order_msg)
       // needs to be checked
       if (new_product.agv_id == "any")
       {
-        if (this->agvInUse.size() != 0) {
+        if (this->agvInUse.size() != 0)
+        {
           new_product.tray = agvTrayMap.at(oppositeAGV.at(this->agvInUse));
         }
-        else {
-          new_product.tray = "kit_tray_2";  
+        else
+        {
+          new_product.tray = "kit_tray_2";
         }
       };
       new_product.isPlacedOnAGV = false;
@@ -125,6 +128,11 @@ void Competition::order_callback(const nist_gear::Order::ConstPtr &order_msg)
   processOrder();
 }
 
+/**
+ * @brief Callback to get the clock
+ * 
+ * @param msg 
+ */
 void Competition::competition_clock_callback(const rosgraph_msgs::Clock::ConstPtr &msg)
 {
   competition_clock_ = msg->clock;
@@ -186,7 +194,10 @@ bool Competition::processOrder()
   }
 }
 
-////////////////////////
+/**
+ * @brief Start the competition
+ * 
+ */
 void Competition::startCompetition()
 {
   // Create a Service client for the correct service, i.e. '/ariac/start_competition'.
@@ -213,7 +224,10 @@ void Competition::startCompetition()
   }
 }
 
-////////////////////////
+/**
+ * @brief End the competition
+ * 
+ */
 void Competition::endCompetition()
 {
   // Create a Service client for the correct service, i.e. '/ariac/end_competition'.
@@ -240,13 +254,21 @@ void Competition::endCompetition()
   }
 }
 
-////////////////////////
+/**
+ * @brief Get competition start time
+ * 
+ * @return double 
+ */
 double Competition::getStartTime()
 {
   return competition_start_time_;
 }
 
-////////////////////////
+/**
+ * @brief get the current clock time
+ * 
+ * @return double 
+ */
 double Competition::getClock()
 {
   double time_spent = competition_clock_.toSec();
@@ -254,7 +276,11 @@ double Competition::getClock()
   return time_spent;
 }
 
-////////////////////////
+/**
+ * @brief Get the state of the competition
+ * 
+ * @return std::string 
+ */
 std::string Competition::getCompetitionState()
 {
   return competition_state_;
@@ -296,11 +322,11 @@ void Competition::removePrevProductsFromAGV(std::string fromAGV, SensorControl &
         else if (k % 2 == 1 && t_sum < 2)
         {
           gantry.pickPartFromTrayRightArm(current_part, fromAGV);
-          if (fromAGV.compare("agv1")==0)
+          if (fromAGV.compare("agv1") == 0)
           {
             gantry.product_right_arm_.agv_id = "agv2";
           }
-          if (fromAGV.compare("agv2")==0)
+          if (fromAGV.compare("agv2") == 0)
           {
             gantry.product_right_arm_.agv_id = "agv1";
           }
@@ -427,11 +453,20 @@ std::vector<Product> Competition::get_product_list_from_shipment(Shipment shipme
   ROS_INFO_STREAM("PRODUCT SIZE: " << products_for_shipment.size());
   return products_for_shipment;
 }
-void Competition::setAgvInUse(const std::string& agv_id) {
-  if (agv_id.compare(ANY_AGV) == 0) {
-    agvInUse = agvInUse.size() == 0  || receivedOrdersCount < 2 ? AGV2_ID : oppositeAGV.at(agvInUse);
+
+/**
+ * @brief Check free AGV to place part
+ * 
+ * @param agv_id 
+ */
+void Competition::setAgvInUse(const std::string &agv_id)
+{
+  if (agv_id.compare(ANY_AGV) == 0)
+  {
+    agvInUse = agvInUse.size() == 0 || receivedOrdersCount < 2 ? AGV2_ID : oppositeAGV.at(agvInUse);
   }
-  else {
+  else
+  {
     agvInUse = agv_id;
-  }      
+  }
 }

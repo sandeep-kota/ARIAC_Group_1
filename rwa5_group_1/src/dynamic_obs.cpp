@@ -40,6 +40,12 @@ void DynamicObs::blackout_subscriber_callback(const nist_gear::Proximity::ConstP
 	// ROS_INFO_STREAM("Blackout latest time :"<<latest_time);
 }
 
+/**
+ * @brief Callback for the breakbeam sensors
+ * 
+ * @param msg 
+ * @param sensor 
+ */
 void DynamicObs::break_beam_callback(const nist_gear::Proximity::ConstPtr &msg, int sensor)
 {
 	double time = msg->header.stamp.toSec();
