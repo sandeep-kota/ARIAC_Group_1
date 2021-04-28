@@ -524,9 +524,10 @@ while (true) {
             
         }
         // }
-        // sensors.clearPartsList();
-        // sensors.clearLogicalCallVector();
-        // sensors.read_all_sensors_ = false;
+        sensors.clearPartsList();
+        sensors.clearLogicalCallVector();
+        sensors.read_all_sensors_ = false;
+        ros::Duration(5).sleep();
         
         while (!agvControl.isAGVReady(AGV1_TRAY) && !agvControl.isAGVReady(AGV2_TRAY));
 
@@ -888,7 +889,8 @@ while (true) {
 
                     bool blackout;
 
-                    std::string shipmentAGV = current_shipment.agv_id;
+                    // std::string shipmentAGV = current_shipment.agv_id;
+                    std::string shipmentAGV = comp.getAgvInUse();
                     int sensorNum = sensorNumMap.at(shipmentAGV);
                     
                     blackout = checkBlackout(sensorNum, list_of_products.size(), sensors);
