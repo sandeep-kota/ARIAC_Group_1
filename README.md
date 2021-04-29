@@ -50,11 +50,11 @@ rosrun rwa5_group_1 rwa5_node
  ---
  ## Output Score for final run (config file: [final_ariac_2021.yaml](./rwa5_group_1/config/final_ariac_2021.yaml))
 
- ![alt text](./rwa5_group_1/docs/output_score/final_score1.PNG?raw=true "Final Score")
+ ![alt text](./rwa5_group_1/docs/output_score/final_score1.png?raw=true "Final Score")
 
-  ![alt text](./rwa5_group_1/docs/output_score/final_score2.PNG?raw=true "Final Score")
+  ![alt text](./rwa5_group_1/docs/output_score/final_score2.png?raw=true "Final Score")
 
-   ![alt text](./rwa5_group_1/docs/output_score/final_score3.PNG?raw=true "Final Score")
+   ![alt text](./rwa5_group_1/docs/output_score/final_score3.png?raw=true "Final Score")
 
 
 
