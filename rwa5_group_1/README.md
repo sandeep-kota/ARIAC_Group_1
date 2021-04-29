@@ -21,7 +21,7 @@ cd ~/ariac_ws/src/
 
 git clone https://github.com/sandeep-kota/ARIAC_Group_1.git
 
-git checkout rwa5
+git checkout final
 
 catkin build
 ```
@@ -45,4 +45,4 @@ rosrun rwa5_group_1 rwa5_node
 
 
 ---
- ## [Output Video](https://drive.google.com/drive/folders/1SD0k3rtUNtA19fljxNB2-TI2M0F4D8mn?usp=sharing)
+ ## [Output Video](https://drive.google.com/file/d/1501NE050lnaqLuepaXyWLED4M8BpvkMU/view?usp=sharing)
