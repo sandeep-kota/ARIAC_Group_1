@@ -299,22 +299,26 @@ void Competition::removePrevProductsFromAGV(std::string fromAGV, SensorControl &
 
   ROS_WARN_STREAM("AGV ID: " << fromAGV);
   if (fromAGV == "agv1") {
-    sensors.detectPartsTray1();
-    std::vector<Part> parts_tray_1 = sensors.getPartsTray1();
-    for (Part& part_in_agv: parts_tray_1) {
-      gantry.pickPartFromTrayLeftArm(part_in_agv, fromAGV);
+    // sensors.detectPartsTray1();
+    // ros::Duration(2).sleep();
+    // std::vector<Part> parts_tray_1 = sensors.getPartsTray1();
+    
+    std::vector<Product> products_tray_1 = gantry.getProductsTray1();    
+    for (Product& product_in_agv: products_tray_1) {
+      gantry.pickPartFromTrayLeftArm(product_in_agv.p, fromAGV);
       gantry.goToPresetLocation(gantry.start_90_);
       placePartsEmptyBins(gantry, sensors);
       gantry.goToPresetLocation(gantry.start_90_);
       gantry.clearProductsTray1();
     }
   } else if (fromAGV == "agv2") {
-    sensors.detectPartsTray2();
-    ros::Duration(2).sleep();
-    std::vector<Part> parts_tray_2 = sensors.getPartsTray2();
-    ROS_WARN_STREAM("parts tray 2 size: " << parts_tray_2.size());
-    for (Part& part_in_agv: parts_tray_2) {
-      gantry.pickPartFromTrayLeftArm(part_in_agv, fromAGV);
+    // sensors.detectPartsTray2();
+    // ros::Duration(2).sleep();
+    // std::vector<Part> parts_tray_2 = sensors.getPartsTray2();
+
+    std::vector<Product> products_tray_2 = gantry.getProductsTray2(); 
+    for (Product& product_in_agv: products_tray_2) {
+      gantry.pickPartFromTrayLeftArm(product_in_agv.p, fromAGV);
       gantry.goToPresetLocation(gantry.start_90_);
       placePartsEmptyBins(gantry, sensors);
       gantry.goToPresetLocation(gantry.start_90_);
