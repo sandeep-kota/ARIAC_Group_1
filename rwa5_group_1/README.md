@@ -47,7 +47,7 @@ rosrun rwa5_group_1 rwa5_node
 ---
  ## [Output Video](https://drive.google.com/file/d/1501NE050lnaqLuepaXyWLED4M8BpvkMU/view?usp=sharing)
 
- [![alt text](./docs/output_score/video_thumbnail.png?raw=true "Final Output Video")](https://drive.google.com/file/d/1501NE050lnaqLuepaXyWLED4M8BpvkMU/view?usp=sharing)
+ [![alt text](./docs/output_score/video_thumbnail.PNG?raw=true "Final Output Video")](https://drive.google.com/file/d/1501NE050lnaqLuepaXyWLED4M8BpvkMU/view?usp=sharing)
 
 
  ---
