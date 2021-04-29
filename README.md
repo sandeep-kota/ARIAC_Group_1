@@ -21,7 +21,7 @@ cd ~/ariac_ws/src/
 
 git clone https://github.com/sandeep-kota/ARIAC_Group_1.git
 
-git checkout final
+git checkout rwa5
 
 catkin build
 ```
