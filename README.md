@@ -46,3 +46,16 @@ rosrun rwa5_group_1 rwa5_node
 
 ---
  ## [Output Video](https://drive.google.com/file/d/1501NE050lnaqLuepaXyWLED4M8BpvkMU/view?usp=sharing)
+
+ ---
+ ## Output Score for final run (config file: [final_ariac_2021.yaml](./rwa5_group_1/config/final_ariac_2021.yaml))
+
+ ![alt text](./rwa5_group_1/docs/output_score/final_score1.PNG?raw=true "Final Score")
+
+  ![alt text](./rwa5_group_1/docs/output_score/final_score2.PNG?raw=true "Final Score")
+
+   ![alt text](./rwa5_group_1/docs/output_score/final_score3.PNG?raw=true "Final Score")
+
+
+
+
