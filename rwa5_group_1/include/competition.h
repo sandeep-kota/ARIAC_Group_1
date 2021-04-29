@@ -87,6 +87,7 @@ public:
     std::string getCompetitionState();
     std::vector<Product> get_product_list();
     std::vector<Product> get_product_list_from_shipment(Shipment shipment);
+    void placePartsEmptyBins(GantryControl &gantry, SensorControl &sensors);
     
     std::vector<Shipment> get_shipment_list()
     {

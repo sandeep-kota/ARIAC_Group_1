@@ -114,6 +114,18 @@ public:
     return products_kit_tray_2_;
   }
 
+  void clearProductsTray1()
+  {
+    products_kit_tray_1_.clear();
+  }
+  void clearProductsTray2()
+  {
+    products_kit_tray_2_.clear();
+  }
+  void clearProductsToFlip()
+  {
+    products_to_flip_.clear();
+  }
   void set_product_left_arm_(const product &product)
   {
     product_left_arm_ = product;

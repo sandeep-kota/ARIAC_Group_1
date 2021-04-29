@@ -155,6 +155,21 @@ void clearPartsList(){
 
   int getLogicalCameraNumProducts(int sensorNum);
 
+  void detectPartsTray1(){
+    logical_camera_tray_1 = 1;
+  }
+  void detectPartsTray2(){
+    logical_camera_tray_2 = 1;
+  }
+
+  std::vector<Part> getPartsTray1(){
+    return partsTray1;
+  }
+
+  std::vector<Part> getPartsTray2(){
+    return partsTray2;
+  }
+
   private:
     ros::NodeHandle node_;
 
@@ -180,9 +195,12 @@ void clearPartsList(){
     ros::Subscriber quality_ctrl_sensor1_subs;
     ros::Subscriber quality_ctrl_sensor2_subs;
 
+
     std::array<int, 17> logic_call_{0};
     std::array<int, 2> logic_call_agv_{0};
     std::array<int, 2> logic_call_quality_ {0};
+    int logical_camera_tray_1 {0};
+    int logical_camera_tray_2 {0};
     int conveyor_callback_ = 0;
     int detected_conveyor_ = 0;
     double first_time;
@@ -199,6 +217,8 @@ void clearPartsList(){
 
     // std::array <std::array <std::vector < part >, 3>, 5> current_parts_ {};
 
+    std::vector<Part> partsTray1;
+    std::vector<Part> partsTray2;
     std::vector<Part> faultyPartsList;
     std::vector<Part> partsToFlip;
     std::vector<Part> partsConveyor;

@@ -295,52 +295,85 @@ std::string Competition::getCompetitionState()
  */
 void Competition::removePrevProductsFromAGV(std::string fromAGV, SensorControl &sensors, GantryControl &gantry)
 {
-  std::array<std::array<std::vector<part>, 3>, 5> parts_agv = sensors.getPartsAGV(fromAGV);
-  for (int i = 0; i < 5; i++)
-  {
-    for (int j = 0; j < 3; j++)
-    {
-      int t_sum = 0;
-      for (int k = 0; k < parts_agv.at(i).at(j).size(); k++)
-      {
-        Part current_part = parts_agv.at(i).at(j).at(k);
+  ROS_WARN_STREAM("REMOVE CALLED");
 
-        if (k % 2 == 0 && t_sum < 2)
-        {
-
-          gantry.pickPartFromTrayLeftArm(current_part, fromAGV);
-          if (fromAGV.compare("agv1") == 0)
-          {
-            gantry.product_left_arm_.agv_id = "agv2";
-          }
-          if (fromAGV.compare("agv2") == 0)
-          {
-            gantry.product_left_arm_.agv_id = "agv1";
-          }
-          t_sum += 1;
-        }
-        else if (k % 2 == 1 && t_sum < 2)
-        {
-          gantry.pickPartFromTrayRightArm(current_part, fromAGV);
-          if (fromAGV.compare("agv1") == 0)
-          {
-            gantry.product_right_arm_.agv_id = "agv2";
-          }
-          if (fromAGV.compare("agv2") == 0)
-          {
-            gantry.product_right_arm_.agv_id = "agv1";
-          }
-          t_sum += 1;
-        }
-        if (t_sum == 2)
-        {
-          t_sum = 0;
-          gantry.placePartLeftArm();
-          gantry.placePartRightArm();
-        }
-      }
+  ROS_WARN_STREAM("AGV ID: " << fromAGV);
+  if (fromAGV == "agv1") {
+    sensors.detectPartsTray1();
+    std::vector<Part> parts_tray_1 = sensors.getPartsTray1();
+    for (Part& part_in_agv: parts_tray_1) {
+      gantry.pickPartFromTrayLeftArm(part_in_agv, fromAGV);
+      gantry.goToPresetLocation(gantry.start_90_);
+      placePartsEmptyBins(gantry, sensors);
+      gantry.goToPresetLocation(gantry.start_90_);
+      gantry.clearProductsTray1();
+    }
+  } else if (fromAGV == "agv2") {
+    sensors.detectPartsTray2();
+    ros::Duration(2).sleep();
+    std::vector<Part> parts_tray_2 = sensors.getPartsTray2();
+    ROS_WARN_STREAM("parts tray 2 size: " << parts_tray_2.size());
+    for (Part& part_in_agv: parts_tray_2) {
+      gantry.pickPartFromTrayLeftArm(part_in_agv, fromAGV);
+      gantry.goToPresetLocation(gantry.start_90_);
+      placePartsEmptyBins(gantry, sensors);
+      gantry.goToPresetLocation(gantry.start_90_);
+      gantry.clearProductsTray2();
     }
   }
+
+  sensors.clearPartsList();
+  sensors.clearLogicalCallVector();
+  sensors.read_all_sensors_ = false;
+  ros::Duration(5).sleep();
+  gantry.clearProductsToFlip(); 
+  // REMOVE PRODUCTS TO FLIP
+  // std::array<std::array<std::vector<part>, 3>, 5> parts_agv = sensors.getPartsAGV(fromAGV);
+  // for (int i = 0; i < 5; i++)
+  // {
+  //   for (int j = 0; j < 3; j++)
+  //   {
+  //     int t_sum = 0;
+  //     for (int k = 0; k < parts_agv.at(i).at(j).size(); k++)
+  //     {
+  //       Part current_part = parts_agv.at(i).at(j).at(k);
+
+  //       if (k % 2 == 0 && t_sum < 2)
+  //       {
+
+  //         gantry.pickPartFromTrayLeftArm(current_part, fromAGV);
+  //         if (fromAGV.compare("agv1") == 0)
+  //         {
+  //           gantry.product_left_arm_.agv_id = "agv2";
+  //         }
+  //         if (fromAGV.compare("agv2") == 0)
+  //         {
+  //           gantry.product_left_arm_.agv_id = "agv1";
+  //         }
+  //         t_sum += 1;
+  //       }
+  //       else if (k % 2 == 1 && t_sum < 2)
+  //       {
+  //         gantry.pickPartFromTrayRightArm(current_part, fromAGV);
+  //         if (fromAGV.compare("agv1") == 0)
+  //         {
+  //           gantry.product_right_arm_.agv_id = "agv2";
+  //         }
+  //         if (fromAGV.compare("agv2") == 0)
+  //         {
+  //           gantry.product_right_arm_.agv_id = "agv1";
+  //         }
+  //         t_sum += 1;
+  //       }
+  //       if (t_sum == 2)
+  //       {
+  //         t_sum = 0;
+  //         gantry.placePartLeftArm();
+  //         gantry.placePartRightArm();
+  //       }
+  //     }
+  //   }
+  // }
 
   // std::string toAGV = oppositeAGV.at(fromAGV);
 }
@@ -469,4 +502,85 @@ void Competition::setAgvInUse(const std::string &agv_id)
   {
     agvInUse = agv_id;
   }
+}
+
+void Competition::placePartsEmptyBins(GantryControl &gantry, SensorControl &sensors)
+{
+    double b_x;
+    double b_y;
+    std::vector<EmptyBin> emptybins;
+    emptybins = sensors.getEmptyBins();
+    if (gantry.checkFreeGripper().compare("left") != 0)
+    {
+
+        if (emptybins.at(0).empty_locations.at(0) == 0)
+        {
+            b_x = emptybins.at(0).pose.position.x + 0.15;
+            b_y = emptybins.at(0).pose.position.y + 0.15;
+            emptybins.at(0).empty_locations.at(0) = true;
+        }
+        else if (emptybins.at(0).empty_locations.at(1) == 0)
+        {
+            b_x = emptybins.at(0).pose.position.x + 0.15;
+            b_y = emptybins.at(0).pose.position.y - 0.15;
+            emptybins.at(0).empty_locations.at(1) = true;
+        }
+        else if (emptybins.at(0).empty_locations.at(2) == 0)
+        {
+            b_x = emptybins.at(0).pose.position.x - 0.15;
+            b_y = emptybins.at(0).pose.position.y - 0.15;
+            emptybins.at(0).empty_locations.at(2) = true;
+        }
+        else if (emptybins.at(0).empty_locations.at(3) == 0)
+        {
+            b_x = emptybins.at(0).pose.position.x - 0.15;
+            b_y = emptybins.at(0).pose.position.y + 0.15;
+            emptybins.at(0).empty_locations.at(3) = true;
+            emptybins.erase(emptybins.begin() + 0);
+        }
+
+        gantry.product_left_arm_.pose.position.x = b_x;
+        gantry.product_left_arm_.pose.position.y = b_y;
+
+        gantry.placeProductLeftArmBin();
+        sensors.updatePartDataStruct(gantry.product_left_arm_);
+    }
+
+    if (gantry.checkFreeGripper().compare("right") != 0)
+    {
+
+        if (emptybins.at(0).empty_locations.at(0) == 0)
+        {
+            b_x = emptybins.at(0).pose.position.x + 0.15;
+            b_y = emptybins.at(0).pose.position.y + 0.15;
+            emptybins.at(0).empty_locations.at(0) = true;
+        }
+        else if (emptybins.at(0).empty_locations.at(1) == 0)
+        {
+            b_x = emptybins.at(0).pose.position.x + 0.15;
+            b_y = emptybins.at(0).pose.position.y - 0.15;
+            emptybins.at(0).empty_locations.at(1) = true;
+        }
+        else if (emptybins.at(0).empty_locations.at(2) == 0)
+        {
+            b_x = emptybins.at(0).pose.position.x - 0.15;
+            b_y = emptybins.at(0).pose.position.y - 0.15;
+            emptybins.at(0).empty_locations.at(2) = true;
+        }
+        else if (emptybins.at(0).empty_locations.at(3) == 0)
+        {
+            b_x = emptybins.at(0).pose.position.x - 0.15;
+            b_y = emptybins.at(0).pose.position.y + 0.15;
+            emptybins.at(0).empty_locations.at(3) = true;
+            emptybins.erase(emptybins.begin() + 0);
+        }
+
+        gantry.product_right_arm_.pose.position.x = b_x;
+        gantry.product_right_arm_.pose.position.y = b_y;
+
+        gantry.placeProductRightArmBin();
+        sensors.updatePartDataStruct(gantry.product_right_arm_);
+    }
+
+    sensors.updateEmptyBins(emptybins);
 }

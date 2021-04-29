@@ -656,6 +656,66 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
       }
     }
   }
+
+  if (logical_camera_tray_1 == 1 && sensor_n == 0){
+
+    for (int i = 0; i < msg->models.size(); i++)
+      {
+        pos_t = msg->models.at(i).type.find("_");
+        pos_c = msg->models.at(i).type.rfind("_");
+
+        type = msg->models.at(i).type.substr(0, pos_t);
+        color = msg->models.at(i).type.substr(pos_c + 1);
+
+        ktype = hashit_type(type);
+        kcolor = hashit_color(color);
+
+        Part.picked_status = false;
+        Part.type = msg->models.at(i).type;
+        Part.pose = frame_to_world(i, msg->models.at(i).pose, c_w_transforms_.at(sensor_n));
+        Part.save_pose = Part.pose;
+        Part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
+        Part.time_stamp = ros::Time::now();
+
+        Part.location = "agv_1";
+        // ROS_INFO_STREAM("New part added to AGV1. Part tye:: " << Part.type);
+        partsTray1.push_back(Part);
+      }
+    
+    logical_camera_tray_1 = 0;
+
+  }
+
+  if (logical_camera_tray_2 == 1 && sensor_n == 1){
+
+    for (int i = 0; i < msg->models.size(); i++)
+      {
+        pos_t = msg->models.at(i).type.find("_");
+        pos_c = msg->models.at(i).type.rfind("_");
+
+        type = msg->models.at(i).type.substr(0, pos_t);
+        color = msg->models.at(i).type.substr(pos_c + 1);
+
+        ktype = hashit_type(type);
+        kcolor = hashit_color(color);
+
+        Part.picked_status = false;
+        Part.type = msg->models.at(i).type;
+        Part.pose = frame_to_world(i, msg->models.at(i).pose, c_w_transforms_.at(sensor_n));
+        Part.save_pose = Part.pose;
+        Part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
+        Part.time_stamp = ros::Time::now();
+
+        ROS_WARN_STREAM("PART TRAY 2: " << Part.type);
+        Part.location = "agv_2";
+        Part.id = Part.type + std::to_string(parts_agv1_.at(ktype).at(kcolor).size());
+        // ROS_INFO_STREAM("New part added to AGV1. Part tye:: " << Part.type);
+        partsTray2.push_back(Part);
+      }
+    
+    logical_camera_tray_2 = 0;
+
+  }
 }
 
 /**

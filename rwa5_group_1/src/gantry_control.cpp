@@ -2824,104 +2824,70 @@ bool GantryControl::correctPosePartLeftArm(Part part, geometry_msgs::Pose target
  */
 bool GantryControl::pickPartFromTrayLeftArm(part part, std::string agv_id)
 {
-    if (agv_id.compare("agv2") == 0 || agv_id.compare("any") == 0)
-    {
-        if (part.pose.position.x >= 0)
-        {
-            goToPresetLocation(tray2_left_positive_);
-            ros::Duration(0.5).sleep();
-        }
-        else
-        {
-            goToPresetLocation(tray2_left_negative_);
-            ros::Duration(0.5).sleep();
-        }
-    }
-    else
-    {
-        // goToPresetLocation(agv1_);
-        if (-part.pose.position.x >= 0)
-        {
-            goToPresetLocation(tray1_left_positive_);
-            ros::Duration(0.5).sleep();
-        }
-        else
-        {
-            goToPresetLocation(tray1_left_negative_);
-            ros::Duration(0.5).sleep();
-        }
-    }
-
-    ROS_INFO_STREAM("[" << part.type << "]= " << part.pose.position.x << ", " << part.pose.position.y << "," << part.pose.position.z << "," << part.pose.orientation.x << "," << part.pose.orientation.y << "," << part.pose.orientation.z << "," << part.pose.orientation.w);
-    geometry_msgs::Pose currentArmPose = left_arm_group_.getCurrentPose().pose;
-
-    const double offset_y = part.pose.position.y - currentArmPose.position.y;
-    const double offset_x = part.pose.position.x - currentArmPose.position.x;
-
-    joint_group_positions_.at(0) += offset_x;
-    joint_group_positions_.at(1) -= offset_y;
-
-    full_robot_group_.setJointValueTarget(joint_group_positions_);
-    full_robot_group_.move();
-
-    ros::Duration(0.5).sleep();
-    part.pose.position.z = 0.73 + 0.021;
-    pickPartLeftArm(part);
-    activateGripper("left_arm");
-    geometry_msgs::Pose currentPose = left_arm_group_.getCurrentPose().pose;
-
-    ROS_INFO_STREAM("[Pick " << part.type << " Left Arm]= " << part.pose.position.x << ", " << part.pose.position.y << "," << part.pose.position.z << "," << part.pose.orientation.x << "," << part.pose.orientation.y << "," << part.pose.orientation.z << "," << part.pose.orientation.w);
-    part.pose.position.z = part.pose.position.z + model_height.at(part.type) + GRIPPER_HEIGHT - EPSILON;
-    part.pose.orientation.x = currentPose.orientation.x;
-    part.pose.orientation.y = currentPose.orientation.y;
-    part.pose.orientation.z = currentPose.orientation.z;
-    part.pose.orientation.w = currentPose.orientation.w;
-
-    auto state = getGripperState("left_arm");
-    if (state.enabled)
-    {
-        ROS_INFO_STREAM("[Gripper] = enabled");
-        //--Move arm to part
-        left_arm_group_.setPoseTarget(part.pose);
-        left_arm_group_.move();
-        auto state = getGripperState("left_arm");
-        if (state.attached)
-        {
-            ROS_INFO_STREAM("[Gripper] = object attached");
-
-            //--Move arm to previous position
-            left_arm_group_.setPoseTarget(currentPose);
-            left_arm_group_.move();
-        }
-
-        else
-        {
-            ROS_INFO_STREAM("[Gripper] = object not attached");
-            int max_attempts{5};
-            int current_attempt{0};
-            //--try to pick up the part 5 times
-            while (current_attempt < max_attempts)
+    part.pose.position.z += 0.01;
+            if (agv_id.compare("agv2") == 0)
             {
-                left_arm_group_.setPoseTarget(currentPose);
-                left_arm_group_.move();
-                ros::Duration(1).sleep();
-                left_arm_group_.setPoseTarget(part.pose);
-                left_arm_group_.move();
-
-                activateGripper("left_arm");
-                ros::Duration(1).sleep();
-                current_attempt++;
+                goToPresetLocation(agv2_);
+                if (part.pose.position.x >= 0)
+                {
+                    goToPresetLocation(tray2_left_positive_);
+                }
+                else
+                {
+                    goToPresetLocation(tray2_left_negative_);
+                }
             }
-            part.picked_status = true;
+            else
+            {
+                goToPresetLocation(agv1_);
+                if (part.pose.position.x <= 0)
+                {
+                    goToPresetLocation(tray1_left_positive_);
+                }
+                else
+                {
+                    goToPresetLocation(tray1_left_negative_);
+                }
+            }
 
-            left_arm_group_.setPoseTarget(currentPose);
-            left_arm_group_.move();
-        }
-    }
-    ros::Duration(0.5).sleep();
-    std::vector<double> retrieve{joint_group_positions_.at(0) -= offset_x, joint_group_positions_.at(1) += offset_y};
-    FKGantry(retrieve);
-    ros::Duration(1).sleep();
+            geometry_msgs::Pose currentArmPose = left_arm_group_.getCurrentPose().pose;
+
+            const double offset_y = part.pose.position.y - currentArmPose.position.y;
+            const double offset_x = part.pose.position.x - currentArmPose.position.x;
+
+            if (currentArmPose.position.y > 0)
+            {
+                joint_group_positions_.at(1) -= offset_y - 0.2;
+            }
+            else
+            {
+                joint_group_positions_.at(1) -= offset_y + 0.2;
+            }
+            joint_group_positions_.at(0) += offset_x;
+
+            full_robot_group_.setJointValueTarget(joint_group_positions_);
+
+            moveit::planning_interface::MoveGroupInterface::Plan move_x;
+            bool success = (full_robot_group_.plan(move_x) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+            if (success)
+                full_robot_group_.move();
+
+            ros::Duration(1).sleep();
+            pickPartLeftArm(part);
+            ros::Duration(1).sleep();
+
+            std::vector<double> retrieve{joint_group_positions_.at(0) -= offset_x, joint_group_positions_.at(1) += offset_y};
+
+            FKGantry(retrieve);
+
+            Product product_left;
+            
+            product_left.pose = part.pose;
+            product_left.agv_id = agv_id;
+            product_left.p = part;
+            product_left.arm_name = "left";
+
+            product_left_arm_ = product_left;
 }
 
 /**
@@ -3127,7 +3093,6 @@ bool GantryControl::throwPartLeft(part part)
     ROS_WARN_STREAM("Faulty Part: " << part.type);
     ROS_WARN_STREAM("FAULTY POSE Z: " << part.pose.position.z);
 
-    // part.pose.position.z += 0.015;
     part.pose.position.z = 0.73 + 0.019;
     ROS_WARN_STREAM("PART LOCATION: " << part.location);
     if (part.location == "agv_2")
@@ -3269,8 +3234,7 @@ bool GantryControl::throwPartRight(part part)
     ROS_WARN_STREAM("Faulty Part: " << part.type);
     ROS_WARN_STREAM("FAULTY POSE Z: " << part.pose.position.z);
 
-    // part.pose.position.z += 0.015;
-    part.pose.position.z = 0.73 + 0.019;
+    part.pose.position.z += 0.015;
     ROS_WARN_STREAM("PART LOCATION: " << part.location);
     if (part.location == "agv_2")
     {

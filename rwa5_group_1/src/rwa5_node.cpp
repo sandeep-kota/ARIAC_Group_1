@@ -697,12 +697,14 @@ int main(int argc, char **argv)
                         // ros::Duration(2).sleep();
 
                         // gantry.getProductsToFlip(sensors.getPartsToFlip());
+                        if (!comp.newOrderAlert()){
                         faultyPartsProcess(gantry, sensors);
                         ros::param::set("/check_parts_to_flip", true);
                         ros::Duration(1).sleep();
                         gantry.flipProductsAGV(sensors.getcheckPartsToFlip());
                         sensors.clearcheckPartsToFlip();
                         // sensors.clearPartsToFlip();
+                        }
 
                         gantry.goToPresetLocation(gantry.start_90_); // go back to start position
 
@@ -862,7 +864,7 @@ int main(int argc, char **argv)
                         // if (sensors.getPartsToFlip().empty() != 1)
                         // {
                         //     // gantry.getProductsToFlip(sensors.getPartsToFlip());
-                        ROS_WARN_STREAM("FIRST FAULTY PARTS CALLED");
+                        if(!comp.newOrderAlert()){
                         faultyPartsProcess(gantry, sensors);
                         ROS_WARN_STREAM("FIRST FAULTY PARTS FINISHED");
                         ros::param::set("/check_parts_to_flip", true);
@@ -870,7 +872,7 @@ int main(int argc, char **argv)
                         gantry.flipProductsAGV(sensors.getcheckPartsToFlip());
                         sensors.clearcheckPartsToFlip();
                         //     sensors.clearPartsToFlip();
-                        // }
+                        }
                         gantry.goToPresetLocation(gantry.start_90_); // go back to start position
 
                         // the last two products that were picked have been placed.
