@@ -22,7 +22,7 @@ The environment consists of a gantry robot, 2 AGV’s on either side of the shop
 ## Knowledge Representation
 There are different kinds of knowledge representations based on the information we have ranging fromordinary glossariestogeneral logic.  Following is the knowledge model of the objects and behaviorsimplemented in our project.  For each object in the project, appropriate attributes and behaviors areidentified.
 
- ![alt text](./rwa5_group_1/docs/readme_images/knowledge_representation.png?raw=true "Knowledge Representation")
+ ![alt text](./rwa5_group_1/docs/readme_images/knowledge_representation.PNG?raw=true "Knowledge Representation")
 
 ## Agility Challeneges
 
