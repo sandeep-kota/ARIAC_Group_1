@@ -86,7 +86,7 @@ An sample output video for the config file : [final_ariac_2021.yaml](./rwa5_grou
 
 An sample output video for the config file : [rwa5-sample.yaml](./rwa5_group_1/config/rwa5-sample.yaml) is shown below.
 
- [![alt text](./rwa5_group_1/docs/output_score/video_thumbnail.PNG?raw=true "Final Output Video")](https://www.youtube.com/watch?v=VHgZroqvAyw&ab_channel=RodrigoPerez)
+ [![alt text](./rwa5_group_1/docs/output_score/video_thumbnail.PNG?raw=true "Final Output Video")](https://www.youtube.com/watch?v=ij6FFzRd-K4&ab_channel=RodrigoPerez)
 
 ## Final Score
 Final score for the [final_ariac_2021.yaml](./rwa5_group_1/config/final_ariac_2021.yaml) config file is shown below.
