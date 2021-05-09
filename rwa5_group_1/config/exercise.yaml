@@ -1,0 +1,64 @@
+#Number of orders: 2
+#Number of shipments per order: 1
+#Challenges:
+#  -Interruption: yes
+#  -Drop parts: yes
+#  -Sensor blackout: no
+#  -Part flipping: yes
+#  -Faulty parts: yes
+#  -Moving obstacle: no
+#Containers
+# -Belt: yes
+# -Bins: yes
+# -Shelf: yes
+#AGV
+# -order_0:
+#   -shipment_0: agv1
+# -order_1:
+#   -shipment_0: agv2
+#Time limit: no
+
+time_limit: -1
+options:
+  gazebo_state_logging: true
+  insert_models_over_bins: true
+  insert_models_over_shelves: true
+  # belt_population_cycles: 10
+  # spawn_extra_models: true
+
+shelf_layout:
+  row_1: ['base','collar',0,'base'] #shelves: 3, 4, 5
+  row_2: ['pipe', 0,'base','base']   #shelves: 6, 7, 8
+  row_3: ['base','pipe',0,'collar'] #shelves: 9, 10, 11
+
+
+orders:
+  order_0:
+    announcement_condition: time
+    announcement_condition_value: 0.0
+    shipment_count: 1
+    destinations: [agv2]
+    products:
+      part_0:
+        type: pulley_part_red
+        pose:
+          xyz: [-0.1, -0.2, 0]
+          rpy: [0, 0, 'pi/2']
+
+models_over_bins:
+  bin3:
+    models:
+      pulley_part_red:
+        xyz_start: [0.15, 0.15, 0.0]
+        xyz_end: [0.45, 0.45, 0.0]
+        rpy: [0, 0, 0]
+        num_models_x: 2
+        num_models_y: 1
+
+# belt_models:
+#   pulley_part_red:
+#     15.0:
+#       pose:
+#         xyz: [0.0, 4.3, 0.92]
+#         rpy: [0, 0, 'pi/2']
+
