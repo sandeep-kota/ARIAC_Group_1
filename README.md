@@ -1,7 +1,7 @@
-# ARIAC 2020 Group 1
+# ARIAC 2020
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
-Agile Robotics for Industrial Automation (ARIAC) is a simulation based competition organized by the National Institute of Standards and Tech-nology (NIST) in Collaboration with IEEE CASE, every year since 2017.  The purpose of ARIAC isto advance robot agility by utilizing the latest advances in artificial intelligence and robot planning.Specifically, ARIAC focuses on challenging robotic agility in the manufacturing environments and makethem autonomous, efficient and require lesser human input.  The ARIAC competition uses ROS andGazebo simulator.
+[Agile Robotics for Industrial Automation](https://www.nist.gov/el/intelligent-systems-division-73500/agile-robotics-industrial-automation-competition) (ARIAC) is a simulation based competition organized by the National Institute of Standards and Technology (NIST) in Collaboration with IEEE CASE, every year since 2017.  The purpose of ARIAC is to investigate robot agility by utilizing the latest advances in artificial intelligence, robot planning and control. Specifically, ARIAC focuses on challenging robotic agility in manufacturing environments. This project is build around [ARIAC 2020](https://github.com/usnistgov/ARIAC/tree/ariac2020) competition, which is implemented in ROS Melodic and Gazebo 9.16 simulator.
 
 ## Team Members
 
@@ -11,16 +11,16 @@ Agile Robotics for Industrial Automation (ARIAC) is a simulation based competiti
 - Vasista Ayyagari - [LinkedIn Link](https://www.linkedin.com/in/vasista-ayyagari-b559b8144/)
 
 ## Goal of ARIAC 2020 Challenge
-The goal of ARIAC 2020 is to build kits based on the received orders by picking up parts from theenvironment.  We are given a shop floor setup with a gantry robot fixed with two UR10 arms withvacuum grippers.  The parts are placed in shelves and bins.  The robot picks up the parts and placesthem on an AGV. Once a kit is completed, the AGV is shipped.  Some agility challenges include highpriority order, faulty parts, faulty gripper, flipped parts, sensor blackout and moving obstacles.  Someof the technologies used for this competition include C++, ROS, Gazebo, MoveIt and ROS TF.
+The premise of ARIAC 2020 is to build kits of different types of products based on received orders from the system. To build this kits, a gantry robot with two UR10 arms attached to its torso and vacuum grippers can be moved around a warehouse to retrieve the parts from each order. These parts can be found in shelves and bins. The robot picks up the parts and places them on a specified AGV. Once a kit is completed, the AGV is shipped to fulfill an order. ARIAC 2020 presents the following agility challenges include high priority order, faulty parts, faulty gripper, flipped parts, sensor blackout and moving obstacles.  Some of the tools used for this competition include C++, ROS, Gazebo, MoveIt and ROS TF.
 
 ## Ariac Environment
 
-The environment consists of a gantry robot, 2 AGV’s on either side of the shop floor, multiple shelvesand bins, a conveyor belt and moving obstacles.  The parts are located within the bins and shelves.However, some parts also come from the conveyor belt but they are in continuous motion and disappearwhen they reach the end of the belt.  The shelves are arranged in a way to create four aisles.  Thereare two moving obstacles that can be found from any of the aisles.
+The environment consists of a gantry robot, 2 AGV’s on either side of the shop floor, multiple shelvesand bins, a conveyor belt and moving obstacles. The parts are located within the bins and shelves.However, some parts also come from the conveyor belt but they are in continuous motion and disappearwhen they reach the end of the belt.  The shelves are arranged in a way to create four aisles.  Thereare two moving obstacles that can be found from any of the aisles.
 
  ![alt text](./rwa5_group_1/docs/readme_images/IntroARIAC.png?raw=true "ARIAC Environment")
 
 ## Knowledge Representation
-There are different kinds of knowledge representations based on the information we have ranging fromordinary glossariestogeneral logic.  Following is the knowledge model of the objects and behaviorsimplemented in our project.  For each object in the project, appropriate attributes and behaviors areidentified.
+There are different kinds of knowledge representations based on the information we have, ranging from ordinary glossaries to general logic. Following is the knowledge model of the objects and behaviors implemented in our project. For each object in the project, appropriate attributes and behaviors are identified.
 
  ![alt text](./rwa5_group_1/docs/readme_images/knowledge_representation.PNG?raw=true "Knowledge Representation")
 
