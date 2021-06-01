@@ -41,12 +41,12 @@ orders:
     announcement_condition: time
     announcement_condition_value: 0.0
     shipment_count: 1
-    destinations: [agv2]
+    destinations: [agv1]
     products:
       part_0:
         type: pulley_part_red
         pose:
-          xyz: [-0.1, -0.2, 0]
+          xyz: [-0.0, 0.0, 0]
           rpy: [0, 0, 0]
 
 
@@ -76,27 +76,27 @@ models_over_bins:
         num_models_x: 2
         num_models_y: 1
 
-models_over_shelves:
-  shelf5:
-    models:
-      pulley_part_red:
-        xyz_start: [1, 0.4, 0.0]
-        xyz_end: [0., 0.4, 0.0]
-        rpy: [0, 0, 0]
-        num_models_x: 2
-        num_models_y: 1
+# models_over_shelves:
+#   shelf5:
+#     models:
+#       pulley_part_red:
+#         xyz_start: [1, 0.4, 0.0]
+#         xyz_end: [0., 0.4, 0.0]
+#         rpy: [0, 0, 0]
+#         num_models_x: 2
+#         num_models_y: 1
 
 
 drops:
   drop_regions:
     shipping_box_0_impeding:
-      frame: agv2::kit_tray_2
+      frame: agv1::kit_tray_1
       min:
         xyz: [-0.3, -0.3, 0.0]
       max:
         xyz: [0.3, 0.3, 0.5]
       destination:
-        xyz: [0.15, 0.15, 0.05]
+        xyz: [0.1, 0.15, 0.05]
         rpy: [0, 0, 0.2]
       product_type_to_drop: pulley_part_red
 

@@ -157,6 +157,27 @@ void GantryControl::init()
     tray2_right_negative_.left_arm = {0.0, -PI / 4, PI / 2, -PI / 4, PI / 2, PI / 4};
     tray2_right_negative_.right_arm = {PI, -PI / 4, PI / 2, -PI / 4, PI / 2, PI / 4};
 
+    //joint positions for replacing faulty gripper parts tray1
+    tray1_left_negative_faulty_gripper_.location = "tray1";
+    tray1_left_negative_faulty_gripper_.gantry = {0, -6.5, PI / 4};
+    tray1_left_negative_faulty_gripper_.left_arm = {0.0, -PI / 4, PI / 2, -PI / 4, PI / 2, PI / 4};
+    tray1_left_negative_faulty_gripper_.right_arm = {PI, -PI / 4, PI / 2, -PI / 4, PI / 2, PI / 4};
+
+    tray1_left_positive_faulty_gripper_.location = "tray1";
+    tray1_left_positive_faulty_gripper_.gantry = {0, -6.5, PI / 4 + PI / 2};
+    tray1_left_positive_faulty_gripper_.left_arm = {0.0, -PI / 4, PI / 2, -PI / 4, PI / 2, PI / 4 + PI / 2};
+    tray1_left_positive_faulty_gripper_.right_arm = {PI, -PI / 4, PI / 2, -PI / 4, PI / 2, PI / 4 + PI / 2};
+
+    //joint positions for replacing faulty gripper parts tray2
+    tray2_left_positive_faulty_gripper_.location = "tray2";
+    tray2_left_positive_faulty_gripper_.gantry = {0, 6.5, -PI / 4};
+    tray2_left_positive_faulty_gripper_.left_arm = {0.0, -PI / 4, PI / 2, -PI / 4, PI / 2, -PI / 4};
+    tray2_left_positive_faulty_gripper_.right_arm = {PI, -PI / 4, PI / 2, -PI / 4, PI / 2, -PI / 4};
+
+    tray2_left_negative_faulty_gripper_.location = "tray2";
+    tray2_left_negative_faulty_gripper_.gantry = {0, 6.5, -PI / 4 - PI / 2};
+    tray2_left_negative_faulty_gripper_.left_arm = {0.0, -PI / 4, PI / 2, -PI / 4, PI / 2, -PI / 4 - PI / 2};
+    tray2_left_negative_faulty_gripper_.right_arm = {PI, -PI / 4, PI / 2, -PI / 4, PI / 2, -PI / 4 - PI / 2};
     // Reach Rail 1 from start
     rail_1_.location = "rail_1";
     rail_1_.gantry = {0., -6.8, 0.};
@@ -2733,6 +2754,118 @@ bool GantryControl::pickPartRightArm(part part)
     return false;
 }
 
+void GantryControl::moveFaultyGripperPart(part incorrect, part correct)
+{
+    // First, get the part with incorrect pose from the tray
+    incorrect.pose.position.z = 0.73 + 0.020;
+    double offset_x;
+    double offset_y;
+    bool success;
+    if (-incorrect.pose.position.x >= 0)
+    {
+        goToPresetLocation(tray1_left_positive_);
+    }
+    else
+    {
+        goToPresetLocation(tray1_left_negative_);
+    }
+
+    geometry_msgs::Pose currentArmPose = left_arm_group_.getCurrentPose().pose;
+
+    offset_y = incorrect.pose.position.y - currentArmPose.position.y;
+    offset_x = incorrect.pose.position.x - currentArmPose.position.x;
+
+    incorrect.pose.position.y += 0.007;
+
+    if (currentArmPose.position.y > 0)
+    {
+        joint_group_positions_.at(1) -= offset_y - 0.2;
+    }
+    else
+    {
+        joint_group_positions_.at(1) -= offset_y + 0.2;
+    }
+    joint_group_positions_.at(0) += offset_x;
+
+    full_robot_group_.setJointValueTarget(joint_group_positions_);
+
+    moveit::planning_interface::MoveGroupInterface::Plan move_x;
+    success = (full_robot_group_.plan(move_x) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+    if (success)
+        full_robot_group_.move();
+
+    ros::Duration(1).sleep();
+    pickPartLeftArm(incorrect);
+    ros::Duration(1).sleep();
+
+    std::vector<double> retrieve{joint_group_positions_.at(0) -= offset_x, joint_group_positions_.at(1) += offset_y};
+
+    FKGantry(retrieve);
+
+    // Second, place the incorrect part picked with left arm in the correct possible pose
+    goToPresetLocation(agv1_);
+    if (correct.pose.position.x >= 0)
+    {
+        goToPresetLocation(tray1_left_positive_faulty_gripper_);
+    }
+    else
+    {
+        goToPresetLocation(tray1_left_negative_faulty_gripper_);
+    }
+
+    geometry_msgs::Pose target_pose_in_tray;
+
+    target_pose_in_tray.position.x = correct.pose.position.x;
+    target_pose_in_tray.position.y = correct.pose.position.y;
+
+    tf2::Quaternion q_world_tray_pose(correct.pose.orientation.x,
+                                      correct.pose.orientation.y,
+                                      correct.pose.orientation.z,
+                                      correct.pose.orientation.w);
+
+    currentArmPose = left_arm_group_.getCurrentPose().pose;
+
+    target_pose_in_tray.position.z = 0.9;
+
+    tf2::Quaternion q_rotation = q_world_tray_pose * q_left_ee_link_part.inverse();
+    q_rotation.normalize();
+    target_pose_in_tray.orientation.x = q_rotation.getX();
+    target_pose_in_tray.orientation.y = q_rotation.getY();
+    target_pose_in_tray.orientation.z = q_rotation.getZ();
+    target_pose_in_tray.orientation.w = q_rotation.getW();
+
+    offset_y = target_pose_in_tray.position.y - currentArmPose.position.y;
+
+    offset_x = target_pose_in_tray.position.x - currentArmPose.position.x;
+
+    if (currentArmPose.position.y > 0)
+    {
+        joint_group_positions_.at(1) -= offset_y - 0.4;
+    }
+    else
+    {
+        joint_group_positions_.at(1) -= offset_y + 0.4;
+    }
+
+    joint_group_positions_.at(0) += offset_x;
+
+    full_robot_group_.setJointValueTarget(joint_group_positions_);
+
+    moveit::planning_interface::MoveGroupInterface::Plan plan;
+    success = (full_robot_group_.plan(plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+    if (success)
+        full_robot_group_.move();
+
+    ros::Duration(0.5).sleep();
+    ROS_WARN_STREAM("x: " << target_pose_in_tray.position.x);
+    ROS_WARN_STREAM("y: " << target_pose_in_tray.position.y);
+    ROS_WARN_STREAM("z: " << target_pose_in_tray.position.z);
+    left_arm_group_.setPoseTarget(target_pose_in_tray);
+    left_arm_group_.move();
+
+    deactivateGripper("left_arm");
+}
+
 /**
  * @brief A method to correct the pose of the part in the tray using left arm
  * 
@@ -3739,82 +3872,6 @@ void GantryControl::rotateTorso(const double angle)
     if (success)
         full_robot_group_.move();
 }
-
-// void GantryControl::getProductsToFlip(std::vector<Part> partsToFlip)
-// {
-//     bool is_no_prod_right{false};
-
-//     ros::param::get("/no_prod_right", is_no_prod_right);
-
-//     auto target_pose_in_tray_left = getTargetWorldPose(product_left_arm_.pose, product_left_arm_.agv_id);
-
-//     double x_prod_r{0};
-//     double y_prod_r{0};
-
-//     double roll_right, pitch_right, yaw_right{0};
-//     if (is_no_prod_right != 1)
-//     {
-//         auto target_pose_in_tray_right = getTargetWorldPose(product_right_arm_.pose, product_right_arm_.agv_id);
-//         x_prod_r = target_pose_in_tray_right.position.x;
-//         y_prod_r = target_pose_in_tray_right.position.y;
-
-//         tf2::Quaternion q_right(
-//             product_right_arm_.pose.orientation.x,
-//             product_right_arm_.pose.orientation.y,
-//             product_right_arm_.pose.orientation.z,
-//             product_right_arm_.pose.orientation.w);
-//         tf2::Matrix3x3 m_right(q_right);
-//         m_right.getRPY(roll_right, pitch_right, yaw_right);
-//     }
-
-//     double x_prod_l{target_pose_in_tray_left.position.x};
-//     double y_prod_l{target_pose_in_tray_left.position.y};
-
-//     double y_part{};
-//     double x_part{};
-
-//     tf2::Quaternion q_left(
-//         product_left_arm_.pose.orientation.x,
-//         product_left_arm_.pose.orientation.y,
-//         product_left_arm_.pose.orientation.z,
-//         product_left_arm_.pose.orientation.w);
-//     tf2::Matrix3x3 m_left(q_left);
-//     double roll_left, pitch_left, yaw_left{0};
-//     ;
-//     m_left.getRPY(roll_left, pitch_left, yaw_left);
-
-//     if (partsToFlip.empty() != 1)
-//     {
-//         for (int i = 0; i < partsToFlip.size(); i++)
-//         {
-//             x_part = partsToFlip.at(i).pose.position.x;
-//             y_part = partsToFlip.at(i).pose.position.y;
-
-//             tf2::Quaternion q_part(
-//                 partsToFlip.at(i).pose.orientation.x,
-//                 partsToFlip.at(i).pose.orientation.y,
-//                 partsToFlip.at(i).pose.orientation.z,
-//                 partsToFlip.at(i).pose.orientation.w);
-//             tf2::Matrix3x3 m_part(q_part);
-//             double roll_part, pitch_part, yaw_part;
-//             m_part.getRPY(roll_part, pitch_part, yaw_part);
-
-//             if (-1 <= roll_part && 1 >= roll_part)
-//             {
-//                 if ((x_prod_l - 1) <= x_part && (x_prod_l + 1) >= x_part && (y_prod_l - 1) <= y_part && (y_prod_l + 1) >= y_part && (((PI - 1) <= roll_left && (PI + 1) >= roll_left) || ((-PI - 1) <= roll_left && (-PI + 1) >= roll_left)))
-//                 {
-//                     product_left_arm_.p = partsToFlip.at(i);
-//                     products_to_flip_.push_back(product_left_arm_);
-//                 }
-//                 else if ((x_prod_r - 1) <= x_part && (x_prod_r + 1) >= x_part && (y_prod_r - 1) <= y_part && (y_prod_r + 1) >= y_part && (((PI - 1) <= roll_right && (PI + 1) >= roll_right) || ((-PI - 1) <= roll_right && (-PI + 1) >= roll_right)) && is_no_prod_right != 1)
-//                 {
-//                     product_right_arm_.p = partsToFlip.at(i);
-//                     products_to_flip_.push_back(product_right_arm_);
-//                 }
-//             }
-//         }
-//     }
-// }
 
 /**
  * @brief Flips the parts in the AGV if required

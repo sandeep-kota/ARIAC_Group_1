@@ -40,10 +40,10 @@ orders:
     destinations: [agv1]
     products:
       part_0:
-        type: pulley_part_red
+        type: disk_part_green
         pose:
           xyz: [0.12, 0.1, 0]
-          rpy: ['pi', 0, 0]
+          rpy: [0, 0, 0]
       part_1:
         type: gasket_part_green
         pose:
@@ -59,22 +59,22 @@ orders:
         pose:
           xyz: [0.15, -0.2, 0]
           rpy: [0, 0, 0]
-  order_1:
-    announcement_condition: unwanted_products
-    announcement_condition_value: 1
-    shipment_count: 1
-    destinations: [agv2]
-    products:
-      part_0:
-        type: disk_part_green
-        pose:
-          xyz: [-0.15, -0.2, 0]
-          rpy: [0, 0, 0]
-      part_1:
-        type: gasket_part_blue
-        pose:
-          xyz: [0.15, 0.2, 0]
-          rpy: [0, 0, '-pi/4']
+  # order_1:
+  #   announcement_condition: unwanted_products
+  #   announcement_condition_value: 1
+  #   shipment_count: 1
+  #   destinations: [agv2]
+  #   products:
+  #     part_0:
+  #       type: disk_part_green
+  #       pose:
+  #         xyz: [-0.15, -0.2, 0]
+  #         rpy: [0, 0, 0]
+  #     part_1:
+  #       type: gasket_part_blue
+  #       pose:
+  #         xyz: [0.15, 0.2, 0]
+  #         rpy: [0, 0, '-pi/4']
 
 models_over_bins:
   bin13:
@@ -85,16 +85,16 @@ models_over_bins:
         rpy: [0, 0, 0]
         num_models_x: 3
         num_models_y: 3
-
-models_over_shelves:
-  shelf8:
+  bin5:
     models:
       gasket_part_green:
-        xyz_start: [1, 0.45, 0.0]
-        xyz_end: [0., 0.45, 0.0]
-        rpy: [0, 0, 'pi/4']
-        num_models_x: 6
-        num_models_y: 1
+        xyz_start: [0.1, 0.1, 0.0]
+        xyz_end: [0.5, 0.5, 0.0]
+        rpy: [0, 0, 0]
+        num_models_x: 3
+        num_models_y: 3
+
+models_over_shelves:
   shelf11:
     models:
       gasket_part_blue:
@@ -121,7 +121,7 @@ drops:
       max:
         xyz: [0.3, 0.3, 0.5]
       destination:
-        xyz: [0.2, 0.3, 0.3]
+        xyz: [0.1, 0.3, 0.3]
         rpy: [0, 0, 0.2]
       product_type_to_drop: gasket_part_green
     shipping_box_1_impeding:

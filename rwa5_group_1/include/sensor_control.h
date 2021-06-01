@@ -130,6 +130,11 @@ void clearPartsList(){
   void erasePartConveyor(int p){
     partsConveyor.erase(partsConveyor.begin() + p);
   }
+  
+  void resetLogicCallTray(){
+    logic_call_tray_[0] = 0;
+    logic_call_tray_[1] = 0;
+  }
 
   void resetLogicCallQuality(){
     logic_call_quality_[0] = 0;
@@ -199,6 +204,8 @@ void clearPartsList(){
     std::array<int, 17> logic_call_{0};
     std::array<int, 2> logic_call_agv_{0};
     std::array<int, 2> logic_call_quality_ {0};
+    std::array<int, 2> logic_call_tray_ {0};
+    
     int logical_camera_tray_1 {0};
     int logical_camera_tray_2 {0};
     int conveyor_callback_ = 0;

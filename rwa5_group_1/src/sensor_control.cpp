@@ -716,6 +716,54 @@ void SensorControl::logical_camera_callback(const nist_gear::LogicalCameraImage:
     logical_camera_tray_2 = 0;
 
   }
+
+  bool update_tray_parts;
+  ros::param::get("/update_tray_parts", update_tray_parts);
+  if (update_tray_parts && (sensor_n == 0 || sensor_n == 1))
+  {
+    int t_sum = 0;
+    for (int i = 0; i < 2; i++)
+    {
+      t_sum += logic_call_tray_[i];
+    }
+    ROS_WARN_STREAM("SUM AGV :" << t_sum);
+    if (t_sum == 2)
+    {
+      ros::param::set("/update_tray_parts", false);
+    }
+    if ((logic_call_tray_[sensor_n] == 0) && t_sum < 2)
+    {
+      logic_call_tray_[sensor_n] = 1;
+      ROS_WARN_STREAM("SENSOR CALLED: " << sensor_n);
+
+      for (int i = 0; i < msg->models.size(); i++)
+      {
+        Part.picked_status = false;
+        Part.type = msg->models.at(i).type;
+        Part.pose = frame_to_world(i, msg->models.at(i).pose, c_w_transforms_.at(sensor_n));
+        Part.save_pose = Part.pose;
+        Part.frame = "logical_camera_" + std::to_string(sensor_n) + "_frame";
+        Part.time_stamp = ros::Time::now();
+
+        if (sensor_n == 0)
+        {
+          Part.location = "agv_1";
+          partsTray1.push_back(Part);
+          // Part.id = Part.type + std::to_string(parts_agv1_.at(ktype).at(kcolor).size());
+          // parts_agv1_.at(ktype).at(kcolor).push_back(Part);
+          ROS_INFO_STREAM("New part added to AGV1. Part tye:: " << Part.type);
+        }
+        if (sensor_n == 1)
+        {
+          Part.location = "agv_2";
+          partsTray2.push_back(Part);
+          // Part.id = Part.type + std::to_string(parts_agv2_.at(ktype).at(kcolor).size());
+          // parts_agv2_.at(ktype).at(kcolor).push_back(Part);
+          // ROS_INFO_STREAM("New part added to AGV2. Part tye:: " << Part.type);
+        }
+      }
+    }
+  }
 }
 
 /**

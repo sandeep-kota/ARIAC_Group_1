@@ -110,7 +110,8 @@ typedef struct PresetLocation {
     std::vector<double> right_arm;
 } start, bins, shelf1, shelf2, aisle1, aisle2, agv1, agv2, tray1_left_positive,
     tray1_left_negative, tray1_right_positive, tray1_right_negative, tray2_left_positive,
-    tray2_left_negative, tray2_right_positive, tray2_right_negative;
+    tray2_left_negative, tray2_right_positive, tray2_right_negative, tray1_left_negative_faulty_gripper,
+    tray1_left_positive_faulty_gripper, tray2_left_negative_faulty_gripper, tray2_left_positive_faulty_gripper;
 
 /**
  * @brief Struct to store part information

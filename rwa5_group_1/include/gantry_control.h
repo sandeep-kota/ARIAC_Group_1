@@ -47,9 +47,6 @@ public:
   void init();
   void initializeShelfConfiguration();
 
-  //    bool moveGantry(std::string waypoints);
-
-  //    bool pickPart(part part, std::string arm_name);
   bool pickPartLeftArm(part part);
   bool pickPartRightArm(part part);
   void placePartLeftArm();
@@ -85,6 +82,7 @@ public:
   void getLeftArmRoll();
   void getRightArmRoll();
   void moveLeftArmRoll(double roll);
+  void moveFaultyGripperPart(part incorrect, part correct);
   std::string checkFreeGripper();
   std::string getGantryLocation()
   {
@@ -180,6 +178,10 @@ public:
   tray2_left_negative tray2_left_negative_;
   tray2_right_positive tray2_right_positive_;
   tray2_right_negative tray2_right_negative_;
+  tray1_left_negative_faulty_gripper tray1_left_negative_faulty_gripper_; 
+  tray1_left_positive_faulty_gripper tray1_left_positive_faulty_gripper_;
+  tray2_left_negative_faulty_gripper tray2_left_negative_faulty_gripper_;
+  tray2_left_positive_faulty_gripper tray2_left_positive_faulty_gripper_;
   product product_left_arm_;
   product product_right_arm_;
   tf2::Quaternion q_left_ee_link_part;
