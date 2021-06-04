@@ -13,16 +13,20 @@
 ## Goal of ARIAC 2020 Challenge
 The premise of ARIAC 2020 is to build kits of different types of products based on received orders from the system. To build this kits, a gantry robot with two UR10 arms attached to its torso and vacuum grippers can be moved around a warehouse to retrieve the parts from each order. These parts can be found in shelves and bins. The robot picks up the parts and places them on a specified AGV. Once a kit is completed, the AGV is shipped to fulfill an order. ARIAC 2020 presents the following agility challenges include high priority order, faulty parts, faulty gripper, flipped parts, sensor blackout and moving obstacles.  Some of the tools used for this competition include C++, ROS, Gazebo, MoveIt and ROS TF.
 
-## Ariac Environment
+## ARIAC Environment
 
-The environment consists of a gantry robot, 2 AGV’s on either side of the shop floor, multiple shelvesand bins, a conveyor belt and moving obstacles. The parts are located within the bins and shelves.However, some parts also come from the conveyor belt but they are in continuous motion and disappearwhen they reach the end of the belt.  The shelves are arranged in a way to create four aisles.  Thereare two moving obstacles that can be found from any of the aisles.
+The environment consists of a gantry robot, 2 AGV’s on either side of the shop floor, multiple shelves and bins, a conveyor belt and moving obstacles. The parts are located within the bins and shelves. However, some parts also can spawn in the conveyor belt. The parts in the conveyor are in continuous motion and disappear when they reach the end of the belt. The shelves are arranged in a way to create four aisles. In each trial there are two moving obstacles that can be found in any of the aisles.
 
- ![alt text](./rwa5_group_1/docs/readme_images/IntroARIAC.png?raw=true "ARIAC Environment")
+
+ARIAC Environment             |  Part Types
+:-------------------------:|:-------------------------:
+![](./rwa5_group_1/docs/readme_images/ariac_from_above.png)  |  ![](./rwa5_group_1/docs/readme_images/part_types.png)
+
 
 ## Knowledge Representation
 There are different kinds of knowledge representations based on the information we have, ranging from ordinary glossaries to general logic. Following is the knowledge model of the objects and behaviors implemented in our project. For each object in the project, appropriate attributes and behaviors are identified.
 
- ![alt text](./rwa5_group_1/docs/readme_images/knowledge_representation.PNG?raw=true "Knowledge Representation")
+ ![alt text](./rwa5_group_1/docs/readme_images/knowledge_representation.PNG?raw=true)
 
 ## Agility Challeneges
 
@@ -80,23 +84,63 @@ rosrun rwa5_group_1 rwa5_node
 ---
  ## Output Video
 
-An sample output video for the config file : [final_ariac_2021.yaml](./rwa5_group_1/config/final_ariac_2021.yaml) is shown below.
+A sample output video for the config file : [final_ariac_2021.yaml](./rwa5_group_1/config/final_ariac_2021.yaml) is shown below.
 
  [![alt text](./rwa5_group_1/docs/output_score/video_thumbnail.PNG?raw=true "Final Output Video")](https://www.youtube.com/watch?v=VHgZroqvAyw&ab_channel=RodrigoPerez)
 
-An sample output video for the config file : [rwa5-sample.yaml](./rwa5_group_1/config/rwa5-sample.yaml) is shown below.
+A sample output video for the config file : [rwa5-sample.yaml](./rwa5_group_1/config/rwa5-sample.yaml) is shown below.
 
  [![alt text](./rwa5_group_1/docs/output_score/video_thumbnail.PNG?raw=true "Final Output Video")](https://www.youtube.com/watch?v=ij6FFzRd-K4&ab_channel=RodrigoPerez)
 
 ## Final Score
 Final score for the [final_ariac_2021.yaml](./rwa5_group_1/config/final_ariac_2021.yaml) config file is shown below.
 
- ![alt text](./rwa5_group_1/docs/output_score/final_score1.png?raw=true "Final Score")
+```
+Score breakdown:
+<game_score>
+	Total game score: [36]
+	Total process time: [843.816]
+	Arms collision?: [0]
+<order_score order_0>
+	Total order score: [12]
+	Completion score: [12]
+	Time taken: [843.814]
+	Complete: [true]
+	Priority: [1]
+<shipment_score >
+	Completion score: [12]
+	Complete: [true]
+	Submitted: [true]
+	Product type presence score: [3]
+	Product color presence score: [3]
+	All products bonus: [3]
+	Product pose score: [3]
+	Delivered to correct agv: [true]
+</shipment_score>
 
-  ![alt text](./rwa5_group_1/docs/output_score/final_score2.png?raw=true "Final Score")
+</order_score>
 
-   ![alt text](./rwa5_group_1/docs/output_score/final_score3.png?raw=true "Final Score")
+<order_score order_1>
+	Total order score: [24]
+	Completion score: [8]
+	Time taken: [452.568]
+	Complete: [true]
+	Priority: [3]
+<shipment_score >
+	Completion score: [8]
+	Complete: [true]
+	Submitted: [true]
+	Product type presence score: [2]
+	Product color presence score: [2]
+	All products bonus: [2]
+	Product pose score: [2]
+	Delivered to correct agv: [true]
+</shipment_score>
 
+</order_score>
+
+</game_score>
+```
 
 
 
