@@ -24,9 +24,10 @@ ARIAC Environment             |  Part Types
 
 
 ## Knowledge Representation
-There are different kinds of knowledge representations based on the information we have, ranging from ordinary glossaries to general logic. Following is the knowledge model of the objects and behaviors implemented in our project. For each object in the project, appropriate attributes and behaviors are identified.
-
- ![alt text](./rwa5_group_1/docs/readme_images/knowledge_representation.PNG?raw=true)
+There are different kinds of knowledge representations based on the information we have, ranging from ordinary glossaries to general logic. Following is the knowledge model of the objects and behaviors implemented in our project. For each object in the project, appropriate attributes and behaviors are identified. To learn more about the architecture implemented please read the [final report](https://drive.google.com/file/d/1-XxIVknE4O_pLyZTwY1GoaqGvqv6Sk5j/view?usp=sharing) or have a look at the [presentation](https://drive.google.com/file/d/1EpHO7O77YrO4odJyRM18okfMnBBDxLN4/view?usp=sharing).
+<p align="center">
+<img  src="./rwa5_group_1/docs/readme_images/knowledge_representation.PNG"  alt="drawing" width="500"/>
+</p>
 
 ## Agility Challeneges
 
