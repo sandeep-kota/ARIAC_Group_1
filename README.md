@@ -29,7 +29,7 @@ There are different kinds of knowledge representations based on the information 
 <img  src="./rwa5_group_1/docs/readme_images/knowledge_representation.PNG"  alt="drawing" width="800"/>
 </p>
 
-## Agility Challeneges
+## Agility Challenges
 
 ARIAC 2020 has the following agility challenges
 1)  <b> Faulty Products :</b> Certain parts in the environment are faulty but can only be identified once placed on the trays. Only the quality control sensors above the AGV's can detect faulty parts. Faulty parts are taken from the trays and thrown to the floor. Both arms are used to retrieve new parts from the bins and shelves. Faulty parts are substituted until no more faulty parts are detected in both trays.
@@ -37,19 +37,19 @@ ARIAC 2020 has the following agility challenges
   <img src="https://github.com/sandeep-kota/ARIAC_Group_1/blob/present/rwa5_group_1/docs/gifs/faulty_parts.gif" alt="animated"/>
 </p>
 
-2) <b> Flipped products :</b> Certain parts need to be flipped before placing them on the AGV.
+2) <b> Flipped products :</b> Certain parts in an order need to be flipped before sending the AGV. The only part type which needs to be flipped are pulleys. The approach taken consists in placing the two parts from both arms in the trays, and then check which ones need to be flipped. Finally, pick those parts from the tray individually, flip them and place them again in the same position ready to send the order. 
  <p align="center">
   <img src="https://github.com/sandeep-kota/ARIAC_Group_1/blob/present/rwa5_group_1/docs/gifs/flipping_parts.gif" alt="animated"/>
 </p>
 
-3) <b> Dropped Products :</b>  The gripper becomes faulty at various instances. This leads to either incorrect pose on the AGV or  may not be placed on the AGV at all.
+3) <b> Dropped Products :</b>  The gripper becomes faulty at various instances. This leads to the part being placed on the trays at that time to have a different pose and orintation than the one desired. To tackle this challenge, the desired positions of the parts in both trays are double checked with the information retrieved from the logical cameras placed above the AGV's. If the desired pose of the part in the tray and the pose retrieved by the logical camera don't match, the arms pick again that part from the tray and correct its position.
 <p align="center">
  <img src="https://github.com/sandeep-kota/ARIAC_Group_1/blob/present/rwa5_group_1/docs/gifs/dropped_part.gif" alt="animated"/>
 </p>
 
-4) <b> In-process order interruption :</b> In the middle of an order, another other is placed which need to  be delivered prior the the initial order. (The new order have a higher priority).
-5) <b> Sensor Blackout :</b> At a certain time, communications from the sensors will be lost, but the system needs to continue to process the orders.
-6) <b> Moving Obstacles :</b> Moving Obstacles (humans) are present in the shop floor and the robot should plan to avoid collision.
+4) <b> In-process order interruption :</b> In the middle of an order, another priority order is placed which needs to  be delivered before to the initial order. This priority order can be build in a different AGV than the former one, or in the same. For the second case, the parts from in the AGV already placed from the former order are relocated in empty bins and the new priority order is build in the empty AGV tray. An example of priority order is shown in this [video](https://youtu.be/VHgZroqvAyw?t=42).
+5) <b> Sensor Blackout :</b> At a certain time, communications from the sensors will be lost, but the system needs to continue to process the orders. An example of sensor blackout is shown in this [video](https://youtu.be/ij6FFzRd-K4?t=31).
+6) <b> Moving Obstacles :</b> Moving Obstacles (humans) are present in the environment floor and the robot should plan to avoid collision. To pick parts from the lower shelves the robot must avoid these obstacles and for that it takes advanage of the safe location created by the gaps between the shelves of each aisle.
 
 <p align="center">
  <img src="https://github.com/sandeep-kota/ARIAC_Group_1/blob/present/rwa5_group_1/docs/gifs/obstacle_avoidance.gif" alt="animated"/>
