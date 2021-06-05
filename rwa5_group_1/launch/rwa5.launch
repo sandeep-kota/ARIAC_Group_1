@@ -28,8 +28,7 @@
           $(arg gui_args)
           $(arg load_moveit_args)
           $(arg fill_demo_shipment_args)
-          --visualize-sensor-views
-          -f $(find rwa5_group_1)/config/final_ariac_2021.yaml
+          -f $(find rwa5_group_1)/config/sample_dropped_product.yaml
           $(find rwa5_group_1)/config/rwa4_sensor_group_1.yaml
           " required="true" output="screen" />
 

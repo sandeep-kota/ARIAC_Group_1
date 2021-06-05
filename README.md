@@ -26,18 +26,20 @@ ARIAC Environment             |  Part Types
 ## Knowledge Representation
 There are different kinds of knowledge representations based on the information we have, ranging from ordinary glossaries to general logic. Following is the knowledge model of the objects and behaviors implemented in our project. For each object in the project, appropriate attributes and behaviors are identified. To learn more about the architecture implemented please read the [final report](https://drive.google.com/file/d/1-XxIVknE4O_pLyZTwY1GoaqGvqv6Sk5j/view?usp=sharing) or have a look at the [presentation](https://drive.google.com/file/d/1EpHO7O77YrO4odJyRM18okfMnBBDxLN4/view?usp=sharing).
 <p align="center">
-<img  src="./rwa5_group_1/docs/readme_images/knowledge_representation.PNG"  alt="drawing" width="600"/>
+<img  src="./rwa5_group_1/docs/readme_images/knowledge_representation.PNG"  alt="drawing" width="800"/>
 </p>
 
 ## Agility Challeneges
 
 ARIAC 2020 has the following agility challenges
-1)  <b> Faulty Products :</b> Certain parts in the environment are faulty but can only be identified once placed on the trays. Only the quality control sensors above the AGV's can detect faulty parts. Faulty parts are taken from the trays and thrown to the floor. Both arms are used to retrieve new parts from the bins and shelves. Faulty parts are substituted until no more faulty parts are detected in both trays. 
-2) <b> Flipped products :</b> Certain parts need to be flipped before placing them on the AGV. 
-3) <b> Dropped Products :</b>  The gripper becomes faulty at various instances. This leads to either incorrect pose on the AGV or  may not be placed on the AGV at all.
-4) <b> In-process order interruption :</b> In the middle of an order, another other is placed which need to  be delivered prior the the initial order. (The new order have a higher priority).
-5) <b> Sensor Blackout :</b> At a certain time, communications from the sensors will be lost, but the system needs to continue to process the orders.
-6) <b> Moving Obstacles :</b> Moving Obstacles (humans) are present in the shop floor and the robot should plan to avoid collision.
+1)  <b> Faulty Products :</b> Certain parts in the environment are faulty but can only be identified once placed on the trays. Only the quality control sensors above the AGV's can detect faulty parts. Faulty parts are taken from the trays and thrown to the floor. Both arms are used to retrieve new parts from the bins and shelves. Faulty parts are substituted until no more faulty parts are detected in both trays.
+
+![](./rwa5_group_1/docs/gifs/faulty_part.gif)
+1) <b> Flipped products :</b> Certain parts need to be flipped before placing them on the AGV. 
+2) <b> Dropped Products :</b>  The gripper becomes faulty at various instances. This leads to either incorrect pose on the AGV or  may not be placed on the AGV at all.
+3) <b> In-process order interruption :</b> In the middle of an order, another other is placed which need to  be delivered prior the the initial order. (The new order have a higher priority).
+4) <b> Sensor Blackout :</b> At a certain time, communications from the sensors will be lost, but the system needs to continue to process the orders.
+5) <b> Moving Obstacles :</b> Moving Obstacles (humans) are present in the shop floor and the robot should plan to avoid collision.
 
 
 ## Build Instructions
