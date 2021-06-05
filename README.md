@@ -34,15 +34,14 @@ There are different kinds of knowledge representations based on the information 
 ARIAC 2020 has the following agility challenges
 1)  <b> Faulty Products :</b> Certain parts in the environment are faulty but can only be identified once placed on the trays. Only the quality control sensors above the AGV's can detect faulty parts. Faulty parts are taken from the trays and thrown to the floor. Both arms are used to retrieve new parts from the bins and shelves. Faulty parts are substituted until no more faulty parts are detected in both trays.
 <p align="center">
-  <img src="https://github.com/sandeep-kota/ARIAC_Group_1/blob/present/rwa5_group_1/docs/gifs/faulty_parts.gif" alt="animated" />
+  <img src="https://github.com/sandeep-kota/ARIAC_Group_1/blob/present/rwa5_group_1/docs/gifs/faulty_parts.gif" alt="animated" width="400" height="790"/>
 </p>
-![](https://github.com/sandeep-kota/ARIAC_Group_1/blob/present/rwa5_group_1/docs/gifs/faulty_parts.gif)
 
-1) <b> Flipped products :</b> Certain parts need to be flipped before placing them on the AGV. 
-2) <b> Dropped Products :</b>  The gripper becomes faulty at various instances. This leads to either incorrect pose on the AGV or  may not be placed on the AGV at all.
-3) <b> In-process order interruption :</b> In the middle of an order, another other is placed which need to  be delivered prior the the initial order. (The new order have a higher priority).
-4) <b> Sensor Blackout :</b> At a certain time, communications from the sensors will be lost, but the system needs to continue to process the orders.
-5) <b> Moving Obstacles :</b> Moving Obstacles (humans) are present in the shop floor and the robot should plan to avoid collision.
+2) <b> Flipped products :</b> Certain parts need to be flipped before placing them on the AGV. 
+3) <b> Dropped Products :</b>  The gripper becomes faulty at various instances. This leads to either incorrect pose on the AGV or  may not be placed on the AGV at all.
+4) <b> In-process order interruption :</b> In the middle of an order, another other is placed which need to  be delivered prior the the initial order. (The new order have a higher priority).
+5) <b> Sensor Blackout :</b> At a certain time, communications from the sensors will be lost, but the system needs to continue to process the orders.
+6) <b> Moving Obstacles :</b> Moving Obstacles (humans) are present in the shop floor and the robot should plan to avoid collision.
 
 
 ## Build Instructions
