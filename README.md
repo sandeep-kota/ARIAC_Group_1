@@ -34,7 +34,7 @@ There are different kinds of knowledge representations based on the information 
 ARIAC 2020 has the following agility challenges
 1)  <b> Faulty Products :</b> Certain parts in the environment are faulty but can only be identified once placed on the trays. Only the quality control sensors above the AGV's can detect faulty parts. Faulty parts are taken from the trays and thrown to the floor. Both arms are used to retrieve new parts from the bins and shelves. Faulty parts are substituted until no more faulty parts are detected in both trays.
 <p align="center">
-  <img src="[demo.gif](https://github.com/sandeep-kota/ARIAC_Group_1/blob/present/rwa5_group_1/docs/gifs/faulty_parts.gif)" alt="animated" width="600"/>
+  <img src="[demo.gif](https://github.com/sandeep-kota/ARIAC_Group_1/blob/present/rwa5_group_1/docs/gifs/faulty_parts.gif)" alt="animated"/>
 </p>
 
 
