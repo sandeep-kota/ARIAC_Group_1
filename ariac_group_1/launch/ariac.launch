@@ -28,8 +28,8 @@
           $(arg gui_args)
           $(arg load_moveit_args)
           $(arg fill_demo_shipment_args)
-          -f $(find rwa5_group_1)/config/rwa5-sample.yaml
-          $(find rwa5_group_1)/config/rwa4_sensor_group_1.yaml
+          -f $(find ariac_group_1)/config/rwa5-sample.yaml
+          $(find ariac_group_1)/config/rwa4_sensor_group_1.yaml
           " required="true" output="screen" />
 
  <!-- <group ns='ariac/gantry'>
@@ -38,6 +38,5 @@
    </include>
  </group>  -->
   
-  <!-- <node name="rwa3_node" pkg="rwa3_group_1" type="rwa3_node" output="screen"/> -->
-  <node name="dyn_obs_node" pkg="rwa5_group_1" type="dyn_obs_node" output="screen"/>
+  <node name="dyn_obs_node" pkg="ariac_group_1" type="dyn_obs_node" output="screen"/>
 </launch>
